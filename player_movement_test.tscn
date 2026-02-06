@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bn83aalnxm3wi"]
+
+[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Models/PlayerDrone.tscn" id="1_v7x06"]
+
+[node name="PlayerMovementTest" type="Node3D" unique_id=1051003530]
+
+[node name="PlayerDrone" parent="." unique_id=339431069 instance=ExtResource("1_v7x06")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14.879689)
+RotationSpeed = 5.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1096994086]
+transform = Transform3D(1, 0, 0, 0, -0.16566725, 0.98618174, 0, -0.98618174, -0.16566725, 0, 7.1336193, 0)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1906440651]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.501255, 7.873699)
+size = Vector3(8.297852, 1, 6.9248047)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=970021240]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8247766, -0.8732493, 7.873699)
+size = Vector3(1.6289063, 4.517578, 5.3710938)

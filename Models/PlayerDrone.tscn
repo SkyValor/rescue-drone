@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://bacf4mllwuq5q"]
+
+[ext_resource type="PackedScene" uid="uid://bjlv5mpoo4txn" path="res://Models/player_drone.tscn" id="1_c8tkg"]
+[ext_resource type="Script" uid="uid://xc1fd5edo52h" path="res://Scripts/Drone.cs" id="1_fw6iu"]
+[ext_resource type="Script" uid="uid://dl85s5nvnuxtm" path="res://Scripts/PlayerDroneController.cs" id="2_r42g7"]
+[ext_resource type="Script" uid="uid://2bno15anemda" path="res://Scripts/DroneMovement.cs" id="4_lxflk"]
+
+[sub_resource type="Curve" id="Curve_lxflk"]
+_data = [Vector2(0, 0), 0.0, 1.4, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_c8tkg"]
+size = Vector3(1.3222656, 1.2810059, 0.93188477)
+
+[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Movement", "Camera")]
+motion_mode = 1
+script = ExtResource("1_fw6iu")
+Controller = NodePath("PlayerDroneController")
+Movement = NodePath("DroneMovement")
+Camera = NodePath("FollowUpCamera")
+AccelCurve = SubResource("Curve_lxflk")
+
+[node name="Drone_animated" parent="." unique_id=969365950 instance=ExtResource("1_c8tkg")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.76807594, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2029201119]
+shape = SubResource("BoxShape3D_c8tkg")
+
+[node name="FollowUpCamera" type="Camera3D" parent="." unique_id=657372475]
+transform = Transform3D(1, 0, 0, 0, 0.9661108, 0.2581278, 0, -0.2581278, 0.9661108, 0, 1.3951535, 1.9113352)
+
+[node name="PlayerDroneController" type="Node" parent="." unique_id=2106382197]
+script = ExtResource("2_r42g7")
+
+[node name="DroneMovement" type="Node" parent="." unique_id=999680140]
+script = ExtResource("4_lxflk")

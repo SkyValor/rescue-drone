@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bjlv5mpoo4txn"]
+
+[ext_resource type="PackedScene" uid="uid://bpw3681lvrujn" path="res://Assets/drone/source/Drone_animated.fbx" id="1_es05n"]
+[ext_resource type="Texture2D" uid="uid://bg0r04af4mwng" path="res://Assets/drone/textures/drone_Base_Color.png" id="2_sc2uv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6gmib"]
+albedo_texture = ExtResource("2_sc2uv")
+
+[node name="Drone_animated" unique_id=969365950 instance=ExtResource("1_es05n")]
+
+[node name="Skeleton3D" parent="." index="0" unique_id=1426683572]
+bones/4/rotation = Quaternion(6.5465605e-10, -2.3841768e-07, 0.0027458267, 0.99999624)
+bones/7/rotation = Quaternion(-2.4702403e-11, 1.3836758e-09, 0.017851586, 0.9998407)
+bones/9/rotation = Quaternion(0.49321204, 0.5066973, 0.506697, 0.49321184)
+bones/11/rotation = Quaternion(-0.50669724, 0.49321198, -0.49321204, 0.506697)
+
+[node name="Drone2" parent="Skeleton3D" index="0" unique_id=1794341093]
+surface_material_override/0 = SubResource("StandardMaterial3D_6gmib")
