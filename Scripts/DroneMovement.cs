@@ -25,9 +25,7 @@ public partial class DroneMovement : Node
     public void SetDrone(Drone drone) => Drone = drone;
 
     public void SetPropulsionIntent(float intent) => PropulsionIntent = intent;
-    
     public void SetStrafingIntent(float intent) => StrafingIntent = intent;
-    
     public void SetTurningIntent(float intent) => TurningIntent = intent;
 
     public void Tick(float delta)
@@ -35,9 +33,9 @@ public partial class DroneMovement : Node
         RotateDrone(delta);
         MoveDrone(delta);
     }
-
-    protected virtual void MoveDrone(float delta) { }
     
     protected virtual void RotateDrone(float delta) { }
+
+    protected virtual void MoveDrone(float delta) { }
     
 }
