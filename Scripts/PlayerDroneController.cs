@@ -1,21 +1,20 @@
-﻿namespace RescueDrone.Player;
+﻿namespace RescueDrone;
 
 using Godot;
-using Vector3 = Godot.Vector3;
 
 public partial class PlayerDroneController : DroneController
 {
     public override void Tick(double delta)
     {
         base.Tick(delta);
-        var inputVector = new Vector3(
-            x: Input.GetAxis("move_left", "move_right"),
-            y: 0f,
-            z: Input.GetAxis("move_forward", "move_back"));
-        Drone.SetInputVector(inputVector);
+        var propulsion = Input.GetAxis("move_back", "move_forward");
+        if (propulsion != 0) OnPropulsionInput(propulsion);
 
-        var turningVector = Input.GetAxis("turn_left", "turn_right");
-        Drone.SetInputRotation(turningVector);
+        var strafing = Input.GetAxis("move_left", "move_right");
+        if (strafing != 0) OnStrafingInput(strafing);
+
+        var turning = Input.GetAxis("turn_left", "turn_right");
+        if (turning != 0f) OnTurnInput(turning);
     }
 
 }

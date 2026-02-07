@@ -3,22 +3,28 @@
 [ext_resource type="PackedScene" uid="uid://bjlv5mpoo4txn" path="res://Models/player_drone.tscn" id="1_c8tkg"]
 [ext_resource type="Script" uid="uid://xc1fd5edo52h" path="res://Scripts/Drone.cs" id="1_fw6iu"]
 [ext_resource type="Script" uid="uid://dl85s5nvnuxtm" path="res://Scripts/PlayerDroneController.cs" id="2_r42g7"]
-[ext_resource type="Script" uid="uid://2bno15anemda" path="res://Scripts/DroneMovement.cs" id="4_lxflk"]
-
-[sub_resource type="Curve" id="Curve_lxflk"]
-_data = [Vector2(0, 0), 0.0, 1.4, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
-point_count = 2
+[ext_resource type="Script" uid="uid://dnuxsg02kjhc0" path="res://Scripts/DroneMovementFromCameraPerspective.cs" id="4_lxflk"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_c8tkg"]
 size = Vector3(1.3222656, 1.2810059, 0.93188477)
 
-[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Movement", "Camera")]
+[sub_resource type="Curve" id="Curve_lxflk"]
+_limits = [0.0, 1.0, 0.0, 3.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.68621707, 0.11020887), 0.37141657, 0.37141657, 0, 0, Vector2(2.4105575, 0.9547564), 0.23076196, 0.23076196, 0, 0, Vector2(3, 1), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_1kdy7"]
+_limits = [0.0, 1.0, 0.0, 2.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.6041056, 0.09512758), 0.36262575, 0.36262575, 0, 0, Vector2(1.4193548, 0.8868909), 0.557125, 0.557125, 0, 0, Vector2(2, 1), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Camera", "Movement")]
 motion_mode = 1
+platform_on_leave = 2
 script = ExtResource("1_fw6iu")
 Controller = NodePath("PlayerDroneController")
-Movement = NodePath("DroneMovement")
 Camera = NodePath("FollowUpCamera")
-AccelCurve = SubResource("Curve_lxflk")
+Movement = NodePath("DroneMovement")
 
 [node name="Drone_animated" parent="." unique_id=969365950 instance=ExtResource("1_c8tkg")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.76807594, 0)
@@ -32,5 +38,12 @@ transform = Transform3D(1, 0, 0, 0, 0.9661108, 0.2581278, 0, -0.2581278, 0.96611
 [node name="PlayerDroneController" type="Node" parent="." unique_id=2106382197]
 script = ExtResource("2_r42g7")
 
-[node name="DroneMovement" type="Node" parent="." unique_id=999680140]
+[node name="DroneMovement" type="Node" parent="." unique_id=999680140 node_paths=PackedStringArray("Camera")]
 script = ExtResource("4_lxflk")
+Camera = NodePath("../FollowUpCamera")
+AccelCurve = SubResource("Curve_lxflk")
+MaxPropulsionSpeed = 1125.0
+AccelWeight = 0.65
+StrafingCurve = SubResource("Curve_1kdy7")
+MaxStrafingSpeed = 750.0
+RotationSpeed = 7.5
