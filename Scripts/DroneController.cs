@@ -10,7 +10,7 @@ public partial class DroneController : Node
     public event Action<float> TurnInput;
     public event Action<float> AscensionInput;
     
-    public virtual void Tick(double delta) { }
+    public virtual void Tick() { }
     
     protected void OnPropulsionInput(float input) => PropulsionInput?.Invoke(input);
     

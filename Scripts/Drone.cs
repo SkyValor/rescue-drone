@@ -2,14 +2,12 @@ namespace RescueDrone;
 
 using Godot;
 
-// TODO: We might have a Curve for the acceleration (forward) and another Curve for the deceleration (zero but still forward).
-// Same thing for backward movement and strafing.
-
 public partial class Drone : CharacterBody3D
 {
     [Export] public DroneController Controller { get; set; }
     [Export] private Camera3D Camera { get; set; }
     [Export] private DroneMovement Movement { get; set; }
+    [Export] private DroneRotationHandler RotationHandler { get; set; }
     
     private float currentVelocity;
     private float currentAcceleration;
@@ -36,9 +34,8 @@ public partial class Drone : CharacterBody3D
     public override void _PhysicsProcess(double delta)
     {
         base._PhysicsProcess(delta);
-        var deltaFloat = (float) delta;
-        Controller?.Tick(deltaFloat);
-        Movement?.Tick(deltaFloat);
+        Controller?.Tick();
+        Movement?.Tick((float) delta);
     }
 
     private void OnPropulsionInput(float input) => Movement?.SetPropulsionIntent(input);

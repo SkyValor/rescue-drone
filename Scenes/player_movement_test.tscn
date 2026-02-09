@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bn83aalnxm3wi"]
 
-[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Models/PlayerDrone.tscn" id="1_v7x06"]
+[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Models/PlayerDrone.tscn" id="1_4nblu"]
 
 [node name="PlayerMovementTest" type="Node3D" unique_id=1051003530]
 
-[node name="PlayerDrone" parent="." unique_id=339431069 instance=ExtResource("1_v7x06")]
+[node name="PlayerDrone" parent="." unique_id=339431069 instance=ExtResource("1_4nblu")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14.879689)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1096994086]
