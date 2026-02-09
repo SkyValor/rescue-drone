@@ -6,181 +6,93 @@ public partial class DroneMovementFromCameraPerspective : DroneMovement
 {
     [Export] private Camera3D Camera { get; set; }
     
-    protected override void MoveDrone(float delta)
-    {
-        // There is no user input and the drone has no velocity. Nothing to do.
-        if (PropulsionIntent.IsZeroApprox() && StrafingIntent.IsZeroApprox() && Drone.Velocity.IsZeroApprox())
-            return;
-        
-        UpdatePropulsionForce(delta);
-        UpdateStrafingForce(delta);
-        
-        // Move the drone in last velocity with a bit of deceleration
-        // Drone.Velocity = Drone.Velocity.MoveToward(Vector3.Zero, 2f * delta);
-        // Drone.MoveAndSlide();
-        // return;
-        
-        var propulsionSpeed = -AccelCurve.Sample(Mathf.Abs(CurrentPropulsionForce)) * MaxPropulsionSpeed;
-        var strafingSpeed = StrafingCurve.Sample(Mathf.Abs(CurrentStrafingForce)) * MaxStrafingSpeed;
-        var camRotation = Camera.GlobalTransform.Basis.GetEuler().Y;
-        
-        var propulsionVelocity = GetPropulsionVelocity(camRotation, propulsionSpeed, delta);
-        var strafingVelocity = GetStrafingVelocity(camRotation, strafingSpeed, delta);
-
-        // Drone.Velocity = propulsionVelocity + strafingVelocity;
-        // Drone.MoveAndSlide();
-
-        // Reset the intent until next call, to avoid continuous force applied
-        PropulsionIntent = 0f;
-        StrafingIntent = 0f;
-    }
-
-    protected override void MoveDrone2(float delta)
-    {
-        if (InputVector.IsZeroApprox() && ForceVector.IsZeroApprox())
-            return;
-
-        UpdatePropulsionForceVector();
-    }
-
-    private void UpdatePropulsionForceVector()
-    {
-        var pitchIntent = InputVector.Z;
-        var tiltIntent = InputVector.X;
-
-        var pitchForce = ForceVector.Z;
-        var tiltForce = ForceVector.X;
-
-        switch (pitchIntent)
-        {
-            case 0f:
-                pitchForce = Mathf.MoveToward(pitchForce, 0f, AccelFriction);
-                break;
-            case > 0f when pitchForce >= 0f:
-                pitchForce = pitchForce < pitchIntent
-                    ? Mathf.MoveToward(pitchForce, pitchIntent, AccelWeight)
-                    : Mathf.MoveToward(pitchForce, pitchIntent, AccelFriction);
-                break;
-            case > 0f:
-                pitchForce = Mathf.MoveToward(pitchForce, pitchIntent, AccelWeight * 2f);
-                break;
-            case < 0f when pitchForce <= 0f:
-                pitchForce = pitchForce > pitchIntent
-                    ? Mathf.MoveToward(pitchForce, pitchIntent, AccelWeight)
-                    : Mathf.MoveToward(pitchForce, pitchIntent, AccelFriction);
-                break;
-            case < 0f:
-                pitchForce = Mathf.MoveToward(pitchForce, pitchIntent, AccelWeight * 2f);
-                break;
-        }
-        
-        
-    }
-    
-
-    private void UpdateForceVectorByIntent()
-    {
-        
-    }
-
-    private void UpdatePropulsionForceByIntent()
-    {
-        if (PropulsionIntent.IsZeroApprox() && !CurrentPropulsionForce.IsZeroApprox())
-        {
-            // Without user input into propulsion, decrease the force by friction.
-            CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, 0f, AccelFriction);
-        }
-        else if (PropulsionIntent > 0f)
-        {
-            if (CurrentPropulsionForce < 0f)
-                CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, PropulsionIntent, AccelWeight * 2f);
-            else
-            {
-            }
-            
-            // if (CurrentPropulsionForce >= 0f)
-                // CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, PropulsionIntent);
-        }
-        else
-        {
-            
-        }
-    }
-
-    private Vector3 VelocityFromPropulsion(float camRotation, float delta)
-    {
-        UpdatePropulsionForceByIntent();
-        
-        
-        
-        UpdatePropulsionForce(delta);
-        var propulsionSpeed = -AccelCurve.Sample(Mathf.Abs(CurrentPropulsionForce)) * MaxPropulsionSpeed;
-        
-        if (!PropulsionIntent.IsZeroApprox())
-        {
-            // When the user intends to move forward or back, use camera rotation for the velocity.
-            var propulsionVelocity = GetPropulsionVelocity(camRotation, propulsionSpeed, delta);
-        }
-        else
-        {
-            // Otherwise, let the drone drift towards last velocity.
-        }
-
-        return Vector3.Zero;
-    }
+    // protected override void MoveDrone(float delta)
+    // {
+        // if (PitchIntent.IsZeroApprox() && CurrentPitchForce.IsZeroApprox() &&
+        //     RollIntent.IsZeroApprox() && CurrentRollForce.IsZeroApprox())
+        //     return;
+        //
+        // // Update force to be applied based on user's input
+        // UpdateMotorForce(ref CurrentPitchForce, PitchIntent, AccelDelta, AccelFriction);
+        // UpdateMotorForce(ref CurrentRollForce, RollIntent, RollSpeedDelta, RollSpeedFriction);
+        //
+        // // Get the force to be applied onto the velocity by sampling the graphical curve
+        // var propulsionForceApplied = -AccelCurve.Sample(Mathf.Abs(CurrentPitchForce));
+        // if (CurrentPitchForce > 0f)
+        //     propulsionForceApplied *= -1f;
+        //
+        // var rollForceApplied = RollSpeedCurve.Sample(Mathf.Abs(CurrentRollForce));
+        // if (CurrentRollForce < 0f)
+        //     rollForceApplied *= -1f;
+        //
+        // // Get the direction relative to the drone
+        // var droneRotation = Drone.GlobalTransform.Basis.GetEuler().Y;
+        // var propulsionDirection = Vector3.Forward.Rotated(Vector3.Up, droneRotation).Normalized();
+        // var propulsionVelocity = propulsionDirection * propulsionForceApplied * delta;
+        //
+        // var rollDirection = rollForceApplied > 0f
+        //     ? Vector3.Right.Rotated(Vector3.Up, droneRotation).Normalized()
+        //     : Vector3.Left.Rotated(Vector3.Up, droneRotation);
+        // var rollVelocity = rollDirection * rollForceApplied * delta;
+        //
+        // // Move the drone
+        // Drone.Velocity += propulsionVelocity + rollVelocity;
+    // }
     
     private void UpdatePropulsionForce(float delta)
     {
-        if (!PropulsionIntent.IsZeroApprox())
-        {
-            // User sends input to drone's propulsion. Use acceleration.
-            CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, PropulsionIntent, AccelWeight * delta);
-            if (CurrentPropulsionForce > 0f && PropulsionIntent < 0f)
-                CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, PropulsionIntent, AccelWeight * delta);
-            if (CurrentPropulsionForce < 0f && PropulsionIntent > 0f)
-                CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, PropulsionIntent, AccelWeight * delta);
-        }
-        else
-        {
-            // No input into the drone's propulsion. Decelerate using friction.
-            CurrentPropulsionForce = Mathf.MoveToward(CurrentPropulsionForce, 0f, AccelFriction * delta);
-        }
+        // if (!PitchIntent.IsZeroApprox())
+        // {
+        //     // User sends input to drone's propulsion. Use acceleration.
+        //     CurrentPitchForce = Mathf.MoveToward(CurrentPitchForce, PitchIntent, AccelDelta * delta);
+        //     if (CurrentPitchForce > 0f && PitchIntent < 0f)
+        //         CurrentPitchForce = Mathf.MoveToward(CurrentPitchForce, PitchIntent, AccelDelta * delta);
+        //     if (CurrentPitchForce < 0f && PitchIntent > 0f)
+        //         CurrentPitchForce = Mathf.MoveToward(CurrentPitchForce, PitchIntent, AccelDelta * delta);
+        // }
+        // else
+        // {
+        //     // No input into the drone's propulsion. Decelerate using friction.
+        //     CurrentPitchForce = Mathf.MoveToward(CurrentPitchForce, 0f, AccelFriction * delta);
+        // }
     }
 
     private void UpdateStrafingForce(float delta)
     {
-        if (!StrafingIntent.IsZeroApprox())
-        {
-            // User sends input to drone's strafing. Use acceleration.
-            CurrentStrafingForce = Mathf.MoveToward(CurrentStrafingForce, StrafingIntent, StrafingWeight * delta);
-            if (CurrentStrafingForce > 0f && StrafingIntent < 0f)
-                CurrentStrafingForce = Mathf.MoveToward(CurrentStrafingForce, StrafingIntent, StrafingWeight * delta);
-            if (CurrentStrafingForce < 0f && StrafingIntent > 0f)
-                CurrentStrafingForce = Mathf.MoveToward(CurrentStrafingForce, StrafingIntent, StrafingWeight * delta);
-        }
-        else
-        {
-            // No input into the drone's strafing. Decelerate using friction.
-            CurrentStrafingForce = Mathf.MoveToward(CurrentStrafingForce, 0f, StrafingFriction * delta);
-        }
+        // if (!RollIntent.IsZeroApprox())
+        // {
+        //     // User sends input to drone's strafing. Use acceleration.
+        //     CurrentRollForce = Mathf.MoveToward(CurrentRollForce, RollIntent, RollSpeedDelta * delta);
+        //     if (CurrentRollForce > 0f && RollIntent < 0f)
+        //         CurrentRollForce = Mathf.MoveToward(CurrentRollForce, RollIntent, RollSpeedDelta * delta);
+        //     if (CurrentRollForce < 0f && RollIntent > 0f)
+        //         CurrentRollForce = Mathf.MoveToward(CurrentRollForce, RollIntent, RollSpeedDelta * delta);
+        // }
+        // else
+        // {
+        //     // No input into the drone's strafing. Decelerate using friction.
+        //     CurrentRollForce = Mathf.MoveToward(CurrentRollForce, 0f, RollSpeedFriction * delta);
+        // }
     }
 
     private Vector3 GetPropulsionVelocity(float camRotation, float propulsionSpeed, float delta)
     {
-        var propulsionDirection = new Vector3(x: 0f, y: 0f, z: CurrentPropulsionForce)
-            .Rotated(Vector3.Up, camRotation)
-            .Normalized();
-        
-        return propulsionDirection * propulsionSpeed * delta;
+        // var propulsionDirection = new Vector3(x: 0f, y: 0f, z: CurrentPitchForce)
+        //     .Rotated(Vector3.Up, camRotation)
+        //     .Normalized();
+        //
+        // return propulsionDirection * propulsionSpeed * delta;
+        return Vector3.Zero;
     }
 
     private Vector3 GetStrafingVelocity(float camRotation, float strafingSpeed, float delta)
     {
-        var strafingDirection = new Vector3(x: CurrentStrafingForce, y: 0f, z: 0f)
-            .Rotated(Vector3.Up, camRotation)
-            .Normalized();
-        
-        return strafingDirection * strafingSpeed * delta;
+        // var strafingDirection = new Vector3(x: CurrentRollForce, y: 0f, z: 0f)
+        //     .Rotated(Vector3.Up, camRotation)
+        //     .Normalized();
+        //
+        // return strafingDirection * strafingSpeed * delta;
+        return Vector3.Zero;
     }
     
 }

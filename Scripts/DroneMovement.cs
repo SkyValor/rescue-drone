@@ -6,102 +6,54 @@ public partial class DroneMovement : Node
 {
     [ExportGroup("Pitch")]
     [Export] protected Curve AccelCurve { get; set; }
-    [Export] protected float MaxPropulsionSpeed { get; set; } = 200f;
-    [Export] protected float AccelWeight { get; set; } = 0.5f;
+    [Export] protected float AccelDelta { get; set; } = 0.5f;
     [Export] protected float AccelFriction { get; set; } = 0.75f;
-    [ExportGroup("Tilt")]
-    [Export] protected Curve StrafingCurve { get; set; }
-    [Export] protected float MaxStrafingSpeed { get; set; } = 80f;
-    [Export] protected float StrafingWeight { get; set; } = 0.5f;
-    [Export] protected float StrafingFriction { get; set; } = 0.75f;
-    [ExportGroup("Rotation")]
+    [ExportGroup("Roll")]
+    [Export] protected Curve RollSpeedCurve { get; set; }
+    [Export] protected float RollSpeedDelta { get; set; } = 0.5f;
+    [Export] protected float RollSpeedFriction { get; set; } = 0.75f;
+    [ExportGroup("Yaw")]
     [Export] protected Curve RotationCurve { get; set; }
     [Export] protected float RotationDelta { get; set; } = 0.5f;
     [Export] protected float RotationFriction { get; set; } = 0.75f;
-    [Export] protected float RotationSpeed { get; set; } = 50f;
     [ExportGroup("Throttle")]
     [Export] protected Curve ThrottleCurve { get; set; }
     [Export] protected float ThrottleDelta { get; set; } = 0.5f;
     [Export] protected float ThrottleFriction { get; set; } = 0.75f;
 
-    protected Drone Drone;
-    protected Vector3 InputVector;
-    protected Vector3 ForceVector;
-
-    protected float ThrottleIntent;
-    protected float CurrentThrottleForce;
-    protected float CurrentThrottleCurveX;
-
-    protected float RotationIntent;
-    protected float CurrentRotationForce;
+    private Drone Drone;
     
-    protected float PropulsionIntent;
-    protected float CurrentPropulsionForce;
-    protected float StrafingIntent;
-    protected float CurrentStrafingForce;
-    protected float TurningIntent;
+    private float PitchIntent;
+    private float CurrentPitchForce;
+    
+    private float RollIntent;
+    private float CurrentRollForce;
 
+    private float YawIntent;
+    private float CurrentYawForce;
+    
+    private float ThrottleIntent;
+    private float CurrentThrottleForce;
+    
     public void SetDrone(Drone drone) => Drone = drone;
 
-    public void SetPropulsionIntent(float intent) => PropulsionIntent = intent;
-    public void SetStrafingIntent(float intent) => StrafingIntent = intent;
-    public void SetTurningIntent(float intent) => RotationIntent = intent * RotationCurve.MaxDomain;
+    public void SetPropulsionIntent(float intent) => PitchIntent = intent * AccelCurve.MaxDomain;
+    public void SetStrafingIntent(float intent) => RollIntent = intent * RollSpeedCurve.MaxDomain;
+    public void SetTurningIntent(float intent) => YawIntent = intent * RotationCurve.MaxDomain;
     public void SetThrottleIntent(float intent) => ThrottleIntent = intent * ThrottleCurve.MaxDomain;
 
     public void Tick(float delta)
     {
+        var droneRotation = Drone.GlobalTransform.Basis.GetEuler().Y;
         Drone.Velocity = Vector3.Zero;
-        ThrottleDrone(delta);
+        AddThrottleVelocity(delta);
         RotateDrone(delta);
-        // MoveDrone(delta);
-        // Drone.Velocity = throttleVelocity;
+        AddPitchVelocity(delta, droneRotation);
+        AddRollVelocity(delta, droneRotation);
         Drone.MoveAndSlide();
     }
 
-    // private void ThrottleDrone(float delta)
-    // {
-    //     if (ThrottleIntent.IsZeroApprox() && CurrentThrottleForce.IsZeroApprox())
-    //         return;
-    //     
-    //     switch (ThrottleIntent)
-    //     {
-    //         case 0f:
-    //             // When there is no input, take from the current force by friction
-    //             CurrentThrottleForce = Mathf.MoveToward(CurrentThrottleForce, 0f, ThrottleFriction);
-    //             break;
-    //         case > 0f when CurrentThrottleForce >= 0f:
-    //             // If the current force is less than the intent, add to it by delta;
-    //             // Otherwise, take from it by friction
-    //             CurrentThrottleForce = CurrentThrottleForce < ThrottleIntent
-    //                 ? Mathf.MoveToward(CurrentThrottleForce, ThrottleIntent, ThrottleDelta)
-    //                 : Mathf.MoveToward(CurrentThrottleForce, ThrottleIntent, ThrottleFriction);
-    //             break;
-    //         case > 0f:
-    //             // When the input is to the opposite direction, add to the current force by twice the delta
-    //             CurrentThrottleForce = Mathf.MoveToward(CurrentThrottleForce, ThrottleIntent, ThrottleDelta * 2f);
-    //             break;
-    //         case < 0f when CurrentThrottleForce <= 0f:
-    //             // If current force is greater than the intent, add to it by delta;
-    //             // Otherwise, take from it by friction
-    //             CurrentThrottleForce = CurrentThrottleForce > ThrottleIntent
-    //                 ? Mathf.MoveToward(CurrentThrottleForce, ThrottleIntent, ThrottleDelta)
-    //                 : Mathf.MoveToward(CurrentThrottleForce, ThrottleIntent, ThrottleFriction);
-    //             break;
-    //         case < 0f:
-    //             // When the input is to the opposite direction, add to the current force by twice the delta
-    //             CurrentThrottleForce = Mathf.MoveToward(CurrentThrottleForce, ThrottleIntent, ThrottleDelta * 2f);
-    //             break;
-    //     }
-    //     
-    //     var curveX = CurrentThrottleForce * ThrottleCurve.MaxDomain;
-    //     var throttleSpeed = ThrottleCurve.Sample(Mathf.Abs(curveX));
-    //     throttleSpeed += CurrentThrottleForce > 0f ? 1 : -1;
-    //     
-    //     var throttleVelocity = Vector3.Up * throttleSpeed * delta;
-    //     CalculatedVelocity += throttleVelocity;
-    // }
-
-    private void ThrottleDrone(float delta)
+    private void AddThrottleVelocity(float delta)
     {
         if (ThrottleIntent.IsZeroApprox() && CurrentThrottleForce.IsZeroApprox())
             return;
@@ -110,18 +62,62 @@ public partial class DroneMovement : Node
 
         var forceApplied = ThrottleCurve.Sample(Mathf.Abs(CurrentThrottleForce));
         forceApplied *= CurrentThrottleForce > 0f ? 1f : -1f;
-        GD.Print("Force applied: " + forceApplied);
         
         Drone.Velocity += Vector3.Up * forceApplied * delta;
     }
 
+    private void RotateDrone(float delta)
+    {
+        if (YawIntent.IsZeroApprox() && CurrentYawForce.IsZeroApprox())
+            return;
+
+        UpdateMotorForce(ref CurrentYawForce, YawIntent, RotationDelta, RotationFriction);
+        var forceApplied = RotationCurve.Sample(Mathf.Abs(CurrentYawForce));
+        
+        // We are changing the drone's rotation in Euler angles,
+        // therefore we set a negative value to rotate rightward
+        if (CurrentYawForce > 0f) 
+            forceApplied *= -1f;
+        
+        var rotation = Drone.Rotation;
+        rotation.Y += forceApplied * delta;
+        Drone.Rotation = rotation;
+    }
+
+    private void AddPitchVelocity(float delta, float droneDirection)
+    {
+        if (PitchIntent.IsZeroApprox() && CurrentPitchForce.IsZeroApprox())
+            return;
+        
+        UpdateMotorForce(ref CurrentPitchForce, PitchIntent, AccelDelta, AccelFriction);
+        
+        var pitchForceApplied = -AccelCurve.Sample(Mathf.Abs(CurrentPitchForce));
+        pitchForceApplied *= CurrentPitchForce > 0f ? -1f : 1f; // Invert because Forward is negative Z-axis
+        
+        var pitchDirection = Vector3.Forward.Rotated(Vector3.Up, droneDirection).Normalized();
+        Drone.Velocity += pitchDirection * pitchForceApplied * delta;
+    }
+
+    private void AddRollVelocity(float delta, float droneDirection)
+    {
+        if (RollIntent.IsZeroApprox() && CurrentRollForce.IsZeroApprox())
+            return;
+        
+        UpdateMotorForce(ref CurrentRollForce, RollIntent, RollSpeedDelta, RollSpeedFriction);
+        
+        var rollForceApplied = RollSpeedCurve.Sample(Mathf.Abs(CurrentRollForce));
+        var rollDirection = CurrentRollForce > 0f
+            ? Vector3.Right.Rotated(Vector3.Up, droneDirection).Normalized()
+            : Vector3.Left.Rotated(Vector3.Up, droneDirection).Normalized();
+        Drone.Velocity += rollDirection * rollForceApplied * delta;
+    }
+    
     private static void UpdateMotorForce(ref float currentForce, float intent, float accelDelta, float friction)
     {
         switch (intent)
         {
             case 0f:
                 currentForce = Mathf.MoveToward(currentForce, 0f, friction);
-                GD.Print("No input. Current force: " + currentForce);
                 break;
             case > 0f when currentForce >= 0f:
                 currentForce = currentForce < intent
@@ -141,30 +137,5 @@ public partial class DroneMovement : Node
                 break;
         }
     }
-
-    private void RotateDrone(float delta)
-    {
-        if (RotationIntent.IsZeroApprox() && CurrentRotationForce.IsZeroApprox())
-            return;
-
-        UpdateMotorForce(ref CurrentRotationForce, RotationIntent, RotationDelta, RotationFriction);
-        var forceApplied = RotationCurve.Sample(Mathf.Abs(CurrentRotationForce));
-        
-        // We are changing the drone's rotation in Euler angles,
-        // therefore we set a negative value to rotate rightward
-        if (CurrentRotationForce > 0f) 
-            forceApplied *= -1f;
-        
-        var rotation = Drone.Rotation;
-        rotation.Y += forceApplied * delta;
-        Drone.Rotation = rotation;
-        
-        // Reset the intent until next call, to avoid continuous turning applied
-        TurningIntent = 0f;
-    }
-
-    protected virtual void MoveDrone(float delta) { }
-    
-    protected virtual void MoveDrone2(float delta) { }
     
 }
