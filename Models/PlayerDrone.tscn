@@ -18,6 +18,16 @@ _limits = [0.0, 1.0, 0.0, 2.0]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.6041056, 0.09512758), 0.36262575, 0.36262575, 0, 0, Vector2(1.4193548, 0.8868909), 0.557125, 0.557125, 0, 0, Vector2(2, 1), 0.0, 0.0, 0, 0]
 point_count = 4
 
+[sub_resource type="Curve" id="Curve_1awyl"]
+_limits = [0.0, 0.9216008, 0.0, 15.0]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(5.8064513, 0.13304085), 0.0463519, 0.0463519, 0, 0, Vector2(12.404692, 0.8487088), 0.053168386, 0.053168386, 0, 0, Vector2(15, 0.9216008), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_l1ajr"]
+_limits = [0.0, 115.0, 0.0, 7.704269]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(2.1237571, 10.07251), 8.571146, 8.571146, 0, 0, Vector2(5.8516293, 106.32831), 10.746932, 10.746932, 0, 0, Vector2(7.704269, 115), 0.0, 0.0, 0, 0]
+point_count = 4
+
 [node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Camera", "Movement")]
 motion_mode = 1
 platform_on_leave = 2
@@ -46,4 +56,10 @@ MaxPropulsionSpeed = 1125.0
 AccelWeight = 0.65
 StrafingCurve = SubResource("Curve_1kdy7")
 MaxStrafingSpeed = 750.0
+RotationCurve = SubResource("Curve_1awyl")
+RotationDelta = 0.25
+RotationFriction = 0.3
 RotationSpeed = 7.5
+ThrottleCurve = SubResource("Curve_l1ajr")
+ThrottleDelta = 0.075
+ThrottleFriction = 0.15

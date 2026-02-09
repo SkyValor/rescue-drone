@@ -29,6 +29,7 @@ public partial class Drone : CharacterBody3D
         Controller.PropulsionInput += OnPropulsionInput;
         Controller.StrafingInput += OnStrafingInput;
         Controller.TurnInput += OnTurnInput;
+        Controller.ThrottleInput += OnThrottleInput;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -43,5 +44,7 @@ public partial class Drone : CharacterBody3D
     private void OnStrafingInput(float input) => Movement?.SetStrafingIntent(input);
     
     private void OnTurnInput(float input) => Movement?.SetTurningIntent(input);
+
+    private void OnThrottleInput(float input) => Movement?.SetThrottleIntent(input);
 
 }
