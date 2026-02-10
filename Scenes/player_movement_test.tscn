@@ -1,11 +1,21 @@
 [gd_scene format=3 uid="uid://bn83aalnxm3wi"]
 
 [ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Models/PlayerDrone.tscn" id="1_4nblu"]
+[ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="2_f422q"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="2_fid5x"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="3_ywhih"]
+
+[sub_resource type="Resource" id="Resource_25k4e"]
+script = ExtResource("3_ywhih")
 
 [node name="PlayerMovementTest" type="Node3D" unique_id=1051003530]
 
 [node name="PlayerDrone" parent="." unique_id=339431069 instance=ExtResource("1_4nblu")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14.879689)
+
+[node name="PlayerLookAtTarget" type="Node3D" parent="PlayerDrone" unique_id=334862050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.9607658)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1096994086]
 transform = Transform3D(1, 0, 0, 0, -0.16566725, 0.98618174, 0, -0.98618174, -0.16566725, 0, 7.1336193, 0)
@@ -17,3 +27,30 @@ size = Vector3(8.297852, 1, 6.9248047)
 [node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=970021240]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8247766, -0.8732493, 7.873699)
 size = Vector3(1.6289063, 4.517578, 5.3710938)
+
+[node name="PlayerPhantomCamera3D" type="Node3D" parent="." unique_id=576567977 node_paths=PackedStringArray("follow_targets")]
+transform = Transform3D(1, 0, 0, 0, 0.99304146, 0.11776542, 0, -0.11776542, 0.99304146, 0, 0.8327654, 16.802347)
+top_level = true
+script = ExtResource("2_f422q")
+follow_mode = 3
+follow_targets = [NodePath("../PlayerDrone"), NodePath("../PlayerDrone/PlayerLookAtTarget")]
+tween_resource = SubResource("Resource_25k4e")
+follow_offset = Vector3(0, 0.715, 2.41)
+follow_damping = true
+dead_zone_width = 0.135
+dead_zone_height = 0.146
+show_viewfinder_in_play = true
+align_transform_with_view = Callable()
+align_position_with_view = Callable()
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[node name="MainCamera3D" type="Camera3D" parent="." unique_id=1227896988]
+physics_interpolation_mode = 1
+transform = Transform3D(1, 0, 0, 0, 0.99304146, 0.11776542, 0, -0.11776542, 0.99304146, 0, 0.8327654, 16.802347)
+top_level = true
+
+[node name="PhantomCameraHost" type="Node" parent="MainCamera3D" unique_id=476983645]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("2_fid5x")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"

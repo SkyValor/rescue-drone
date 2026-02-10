@@ -78,10 +78,8 @@ public partial class DroneMovement : Node
         // therefore we set a negative value to rotate rightward
         if (CurrentYawForce > 0f) 
             forceApplied *= -1f;
-        
-        var rotation = Drone.Rotation;
-        rotation.Y += forceApplied * delta;
-        Drone.Rotation = rotation;
+
+        Drone.RotationDegrees += new Vector3(0f, forceApplied * delta, 0f);
     }
 
     private void AddPitchVelocity(float delta, Vector3 droneRotation)

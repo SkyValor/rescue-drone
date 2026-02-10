@@ -33,8 +33,7 @@ public partial class DroneRotationHandler : Node
         UpdateRotationForce(ref currentRoll, inputRoll, RollDelta);
         currentRoll = Mathf.MoveToward(currentRoll, inputRoll, RollDelta * delta);
         
-        var pitchRotation = new Vector3(x: -currentPitch * PitchMaxDegrees, 0f, -currentRoll * RollMaxDegrees);
-        drone.RotationDegrees = pitchRotation;
+        drone.RotationDegrees += new Vector3(x: -currentPitch * PitchMaxDegrees, 0f, -currentRoll * RollMaxDegrees);
     }
 
     private static void UpdateRotationForce(ref float currentForce, float inputForce, float forceDelta)
