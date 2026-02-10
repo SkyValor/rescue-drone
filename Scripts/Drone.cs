@@ -8,43 +8,69 @@ public partial class Drone : CharacterBody3D
     [Export] private Camera3D Camera { get; set; }
     [Export] private DroneMovement Movement { get; set; }
     [Export] private DroneRotationHandler RotationHandler { get; set; }
-    
-    private float currentVelocity;
-    private float currentAcceleration;
 
-    private float curveT;
-    
-    private Vector3 inputVector = Vector3.Zero;
-    private float inputRotation;
-    private bool isAccelerating = true;
+    [Export] private bool MovementEnabled { get; set; } = true;
+    [Export] private bool RotationEnabled { get; set; } = true;
     
     public override void _Ready()
     {
         base._Ready();
-        Movement?.SetDrone(this);
-        
+        if (MovementEnabled)
+            Movement?.SetDrone(this);
+        if (RotationEnabled)
+            RotationHandler?.SetDrone(this);
+
         if (Controller is null)
             return;
         
-        Controller.PropulsionInput += OnPropulsionInput;
-        Controller.StrafingInput += OnStrafingInput;
-        Controller.TurnInput += OnTurnInput;
+        Controller.PitchInput += OnPitchInput;
+        Controller.RollInput += OnRollInput;
+        Controller.YawInput += OnYawInput;
         Controller.ThrottleInput += OnThrottleInput;
     }
 
     public override void _PhysicsProcess(double delta)
     {
         base._PhysicsProcess(delta);
+        var fDelta = (float) delta;
         Controller?.Tick();
-        Movement?.Tick((float) delta);
+        
+        if (MovementEnabled)
+            Movement?.Tick(fDelta);
+        if (RotationEnabled)
+            RotationHandler?.Tick(fDelta);
     }
 
-    private void OnPropulsionInput(float input) => Movement?.SetPropulsionIntent(input);
+    private void OnPitchInput(float input)
+    {
+        if (MovementEnabled)
+            Movement?.SetPitchIntent(input);
+        if (RotationEnabled)
+            RotationHandler?.SetPitch(input);
+    }
 
-    private void OnStrafingInput(float input) => Movement?.SetStrafingIntent(input);
-    
-    private void OnTurnInput(float input) => Movement?.SetTurningIntent(input);
+    private void OnRollInput(float input)
+    {
+        if (MovementEnabled)
+            Movement?.SetRollIntent(input);
+        if (RotationEnabled)
+            RotationHandler?.SetRoll(input);
+    }
 
-    private void OnThrottleInput(float input) => Movement?.SetThrottleIntent(input);
+    private void OnYawInput(float input)
+    {
+        if (MovementEnabled)
+            Movement?.SetYawIntent(input);
+        if (RotationEnabled)
+            RotationHandler?.SetYaw(input);
+    }
+
+    private void OnThrottleInput(float input)
+    {
+        if (MovementEnabled)
+            Movement?.SetThrottleIntent(input);
+        if (RotationEnabled)
+            RotationHandler?.SetThrottle(input);
+    }
 
 }
