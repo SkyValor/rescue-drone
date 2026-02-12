@@ -59,7 +59,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8247766, -0.8732493, 7.8736
 size = Vector3(1.6289063, 4.517578, 5.3710938)
 
 [node name="MainCamera3D" type="Camera3D" parent="." unique_id=1227896988]
-transform = Transform3D(0.9999997, 0.00016004003, -0.00074482895, 1.5695463e-05, 0.9731501, 0.23017155, 0.00076166703, -0.23017149, 0.9731498, 0, 1, 16.8)
+transform = Transform3D(0.9999997, 0.00016004001, -0.0007448289, 1.5695463e-05, 0.97314996, 0.23017153, 0.00076166703, -0.23017146, 0.9731497, 0, 1, 16.8)
 top_level = true
 
 [node name="PhantomCameraHost" type="Node" parent="MainCamera3D" unique_id=476983645]
