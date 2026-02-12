@@ -3,6 +3,9 @@
 using System;
 using Godot;
 
+/// <summary>
+/// Listens for user input and invokes events to alert of respective actions.
+/// </summary>
 public partial class DroneController : Node
 {
     public event Action<float> PitchInput;

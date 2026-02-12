@@ -2,24 +2,33 @@
 
 using Godot;
 
+/// <summary>
+/// Ensures the target <see cref="Drone"/> moves according to input set in matching fields.
+/// For each kind of movement being requested, applies some force of velocity in a respective direction
+/// relative to the drone.
+/// <para/>
+/// Features <see cref="Curve"/>s to provide dynamic acceleration/deceleration with different values
+/// of delta and friction to be used in speed calculation. <c>Delta</c> fields are used for acceleration, while
+/// <c>friction</c> fields are used for deceleration.
+/// </summary>
 public partial class DroneMovement : Node
 {
-    [ExportGroup("Pitch")]
-    [Export] protected Curve AccelCurve { get; set; }
-    [Export] protected float AccelDelta { get; set; } = 0.5f;
-    [Export] protected float AccelFriction { get; set; } = 0.75f;
-    [ExportGroup("Roll")]
+    [ExportGroup("Pitch Speed")]
+    [Export] protected Curve PitchCurve { get; set; }
+    [Export] protected float PitchDelta { get; set; } = 0.5f;
+    [Export] protected float PitchFriction { get; set; } = 0.75f;
+    [ExportGroup("Roll Speed")]
     [Export] protected Curve RollSpeedCurve { get; set; }
     [Export] protected float RollSpeedDelta { get; set; } = 0.5f;
     [Export] protected float RollSpeedFriction { get; set; } = 0.75f;
-    [ExportGroup("Yaw")]
-    [Export] protected Curve RotationCurve { get; set; }
-    [Export] protected float RotationDelta { get; set; } = 0.5f;
-    [Export] protected float RotationFriction { get; set; } = 0.75f;
-    [ExportGroup("Throttle")]
+    [ExportGroup("Throttle Speed")]
     [Export] protected Curve ThrottleCurve { get; set; }
     [Export] protected float ThrottleDelta { get; set; } = 0.5f;
     [Export] protected float ThrottleFriction { get; set; } = 0.75f;
+    [ExportGroup("Yaw Turning Speed")]
+    [Export] protected Curve YawCurve { get; set; }
+    [Export] protected float YawDelta { get; set; } = 0.5f;
+    [Export] protected float YawFriction { get; set; } = 0.75f;
 
     private Drone Drone;
     
@@ -37,9 +46,9 @@ public partial class DroneMovement : Node
     
     public void SetDrone(Drone drone) => Drone = drone;
 
-    public void SetPitchIntent(float intent) => PitchIntent = intent * AccelCurve.MaxDomain;
+    public void SetPitchIntent(float intent) => PitchIntent = intent * PitchCurve.MaxDomain;
     public void SetRollIntent(float intent) => RollIntent = intent * RollSpeedCurve.MaxDomain;
-    public void SetYawIntent(float intent) => YawIntent = intent * RotationCurve.MaxDomain;
+    public void SetYawIntent(float intent) => YawIntent = intent * YawCurve.MaxDomain;
     public void SetThrottleIntent(float intent) => ThrottleIntent = intent * ThrottleCurve.MaxDomain;
 
     public void Tick(float delta)
@@ -71,8 +80,8 @@ public partial class DroneMovement : Node
         if (YawIntent.IsZeroApprox() && CurrentYawForce.IsZeroApprox())
             return;
 
-        UpdateMotorForce(ref CurrentYawForce, YawIntent, RotationDelta, RotationFriction);
-        var forceApplied = RotationCurve.Sample(Mathf.Abs(CurrentYawForce));
+        UpdateMotorForce(ref CurrentYawForce, YawIntent, YawDelta, YawFriction);
+        var forceApplied = YawCurve.Sample(Mathf.Abs(CurrentYawForce));
         
         // We are changing the drone's rotation in Euler angles,
         // therefore we set a negative value to rotate rightward
@@ -87,9 +96,9 @@ public partial class DroneMovement : Node
         if (PitchIntent.IsZeroApprox() && CurrentPitchForce.IsZeroApprox())
             return;
         
-        UpdateMotorForce(ref CurrentPitchForce, PitchIntent, AccelDelta, AccelFriction);
+        UpdateMotorForce(ref CurrentPitchForce, PitchIntent, PitchDelta, PitchFriction);
         
-        var pitchForceApplied = -AccelCurve.Sample(Mathf.Abs(CurrentPitchForce));
+        var pitchForceApplied = -PitchCurve.Sample(Mathf.Abs(CurrentPitchForce));
         pitchForceApplied *= CurrentPitchForce > 0f ? -1f : 1f; // Invert because Forward is negative Z-axis
         
         var pitchDirection = Vector3.Forward.Rotated(Vector3.Up, droneRotation.Y).Normalized();
