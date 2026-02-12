@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://dc26eykh67iis"]
+
+[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Models/PlayerDrone.tscn" id="1_cpfq7"]
+
+[node name="PlayerRotationTest" type="Node3D" unique_id=1647012747]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=718797844]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.012524366, -2.5249286, -0.0129647255)
+size = Vector3(15.37793, 0.40637207, 18.214844)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1898115560]
+
+[node name="PlayerDrone" parent="." unique_id=339431069 instance=ExtResource("1_cpfq7")]
+MovementEnabled = false
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1358781600]
+transform = Transform3D(0.9329911, 0.13719362, -0.3327244, -0.015860178, 0.93926764, 0.34281874, 0.35954982, -0.3145697, 0.8785042, -0.8986416, 0.9302503, 1.6889665)
