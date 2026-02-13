@@ -1,10 +1,11 @@
 [gd_scene format=3 uid="uid://bacf4mllwuq5q"]
 
-[ext_resource type="PackedScene" uid="uid://bjlv5mpoo4txn" path="res://Models/player_drone.tscn" id="1_c8tkg"]
-[ext_resource type="Script" uid="uid://xc1fd5edo52h" path="res://Scripts/Drone.cs" id="1_fw6iu"]
-[ext_resource type="Script" uid="uid://dl85s5nvnuxtm" path="res://Scripts/PlayerDroneController.cs" id="2_r42g7"]
-[ext_resource type="Script" uid="uid://2bno15anemda" path="res://Scripts/DroneMovement.cs" id="4_1kdy7"]
-[ext_resource type="Script" uid="uid://cjxx3rtobecql" path="res://Scripts/DroneRotationHandler.cs" id="5_1kdy7"]
+[ext_resource type="PackedScene" uid="uid://bjlv5mpoo4txn" path="res://Models/player_drone_model.tscn" id="1_c8tkg"]
+[ext_resource type="Script" uid="uid://xc1fd5edo52h" path="res://Scripts/Drone/Drone.cs" id="1_fw6iu"]
+[ext_resource type="Script" uid="uid://dl85s5nvnuxtm" path="res://Scripts/Drone/PlayerDroneController.cs" id="2_r42g7"]
+[ext_resource type="Script" uid="uid://2bno15anemda" path="res://Scripts/Drone/DroneMovement.cs" id="4_1kdy7"]
+[ext_resource type="Script" uid="uid://cjxx3rtobecql" path="res://Scripts/Drone/DroneRotationHandler.cs" id="5_1kdy7"]
+[ext_resource type="Script" uid="uid://c7otxclavhkbd" path="res://Scripts/Drone/DroneEnergy.cs" id="6_l1ajr"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_c8tkg"]
 size = Vector3(1.3222656, 1.2810059, 0.93188477)
@@ -29,12 +30,13 @@ _limits = [0.0, 0.92, 0.0, 15.0]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(5.9243703, 0.16428578), 0.049154285, 0.049154285, 0, 0, Vector2(12.394959, 0.8477144), 0.05630405, 0.05630405, 0, 0, Vector2(15, 0.92), 0.0, 0.0, 0, 0]
 point_count = 4
 
-[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Movement", "RotationHandler")]
+[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Energy", "Movement", "RotationHandler")]
 motion_mode = 1
 platform_on_leave = 2
 script = ExtResource("1_fw6iu")
-Controller = NodePath("PlayerDroneController")
-Movement = NodePath("DroneMovement")
+Controller = NodePath("Controller")
+Energy = NodePath("Energy")
+Movement = NodePath("Movement")
 RotationHandler = NodePath("RotationHandler")
 
 [node name="Drone_animated" parent="." unique_id=969365950 instance=ExtResource("1_c8tkg")]
@@ -45,10 +47,10 @@ shape = SubResource("BoxShape3D_c8tkg")
 
 [node name="DronePhantomCameraTarget" type="Node3D" parent="." unique_id=1137291192]
 
-[node name="PlayerDroneController" type="Node" parent="." unique_id=2106382197]
+[node name="Controller" type="Node" parent="." unique_id=2106382197]
 script = ExtResource("2_r42g7")
 
-[node name="DroneMovement" type="Node" parent="." unique_id=999680140]
+[node name="Movement" type="Node" parent="." unique_id=999680140]
 script = ExtResource("4_1kdy7")
 PitchCurve = SubResource("Curve_1awyl")
 PitchDelta = 0.2
@@ -69,3 +71,9 @@ PitchMaxDegrees = 40.0
 PitchDelta = 0.075
 RollMaxDegrees = 45.0
 RollDelta = 0.075
+
+[node name="Energy" type="Node" parent="." unique_id=1854926765]
+script = ExtResource("6_l1ajr")
+EnergyValue = 100
+PassiveEnergyConsumption = 1
+TickRate = 2.5
