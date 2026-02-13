@@ -21,18 +21,54 @@ public partial class DronePhantomCameraFollow : Node
     {
         base._Ready();
         pCam = GetParent<Node3D>().AsPhantomCamera3D();
+        
+        SaveDefaultOffset();
+        SubscribeToInputEvents();
+    }
+
+    public void SetDrone(Drone drone)
+    {
+        Drone = drone;
+        SaveDefaultOffset();
+        SubscribeToInputEvents();
+    }
+
+    public override void _ExitTree()
+    {
+        UnsubscribeFromInputEvents();
+    }
+
+    private void SaveDefaultOffset()
+    {
+        if (Drone is null)
+            return;
+        
         offsetFromDrone = new Vector3(
             x: Mathf.Abs(Drone.GlobalPosition.X - pCam.Node3D.GlobalPosition.X),
             y: Mathf.Abs(Drone.GlobalPosition.Y - pCam.Node3D.GlobalPosition.Y),
             z: Mathf.Abs(Drone.GlobalPosition.Z - pCam.Node3D.GlobalPosition.Z));
+    }
 
+    private void SubscribeToInputEvents()
+    {
         if (Drone?.Controller is null)
             return;
-
+        
         Drone.Controller.PitchInput += SetCameraPositionWithOffset;
         Drone.Controller.RollInput += SetCameraPositionWithOffset;
         Drone.Controller.YawInput += SetCameraPositionWithOffset;
         Drone.Controller.ThrottleInput += SetCameraPositionWithOffset;
+    }
+
+    private void UnsubscribeFromInputEvents()
+    {
+        if (Drone?.Controller is null)
+            return;
+        
+        Drone.Controller.PitchInput -= SetCameraPositionWithOffset;
+        Drone.Controller.RollInput -= SetCameraPositionWithOffset;
+        Drone.Controller.YawInput -= SetCameraPositionWithOffset;
+        Drone.Controller.ThrottleInput -= SetCameraPositionWithOffset;
     }
 
     private void SetCameraPositionWithOffset(float _)

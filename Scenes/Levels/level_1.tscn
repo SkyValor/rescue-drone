@@ -3,9 +3,11 @@
 [ext_resource type="Script" uid="uid://dtpsd6ffpwjm7" path="res://Scripts/Core/Game.cs" id="1_4dpyx"]
 [ext_resource type="Texture2D" uid="uid://bj7h2fc5jx4ax" path="res://addons/phantom_camera/examples/textures/3D/checker_pattern_dark.png" id="1_tlcug"]
 [ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Scenes/Player/player_drone.tscn" id="2_3mqfk"]
+[ext_resource type="PackedScene" uid="uid://mvx24qs1y7qq" path="res://Scenes/Player/player_look_at_target.tscn" id="3_5f3p6"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="4_xgxfi"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="5_5f3p6"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="6_jv26f"]
+[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/Drone/DronePhantomCameraFollow.cs" id="7_jv26f"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_vk57k"]
 
@@ -19,7 +21,7 @@ script = ExtResource("5_5f3p6")
 [node name="Level1" type="Node3D" unique_id=776801642]
 script = ExtResource("1_4dpyx")
 PlayerScene = ExtResource("2_3mqfk")
-timeBeforeStart = 3.0
+PlayerLookAtTargetScene = ExtResource("3_5f3p6")
 
 [node name="World" type="CSGCombiner3D" parent="." unique_id=789329366]
 use_collision = true
@@ -115,12 +117,8 @@ radius = 2.0
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6275835, 3.8329759, 4.974858)
 
-[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=263212492]
-script = ExtResource("4_xgxfi")
-tween_resource = SubResource("Resource_rb0md")
-metadata/_custom_type_script = "uid://csjccrhj5wnx7"
-
 [node name="Camera3D" type="Camera3D" parent="." unique_id=825446343]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6275835, 3.8329759, 4.974858)
 top_level = true
 
 [node name="PhantomCameraHost" type="Node" parent="Camera3D" unique_id=1441469234]
@@ -128,3 +126,19 @@ process_priority = 300
 process_physics_priority = 300
 script = ExtResource("6_jv26f")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="PlayerPhantomCamera3D" type="Node3D" parent="." unique_id=263212492]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6275835, 3.8329759, 4.974858)
+script = ExtResource("4_xgxfi")
+tween_resource = SubResource("Resource_rb0md")
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[node name="DroneMovementPhantomCameraReact" type="Node" parent="PlayerPhantomCamera3D" unique_id=140586541]
+script = ExtResource("7_jv26f")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1369684563]
+transform = Transform3D(0.6004683, -0.6924903, 0.39986858, -0.074494205, 0.44943815, 0.8902, -0.796171, -0.56432486, 0.21828687, 3.743391, 7.1381116, 6.1001625)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=1506999565]
+transform = Transform3D(-0.27283102, 0.8122836, -0.51551795, 0.06836449, 0.55086154, 0.831792, 0.95963, 0.19169556, -0.20582351, -8.517353, 7.070095, 0.3451459)
