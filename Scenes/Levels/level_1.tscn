@@ -131,6 +131,7 @@ metadata/_custom_type_script = "uid://bd046eokvcnu2"
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6275835, 3.8329759, 4.974858)
 script = ExtResource("4_xgxfi")
+look_at_mode = 2
 tween_resource = SubResource("Resource_rb0md")
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
@@ -142,3 +143,25 @@ transform = Transform3D(0.6004683, -0.6924903, 0.39986858, -0.074494205, 0.44943
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=1506999565]
 transform = Transform3D(-0.27283102, 0.8122836, -0.51551795, 0.06836449, 0.55086154, 0.831792, 0.95963, 0.19169556, -0.20582351, -8.517353, 7.070095, 0.3451459)
+
+[node name="HUD" type="Control" parent="." unique_id=652438954]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerEnergyGauge" type="ProgressBar" parent="HUD" unique_id=528634609]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 34.0
+offset_right = -30.0
+offset_bottom = 61.0
+grow_horizontal = 0
+value = 20.14
+show_percentage = false

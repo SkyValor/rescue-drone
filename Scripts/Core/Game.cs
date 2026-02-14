@@ -7,8 +7,14 @@ public partial class Game : Node
 {
     [Export] private PackedScene PlayerScene { get; set; }
     [Export] private PackedScene PlayerLookAtTargetScene { get; set; }
+    
+    [ExportGroup("Player Energy")]
+    [Export] private float EnergyValue { get; set; }
+    [Export] private float PassiveEnergyConsumption { get; set; }
+    [Export] private float TickRate { get; set; }
 
     private Drone playerDrone;
+    private ProgressBar playerEnergyGauge;
     private GameState gameState;
 
     public override void _Ready()
@@ -42,6 +48,35 @@ public partial class Game : Node
 
         var phantomCamera = phantomCameraNode.AsPhantomCamera3D();
         phantomCamera.LookAtTarget = playerCameraTarget;
+        
+        // Energy gauge needs to be updated whenever there is a change to player's energy
+        playerEnergyGauge = GetNode<ProgressBar>("%PlayerEnergyGauge");
+        var playerEnergy = playerDrone.Energy;
+        if (playerEnergy is not null)
+        {
+            playerEnergyGauge.MaxValue = playerEnergy.MaxEnergy;
+            playerEnergyGauge.Value = playerEnergy.CurrentEnergy;
+            playerEnergy.EnergyChanged += OnEnergyChanged;
+            playerEnergy.StartPassiveEnergyConsumption();
+        }
+    }
+
+    public override void _ExitTree()
+    {
+        if (playerDrone?.Energy != null)
+            playerDrone.Energy.EnergyChanged -= OnEnergyChanged;
+    }
+
+    private void OnEnergyChanged(ushort currentEnergy, ushort maxEnergy)
+    {
+        playerEnergyGauge.Value = currentEnergy;
+        if (currentEnergy == 0)
+        {
+            // TODO: When the energy reaches zero, end the game (GameOver)
+            GD.Print("GAME OVER - Player is out of energy.");
+        }
+        
+        
     }
     
 }

@@ -72,7 +72,8 @@ public partial class DroneEnergy : Node
             currentTickTime += (float) Timing.DeltaTime;
             if (currentTickTime < TickRate)
                 continue;
-
+            
+            currentTickTime -= TickRate;
             CurrentEnergy = (ushort) Mathf.Max(0, CurrentEnergy - PassiveEnergyConsumption);
             EnergyChanged?.Invoke(CurrentEnergy, MaxEnergy);
         }
