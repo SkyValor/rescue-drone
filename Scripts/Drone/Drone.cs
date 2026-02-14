@@ -5,6 +5,7 @@ using Godot;
 public partial class Drone : CharacterBody3D
 {
     [Export] public DroneController Controller { get; set; }
+    [Export] public DroneEnergy Energy { get; set; }
     [Export] private DroneMovement Movement { get; set; }
     [Export] private DroneRotationHandler RotationHandler { get; set; }
 

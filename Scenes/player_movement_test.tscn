@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://bn83aalnxm3wi"]
 
-[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Models/PlayerDrone.tscn" id="1_4nblu"]
-[ext_resource type="Script" uid="uid://bs83vae0wc5u4" path="res://Scripts/DroneCameraLookAtTarget.cs" id="2_25k4e"]
+[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Scenes/Player/player_drone.tscn" id="1_4nblu"]
+[ext_resource type="PackedScene" uid="uid://mvx24qs1y7qq" path="res://Scenes/Player/player_look_at_target.tscn" id="2_25k4e"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="2_f422q"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="2_fid5x"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="3_ywhih"]
-[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/DronePhantomCameraFollow.cs" id="4_ywhih"]
+[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/Drone/DronePhantomCameraFollow.cs" id="4_ywhih"]
 
 [sub_resource type="Resource" id="Resource_25k4e"]
 script = ExtResource("3_ywhih")
@@ -16,16 +16,12 @@ script = ExtResource("3_ywhih")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14.989241)
 
-[node name="PlayerLookAtTarget" type="Node3D" parent="." unique_id=334862050 node_paths=PackedStringArray("Drone")]
+[node name="PlayerLookAtTarget" parent="." unique_id=543389103 node_paths=PackedStringArray("Drone") instance=ExtResource("2_25k4e")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
-script = ExtResource("2_25k4e")
 Drone = NodePath("../PlayerDrone")
-MainOffset = Vector3(0, 0, -9)
-OnYawOffsetAdditive = Vector3(12, 0, 0)
-OnThrottleOffsetAdditive = Vector3(0, 4, 0)
 
 [node name="PlayerPhantomCamera3D" type="Node3D" parent="." unique_id=576567977 node_paths=PackedStringArray("look_at_target")]
-transform = Transform3D(0.9999997, 0.00016004001, -0.0007448289, 1.5695463e-05, 0.97314996, 0.23017153, 0.00076166703, -0.23017146, 0.9731497, 0, 1, 16.8)
+transform = Transform3D(1, 1.6367566e-06, -7.635763e-06, 1.5704774e-07, 0.97337574, 0.22921447, 7.807636e-06, -0.22921446, 0.9733758, 0, 1, 16.8)
 script = ExtResource("2_f422q")
 look_at_mode = 2
 look_at_target = NodePath("../PlayerLookAtTarget")
@@ -59,7 +55,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8247766, -0.8732493, 7.8736
 size = Vector3(1.6289063, 4.517578, 5.3710938)
 
 [node name="MainCamera3D" type="Camera3D" parent="." unique_id=1227896988]
-transform = Transform3D(0.9999997, 0.00016004001, -0.0007448289, 1.5695463e-05, 0.97314996, 0.23017153, 0.00076166703, -0.23017146, 0.9731497, 0, 1, 16.8)
+transform = Transform3D(1, 1.6367566e-06, -7.635763e-06, 1.5704774e-07, 0.97337574, 0.22921447, 7.807636e-06, -0.22921446, 0.9733758, 0, 1, 16.8)
 top_level = true
 
 [node name="PhantomCameraHost" type="Node" parent="MainCamera3D" unique_id=476983645]

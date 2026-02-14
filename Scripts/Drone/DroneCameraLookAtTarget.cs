@@ -27,8 +27,13 @@ public partial class DroneCameraLookAtTarget : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (Drone is null)
+            return;
+        
         SetPositionRelativeToDrone();
     }
+
+    public void SetDrone(Drone drone) => Drone = drone;
     
     private void OnYawInput(float input) => yawInput = input;
     private void OnThrottleInput(float input) => throttleInput = input;
