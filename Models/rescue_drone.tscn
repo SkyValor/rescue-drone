@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://3vnxw3jcn0h6"]
+
+[ext_resource type="Script" uid="uid://cxi8eu2b8f4fo" path="res://Scripts/Drone/SmallDrone.cs" id="1_rbbha"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_njt5m"]
+
+[sub_resource type="PrismMesh" id="PrismMesh_njt5m"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rbbha"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_njt5m"]
+size = Vector3(1, 0.45214844, 0.6347656)
+
+[node name="RescueDrone" type="CharacterBody3D" unique_id=457154522]
+motion_mode = 1
+script = ExtResource("1_rbbha")
+FollowSpeed = 50.0
+Acceleration = 2.5
+StopDistance = 1.5
+FollowOffset = Vector3(2, 1, 0)
+
+[node name="Body Mesh" type="Node3D" parent="." unique_id=100820672]
+
+[node name="MainBody" type="MeshInstance3D" parent="Body Mesh" unique_id=1168901396]
+transform = Transform3D(0.61789984, 0, 0, 0, 0.17564042, 0, 0, 0, 0.8504951, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_njt5m")
+
+[node name="Nose" type="MeshInstance3D" parent="Body Mesh" unique_id=1482271202]
+transform = Transform3D(0.22691216, 0, 0, 0, -7.551656e-09, -0.17257698, 0, 0.17276175, -7.543579e-09, 0, 0.0068843067, 0.46514517)
+mesh = SubResource("PrismMesh_njt5m")
+
+[node name="Front-Left Propeller" type="MeshInstance3D" parent="Body Mesh" unique_id=1632742484]
+transform = Transform3D(0.22887862, 0, 0, 0, 0.027353734, 0, 0, 0, 0.22887862, 0.44524318, 0, 0.27975288)
+mesh = SubResource("CylinderMesh_rbbha")
+
+[node name="Front-Right Propeller" type="MeshInstance3D" parent="Body Mesh" unique_id=1763497116]
+transform = Transform3D(0.22887862, 0, 0, 0, 0.027353734, 0, 0, 0, 0.22887862, -0.445, 0, 0.28)
+mesh = SubResource("CylinderMesh_rbbha")
+
+[node name="Back-Left Propeller" type="MeshInstance3D" parent="Body Mesh" unique_id=757471792]
+transform = Transform3D(0.22887862, 0, 0, 0, 0.027353734, 0, 0, 0, 0.22887862, 0.445, 0, -0.28)
+mesh = SubResource("CylinderMesh_rbbha")
+
+[node name="Back-Right Propeller" type="MeshInstance3D" parent="Body Mesh" unique_id=972979048]
+transform = Transform3D(0.22887862, 0, 0, 0, 0.027353734, 0, 0, 0, 0.22887862, -0.445, 0, -0.28)
+mesh = SubResource("CylinderMesh_rbbha")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=164966847]
+shape = SubResource("BoxShape3D_njt5m")
