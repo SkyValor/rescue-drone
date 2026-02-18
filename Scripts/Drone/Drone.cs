@@ -18,7 +18,10 @@ public partial class Drone : CharacterBody3D
 		if (MovementEnabled)
 			Movement?.SetDrone(this);
 		if (RotationEnabled)
+		{
 			RotationHandler?.SetDrone(this);
+			RotationHandler?.SetDroneBody(GetNode<Node3D>("%DroneBody"));
+		}
 
 		if (Controller is null)
 			return;
@@ -61,16 +64,12 @@ public partial class Drone : CharacterBody3D
 	{
 		if (MovementEnabled)
 			Movement?.SetYawIntent(input);
-		if (RotationEnabled)
-			RotationHandler?.SetYaw(input);
 	}
 
 	private void OnThrottleInput(float input)
 	{
 		if (MovementEnabled)
 			Movement?.SetThrottleIntent(input);
-		if (RotationEnabled)
-			RotationHandler?.SetThrottle(input);
 	}
 
 }
