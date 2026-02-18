@@ -2,6 +2,8 @@
 
 using Godot;
 
+// TODO: Consider rotating the model node. Avoid rotating the parent node so that SmallDrones don't get the wrong placement of the offset.
+
 public partial class DroneRotationHandler : Node
 {
     [Export] private float PitchMaxDegrees { get; set; }
