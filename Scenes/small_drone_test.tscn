@@ -15,6 +15,9 @@ radius = 3.7877047
 [sub_resource type="Resource" id="Resource_yxhrx"]
 script = ExtResource("6_pknx5")
 
+[sub_resource type="Resource" id="Resource_pknx5"]
+script = ExtResource("6_pknx5")
+
 [node name="SmallDroneTest" type="Node3D" unique_id=913673792]
 
 [node name="SmallDroneAreas" type="Node" parent="." unique_id=544333837]
@@ -66,15 +69,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.561804, 0, -21.222681)
 OscillationMagnitude = 0.065
 OscillationHeight = 0.1
 
-[node name="PlayerDrone" parent="." unique_id=339431069 instance=ExtResource("2_eqdof")]
+[node name="PlayerDrone" parent="." unique_id=339431069 node_paths=PackedStringArray("CameraRig") instance=ExtResource("2_eqdof")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 9.645535, 0, -8.577826)
+CameraRig = NodePath("../CameraRig")
+CameraDistance = 2.5
 
 [node name="PlayerLookAtTarget" parent="." unique_id=543389103 node_paths=PackedStringArray("Drone") instance=ExtResource("3_en8rc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.645535, 0, -4.5778255)
 Drone = NodePath("../PlayerDrone")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1577038853]
-transform = Transform3D(-1, 0, 0, 0, 0.98429704, 0.17652024, 0, 0.17652024, -0.98429704, 9.645535, 1.502254, -12.954566)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 9.645535, 0.84718895, -11.202003)
 top_level = true
 
 [node name="PhantomCameraHost" type="Node" parent="Camera3D" unique_id=1165102914]
@@ -83,14 +88,18 @@ process_physics_priority = 300
 script = ExtResource("4_n0qmj")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
-[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=1426228702 node_paths=PackedStringArray("look_at_target")]
-transform = Transform3D(-0.9999995, 0, 0, 0, 0.98429716, 0.17652024, 0, 0.17652026, -0.98429704, 9.645535, 1.502254, -12.954566)
+[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=1426228702 node_paths=PackedStringArray("follow_target")]
+transform = Transform3D(-0.99999917, 0, 0, 0, 0.9458361, 0.32464465, 0, 0.32464477, -0.9458357, 9.645535, 0.35, -14.577826)
+top_level = true
+visible = false
 script = ExtResource("5_kylvf")
-look_at_mode = 2
-look_at_target = NodePath("../PlayerLookAtTarget")
+follow_mode = 2
+follow_target = NodePath("../PlayerDrone/CameraTarget")
 tween_resource = SubResource("Resource_yxhrx")
+follow_offset = Vector3(0, 0.35, -6)
+follow_damping = true
 align_transform_with_view = Callable()
-align_rotation_with_view = Callable()
+align_position_with_view = Callable()
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="PlayerCameraReact" type="Node" parent="PhantomCamera3D" unique_id=1195668491 node_paths=PackedStringArray("Drone")]
@@ -99,3 +108,14 @@ Drone = NodePath("../../PlayerDrone")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=884813950]
 transform = Transform3D(0.9693725, 0.08053722, 0.23201437, -0.24559502, 0.31788334, 0.9157692, 0, -0.9447031, 0.32792693, 3.4043818, 5.73154, 7.778878)
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=1407891907]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 9.645535, 0.84718895, -11.202003)
+
+[node name="PhantomCamera3D" type="Node3D" parent="CameraRig" unique_id=1478813776]
+script = ExtResource("5_kylvf")
+priority = 5
+tween_resource = SubResource("Resource_pknx5")
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[editable path="PlayerDrone"]

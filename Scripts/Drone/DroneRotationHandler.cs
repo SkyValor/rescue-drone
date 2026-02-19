@@ -31,7 +31,7 @@ public partial class DroneRotationHandler : Node
 		UpdateRotationForce(ref currentRoll, inputRoll, RollDelta);
 		currentRoll = Mathf.MoveToward(currentRoll, inputRoll, RollDelta * delta);
 
-		body.RotationDegrees = drone.RotationDegrees with
+		body.RotationDegrees = body.RotationDegrees with
 		{
 			X = currentPitch * PitchMaxDegrees,
 			Z = currentRoll * RollMaxDegrees

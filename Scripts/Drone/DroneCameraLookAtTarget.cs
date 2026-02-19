@@ -84,8 +84,6 @@ public partial class DroneCameraLookAtTarget : Node3D
 		
 			GlobalPosition = Drone.GlobalPosition + mainOffsetRelative + onYawOffsetRelative + onThrottleOffsetRelative;
 		}
-		
-		GD.Print("SetPositionRelativeToDrone coroutine ended");
 	}
 	
 }
