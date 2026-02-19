@@ -72,7 +72,6 @@ public partial class Drone : CharacterBody3D
 		if (RotationEnabled)
 			RotationHandler?.Tick(deltaTime);
 
-		//HandleCamera(deltaTime);
 		UpdateLookTarget();
 		UpdateCamera(deltaTime);
 	}
@@ -88,7 +87,11 @@ public partial class Drone : CharacterBody3D
 		var droneYaw = Rotation.Y;
 		cameraYaw = Mathf.LerpAngle(cameraYaw, droneYaw, CameraRotatingLag * delta);
 		
-		var back = new Basis(Vector3.Up, cameraYaw).Z;
+		var turnInput = Input.GetActionStrength("turn_right") - Input.GetActionStrength("turn_left");
+		var extraYaw = turnInput * Mathf.DegToRad(15f);
+		var finalYaw = cameraYaw + extraYaw;
+		
+		var back = new Basis(Vector3.Up, finalYaw).Z;
 		var desiredPosition = 
 			GlobalPosition + 
 			back * CameraDistance + 
@@ -96,28 +99,6 @@ public partial class Drone : CharacterBody3D
 		
 		CameraRig.GlobalPosition = CameraRig.GlobalPosition.Lerp(desiredPosition, CameraPositionLag * delta);
 		CameraRig.LookAt(CameraTarget.GlobalPosition, Vector3.Up);
-	}
-
-	private void HandleCamera(float delta)
-	{
-		if (CameraTarget is null)
-			return;
-		
-		var turnInput = Input.GetActionStrength("turn_right") - Input.GetActionStrength("turn_left");
-		var targetInfluence = turnInput * CameraTurnInfluence;
-		currentTurnInfluence = Mathf.Lerp(currentTurnInfluence, targetInfluence, CameraFollowSpeed * delta);
-
-		var forward = -GlobalTransform.Basis.Z;
-		var targetPosition = 
-			GlobalTransform.Origin + 
-			forward * CameraForwardOffset + 
-			Vector3.Up * CameraHeightOffset;
-
-		var extraYaw = new Basis(Vector3.Up, Mathf.DegToRad(currentTurnInfluence));
-		var finalBasis = GlobalTransform.Basis * extraYaw;
-
-		CameraTarget.GlobalTransform = new Transform3D(finalBasis, targetPosition);
-		GD.Print($"CameraTarget position ({targetPosition})");
 	}
 
 	private void OnPitchInput(float input)
