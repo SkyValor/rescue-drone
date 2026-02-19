@@ -84,5 +84,5 @@ TickRate = 2.5
 
 [node name="DroneFormation" type="Node3D" parent="." unique_id=1456948184]
 script = ExtResource("7_fgf0t")
-Spacing = 1.2
+Spacing = 2.0
 VerticalSpacing = 0.9

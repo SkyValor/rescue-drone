@@ -17,18 +17,52 @@ script = ExtResource("6_pknx5")
 
 [node name="SmallDroneTest" type="Node3D" unique_id=913673792]
 
-[node name="SmallDronePickupArea" type="Area3D" parent="." unique_id=189160146 node_paths=PackedStringArray("SmallDrone")]
+[node name="SmallDroneAreas" type="Node" parent="." unique_id=544333837]
+
+[node name="SmallDronePickupArea" type="Area3D" parent="SmallDroneAreas" unique_id=189160146 node_paths=PackedStringArray("SmallDrone")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.739465, 0, -5.309411)
 collision_layer = 0
 input_ray_pickable = false
 script = ExtResource("1_pknx5")
-SmallDrone = NodePath("../RescueDrone")
+SmallDrone = NodePath("../../SmallDrones/RescueDrone")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SmallDronePickupArea" unique_id=556830998]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SmallDroneAreas/SmallDronePickupArea" unique_id=556830998]
 shape = SubResource("SphereShape3D_7x1fn")
 
-[node name="RescueDrone" parent="." unique_id=457154522 instance=ExtResource("1_nqx8v")]
+[node name="SmallDronePickupArea2" type="Area3D" parent="SmallDroneAreas" unique_id=403191947 node_paths=PackedStringArray("SmallDrone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.138653, 0, -3.541542)
+collision_layer = 0
+input_ray_pickable = false
+script = ExtResource("1_pknx5")
+SmallDrone = NodePath("../../SmallDrones/RescueDrone2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SmallDroneAreas/SmallDronePickupArea2" unique_id=872886780]
+shape = SubResource("SphereShape3D_7x1fn")
+
+[node name="SmallDronePickupArea3" type="Area3D" parent="SmallDroneAreas" unique_id=798329883 node_paths=PackedStringArray("SmallDrone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.561804, 0, -21.222681)
+collision_layer = 0
+input_ray_pickable = false
+script = ExtResource("1_pknx5")
+SmallDrone = NodePath("../../SmallDrones/RescueDrone3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SmallDroneAreas/SmallDronePickupArea3" unique_id=1801700619]
+shape = SubResource("SphereShape3D_7x1fn")
+
+[node name="SmallDrones" type="Node" parent="." unique_id=453042311]
+
+[node name="RescueDrone" parent="SmallDrones" unique_id=457154522 instance=ExtResource("1_nqx8v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.739465, 0, -5.309411)
+OscillationMagnitude = 0.065
+OscillationHeight = 0.1
+
+[node name="RescueDrone2" parent="SmallDrones" unique_id=1099049702 instance=ExtResource("1_nqx8v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.138653, 0, -3.541542)
+OscillationMagnitude = 0.065
+OscillationHeight = 0.1
+
+[node name="RescueDrone3" parent="SmallDrones" unique_id=119478606 instance=ExtResource("1_nqx8v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.561804, 0, -21.222681)
 OscillationMagnitude = 0.065
 OscillationHeight = 0.1
 
