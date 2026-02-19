@@ -8,6 +8,7 @@ public partial class Drone : CharacterBody3D
 	[Export] public DroneEnergy Energy { get; set; }
 	[Export] private DroneMovement Movement { get; set; }
 	[Export] private DroneRotationHandler RotationHandler { get; set; }
+	[Export] public DroneFormation DroneFormation { get; set; }
 
 	[Export] private bool MovementEnabled { get; set; } = true;
 	[Export] private bool RotationEnabled { get; set; } = true;

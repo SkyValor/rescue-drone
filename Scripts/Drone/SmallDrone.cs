@@ -1,13 +1,12 @@
+namespace RescueDrone;
+
 using System.Collections.Generic;
 using Godot;
 using MEC;
 
-namespace RescueDrone;
-
 public partial class SmallDrone : CharacterBody3D
 {
 	[Export] private Drone Player { get; set; }
-	[Export] private Vector3 FollowOffset = new(2, 0, 0);		// Offset to keep the drone at player's side
 
 	[Export] private float SpringStrength { get; set; } = 12f;		// How strongly it pulls
 	[Export] private float Damping { get; set; } = 8f;				// How much it resists oscillation
@@ -16,41 +15,32 @@ public partial class SmallDrone : CharacterBody3D
 	[Export] private float OscillationMagnitude { get; set; } = 0.05f;
 	[Export] private float OscillationHeight { get; set; } = 0.5f;
 
+	private DroneFormation formation;
+	private int formationIndex;
 	private bool isFollowing;
 	private CoroutineHandle? followCoroutine;
 
-	public void StartFollowing(Drone player)
+	public void SetFormation(DroneFormation formation, int formationIndex)
 	{
 		if (followCoroutine is not null)
 			Timing.KillCoroutines((CoroutineHandle)followCoroutine);
 		
-		Player = player;
+		this.formation = formation;
+		this.formationIndex = formationIndex;
 		isFollowing = true;
 		followCoroutine = Timing.RunCoroutine(FollowCoroutine().CancelWith(this), Segment.PhysicsProcess);
 	}
 
-	public void StopFollowing()
-	{
-		Player = null;
-		isFollowing = false;
-		Velocity = Vector3.Zero;
-		if (followCoroutine is null)
-			return;
-		
-		Timing.KillCoroutines((CoroutineHandle)followCoroutine);
-		followCoroutine = null;
-	}
-
 	private IEnumerator<double> FollowCoroutine()
 	{
-		while (isFollowing && Player is not null)
+		while (isFollowing)
 		{
 			yield return Timing.WaitForOneFrame;
 			
 			var deltaTime = (float)Timing.DeltaTime;
 			
 			// Calculate desired world position with offset and subtle vertical motion
-			var targetPosition = Player.GlobalTransform.Origin + Player.GlobalTransform.Basis * FollowOffset;
+			var targetPosition = formation.GetSlotPosition(formationIndex);
 			targetPosition.Y += Mathf.Sin(Time.GetTicksMsec() * OscillationMagnitude * deltaTime) * OscillationHeight;
 			var direction = targetPosition - GlobalTransform.Origin;
 		
@@ -80,7 +70,7 @@ public partial class SmallDrone : CharacterBody3D
 		targetBasis = targetBasis.Rotated(Vector3.Forward, Velocity.X * 0.02f);
 
 		GlobalTransform = new Transform3D(
-			GlobalTransform.Basis.Slerp(targetBasis, 3f * deltaTime),
+			GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * deltaTime),
 			GlobalTransform.Origin);
 	}
 	

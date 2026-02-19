@@ -40,7 +40,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.645535, 0, -4.5778255)
 Drone = NodePath("../PlayerDrone")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1577038853]
-transform = Transform3D(-1, 0, 0, 0, 0.98354256, 0.18067643, 0, 0.18067643, -0.98354256, 9.645535, 1.2184317, -11.210564)
+transform = Transform3D(-1, 0, 0, 0, 0.98429704, 0.17652024, 0, 0.17652024, -0.98429704, 9.645535, 1.502254, -12.954566)
 top_level = true
 
 [node name="PhantomCameraHost" type="Node" parent="Camera3D" unique_id=1165102914]
@@ -50,7 +50,7 @@ script = ExtResource("4_n0qmj")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="PhantomCamera3D" type="Node3D" parent="." unique_id=1426228702 node_paths=PackedStringArray("look_at_target")]
-transform = Transform3D(-0.99999976, 0, 0, 0, 0.9835427, 0.18067648, 0, 0.18067645, -0.9835428, 9.645535, 1.2184317, -11.210564)
+transform = Transform3D(-0.9999995, 0, 0, 0, 0.98429716, 0.17652024, 0, 0.17652026, -0.98429704, 9.645535, 1.502254, -12.954566)
 script = ExtResource("5_kylvf")
 look_at_mode = 2
 look_at_target = NodePath("../PlayerLookAtTarget")

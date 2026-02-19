@@ -7,7 +7,7 @@ public partial class SmallDronePickupArea : Area3D
 	[Export] private SmallDrone SmallDrone { get; set; }
 	[Export] private float TimeToPickup { get; set; } = 3.5f;
 
-	private Drone playerDrone;
+	private DroneFormation droneFormation;
 	private float elapsedTime;
 	private Timer countdownToPickup;
 
@@ -32,17 +32,17 @@ public partial class SmallDronePickupArea : Area3D
 		if (other is not Drone player)
 			return;
 
-		playerDrone = player;
+		droneFormation = player.DroneFormation;
 		StartCountdown();
 	}
 
 	private void OnBodyExited(Node3D other)
 	{
 		GD.Print("OnAreaExited");
-		if (other is not Drone player || playerDrone != player)
+		if (other is not Drone player || droneFormation != player.DroneFormation)
 			return;
 
-		playerDrone = null;
+		droneFormation = null;
 		StopCountdown();
 	}
 
@@ -69,7 +69,7 @@ public partial class SmallDronePickupArea : Area3D
 
 	private void OnCountdownTimeout()
 	{
-		SmallDrone.StartFollowing(playerDrone);
+		droneFormation.AddDrone(SmallDrone);
 		QueueFree();
 	}
 	
