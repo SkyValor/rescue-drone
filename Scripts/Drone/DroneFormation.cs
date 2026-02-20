@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.ObjectModel;
 
 namespace RescueDrone;
 
@@ -27,6 +27,11 @@ public partial class DroneFormation : Node3D
         followers.Remove(drone);
         EventRepository.Instance.InvokePlayerSmallDronesFollowing((ushort)followers.Count);
         ReassignIndexes();
+    }
+
+    public List<SmallDrone> GetFollowers()
+    {
+        return [..followers];
     }
 
     public Vector3 GetSlotPosition(int index)

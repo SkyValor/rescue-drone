@@ -31,17 +31,17 @@ _limits = [0.0, 40.0, 0.0, 15.0]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(15, 40), 0.0, 0.0, 0, 0]
 point_count = 2
 
-[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Energy", "Movement", "RotationHandler", "DroneFormation", "CameraTarget")]
+[node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Energy", "CameraTarget", "DroneFormation", "Movement", "RotationHandler")]
 collision_mask = 0
 motion_mode = 1
 platform_on_leave = 2
 script = ExtResource("1_fw6iu")
 Controller = NodePath("Controller")
 Energy = NodePath("Energy")
+CameraTarget = NodePath("CameraTarget")
+DroneFormation = NodePath("DroneFormation")
 Movement = NodePath("Movement")
 RotationHandler = NodePath("RotationHandler")
-DroneFormation = NodePath("DroneFormation")
-CameraTarget = NodePath("CameraTarget")
 CameraDistance = 5.0
 CameraHeight = 1.0
 
@@ -89,5 +89,5 @@ TickRate = 2.5
 
 [node name="DroneFormation" type="Node3D" parent="." unique_id=1456948184]
 script = ExtResource("7_fgf0t")
-Spacing = 2.0
+Spacing = 1.5
 VerticalSpacing = 0.9

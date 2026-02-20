@@ -19,9 +19,6 @@ public partial class Drone : CharacterBody3D
 	[Export] private float CameraRotatingLag { get; set; } = 3f;
 	[Export] private float CameraPositionLag { get; set; } = 5f;
 
-	[Export] private float FOVWhenAlone { get; set; } = 75f;
-	[Export] private float FOVWhenFollowed { get; set; } = 100f;
-	
 	[Export] private bool MovementEnabled { get; set; } = true;
 	[Export] private bool RotationEnabled { get; set; } = true;
 
@@ -106,18 +103,6 @@ public partial class Drone : CharacterBody3D
 		
 		CameraRig.GlobalPosition = CameraRig.GlobalPosition.Lerp(desiredPosition, CameraPositionLag * delta);
 		CameraRig.LookAt(CameraTarget.GlobalPosition, Vector3.Up);
-	}
-
-	// TODO: Create a central repository for signals. Decouple this class from any camera.
-	// Make this class call the signal repo and alert about the change of followers.
-	// The PhantomCamera reaction should listen for that signal and increase/decrease the FOV value.
-	
-	private void OnFollowersChanged(ushort followers)
-	{
-		if (followers == 0)
-		{
-			
-		}
 	}
 
 	private void OnPitchInput(float input)

@@ -38,7 +38,6 @@ public partial class SmallDronePickupArea : Area3D
 
 	private void OnBodyEntered(Node3D other)
 	{
-		GD.Print("OnAreaEntered");
 		if (other is not Drone player)
 			return;
 
@@ -48,7 +47,6 @@ public partial class SmallDronePickupArea : Area3D
 
 	private void OnBodyExited(Node3D other)
 	{
-		GD.Print("OnAreaExited");
 		if (other is not Drone player || droneFormation != player.DroneFormation)
 			return;
 

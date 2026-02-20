@@ -7,6 +7,7 @@ using Godot;
 public partial class EventRepository : Node
 {
 	public event Action<ushort> PlayerSmallDronesFollowing;
+	public event Action PlayerDeliveredSmallDrone;
 	
 	public static EventRepository Instance { get; private set; }
 
@@ -18,5 +19,7 @@ public partial class EventRepository : Node
 	public void InvokePlayerSmallDronesFollowing(ushort numberOfFollowers) 
 		=> PlayerSmallDronesFollowing?.Invoke(numberOfFollowers);
 	
+	public void InvokePlayerDeliveredSmallDrone() 
+		=> PlayerDeliveredSmallDrone?.Invoke();
 	
 }
