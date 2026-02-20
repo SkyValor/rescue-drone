@@ -1,7 +1,6 @@
-using System;
-
 namespace RescueDrone;
 
+using System;
 using Godot;
 
 public partial class EventRepository : Node
