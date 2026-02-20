@@ -34,6 +34,24 @@ public partial class DroneFormation : Node3D
 
     public Vector3 GetSlotPosition(int index)
     {
+        return GetSlotLocationCircular(index);
+    }
+
+    private Vector3 GetSlotLocationCircular(int index)
+    {
+        var radius = 2.5f + (index / 6) * 2f;
+        var angle = index * Mathf.Pi * 2f / 6f;
+        
+        var localOffset = new Vector3(
+            x: Mathf.Cos(angle) * radius,
+            y: (index / 6) * 1.2f,
+            z: Mathf.Sin(angle) * radius);
+        
+        return GlobalPosition + GlobalTransform.Basis * localOffset;
+    }
+
+    private Vector3 GetSlotLocationGridBehindPlayer(int index)
+    {
         // Simple layered grid formation behind player
         var row = index / 4;
         var column = index % 4;

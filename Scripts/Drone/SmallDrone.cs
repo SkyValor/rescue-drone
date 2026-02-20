@@ -18,6 +18,7 @@ public partial class SmallDrone : CharacterBody3D
 	private DroneFormation formation;
 	private int formationIndex;
 	private bool isFollowing;
+	private float oscillationModifier;
 	private CoroutineHandle? followCoroutine;
 
 	public void SetFormation(DroneFormation formation, int formationIndex)
@@ -28,6 +29,7 @@ public partial class SmallDrone : CharacterBody3D
 		this.formation = formation;
 		this.formationIndex = formationIndex;
 		isFollowing = true;
+		oscillationModifier = GD.Randf();
 		followCoroutine = Timing.RunCoroutine(FollowCoroutine().CancelWith(this), Segment.PhysicsProcess);
 	}
 
@@ -41,7 +43,8 @@ public partial class SmallDrone : CharacterBody3D
 			
 			// Calculate desired world position with offset and subtle vertical motion
 			var targetPosition = formation.GetSlotPosition(formationIndex);
-			targetPosition.Y += Mathf.Sin(Time.GetTicksMsec() * OscillationMagnitude * deltaTime) * OscillationHeight;
+			var timePassed = Time.GetTicksMsec() / 1000f;
+			targetPosition.Y += Mathf.Sin(timePassed + oscillationModifier * OscillationMagnitude * deltaTime) * OscillationHeight;
 			var direction = targetPosition - GlobalTransform.Origin;
 		
 			var springForce = direction * SpringStrength;
