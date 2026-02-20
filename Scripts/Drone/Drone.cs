@@ -6,15 +6,29 @@ public partial class Drone : CharacterBody3D
 {
 	[Export] public DroneController Controller { get; set; }
 	[Export] public DroneEnergy Energy { get; set; }
+	[Export] public Node3D CameraTarget { get; set; }
+	[Export] public Node3D CameraRig { get; set; }
+	[Export] public DroneFormation DroneFormation { get; set; }
 	[Export] private DroneMovement Movement { get; set; }
 	[Export] private DroneRotationHandler RotationHandler { get; set; }
 
+	[Export] public float LookForwardOffset { get; set; } = 5f;
+	[Export] public float CameraDistance { get; set; } = 8f;
+	[Export] public float CameraHeight { get; set; } = 2f;
+
+	[Export] private float CameraRotatingLag { get; set; } = 3f;
+	[Export] private float CameraPositionLag { get; set; } = 5f;
+
 	[Export] private bool MovementEnabled { get; set; } = true;
 	[Export] private bool RotationEnabled { get; set; } = true;
+
+	private float cameraYaw;
 	
 	public override void _Ready()
 	{
 		base._Ready();
+		cameraYaw = Rotation.Y;
+		
 		if (MovementEnabled)
 			Movement?.SetDrone(this);
 		if (RotationEnabled)
@@ -32,16 +46,63 @@ public partial class Drone : CharacterBody3D
 		Controller.ThrottleInput += OnThrottleInput;
 	}
 
+	public override void _ExitTree()
+	{
+		if (Controller is null)
+			return;
+		
+		Controller.PitchInput -= OnPitchInput;
+		Controller.RollInput -= OnRollInput;
+		Controller.YawInput -= OnYawInput;
+		Controller.ThrottleInput -= OnThrottleInput;
+	}
+
 	public override void _PhysicsProcess(double delta)
 	{
 		base._PhysicsProcess(delta);
-		var fDelta = (float) delta;
+		
+		if (CameraTarget is not null)
+			DebugDraw3D.DrawSphere(CameraTarget.GlobalPosition, 0.5f, Colors.BlueViolet);
+		
+		var forward = -GlobalTransform.Basis.Z;
+		var forwardPoint = GlobalPosition + forward * 5f;
+		DebugDraw3D.DrawBox(forwardPoint, Quaternion.Identity, Vector3.One, Colors.Red, true);
+		
+		var deltaTime = (float) delta;
 		Controller?.Tick();
 		
 		if (MovementEnabled)
-			Movement?.Tick(fDelta);
+			Movement?.Tick(deltaTime);
 		if (RotationEnabled)
-			RotationHandler?.Tick(fDelta);
+			RotationHandler?.Tick(deltaTime);
+
+		UpdateLookTarget();
+		UpdateCamera(deltaTime);
+	}
+
+	private void UpdateLookTarget()
+	{
+		var forward = -GlobalTransform.Basis.Z;
+		CameraTarget.GlobalPosition = GlobalPosition + forward * LookForwardOffset;
+	}
+
+	private void UpdateCamera(float delta)
+	{
+		var droneYaw = Rotation.Y;
+		cameraYaw = Mathf.LerpAngle(cameraYaw, droneYaw, CameraRotatingLag * delta);
+		
+		var turnInput = Input.GetActionStrength("turn_right") - Input.GetActionStrength("turn_left");
+		var extraYaw = turnInput * Mathf.DegToRad(15f);
+		var finalYaw = cameraYaw + extraYaw;
+		
+		var back = new Basis(Vector3.Up, finalYaw).Z;
+		var desiredPosition = 
+			GlobalPosition + 
+			back * CameraDistance + 
+			Vector3.Up * CameraHeight;
+		
+		CameraRig.GlobalPosition = CameraRig.GlobalPosition.Lerp(desiredPosition, CameraPositionLag * delta);
+		CameraRig.LookAt(CameraTarget.GlobalPosition, Vector3.Up);
 	}
 
 	private void OnPitchInput(float input)

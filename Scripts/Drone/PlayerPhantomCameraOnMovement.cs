@@ -4,13 +4,10 @@ using Godot;
 using PhantomCamera;
 
 /// <summary>
-/// This composition node has the single responsibility of ensuring its parent <see cref="PhantomCamera3D"/>
-/// follows the designated <see cref="Drone"/> whenever events for movement input are invoked.
-/// <para/>
-/// No offset needs to be set in this class. Instead, it gets the initial <see cref="Vector3"/> offset from
-/// the drone and will make sure to update the camera's relative position using it.
+/// The class is responsible for listening for any events related to player movement input and moving the
+/// <see cref="PhantomCamera3D"/> accordingly, setting its position to be relative to the player's by an offset.
 /// </summary>
-public partial class DronePhantomCameraFollow : Node
+public partial class PlayerPhantomCameraOnMovement : Node
 {
     [Export] private Drone Drone { get; set; }
 

@@ -1,70 +1,119 @@
-using Godot;
-
 namespace RescueDrone;
+
+using System.Collections.Generic;
+using Godot;
+using MEC;
 
 public partial class SmallDrone : CharacterBody3D
 {
-	[Export] public Drone Player { get; set; }
-	[Export] public float FollowSpeed { get; set; }
-	[Export] public float Acceleration { get; set; }
-	[Export] public float StopDistance { get; set; }
+	[Export] private float SpringStrength { get; set; } = 12f;		// How strongly it pulls
+	[Export] private float Damping { get; set; } = 8f;				// How much it resists oscillation
+	[Export] private float MaxSpeed { get; set; } = 10f;			// Clamp top speed
 
-	// Offset to keep the drone at player's side
-	[Export] public Vector3 FollowOffset = new Vector3(2, 0, 0);
+	[Export] private float OscillationMagnitude { get; set; } = 0.05f;
+	[Export] private float OscillationHeight { get; set; } = 0.5f;
+	
+	[Export] private float AvoidanceStrength { get; set; } = 20f;
+	[Export] private float AvoidanceDistance { get; set; } = 4f;
 
+	private RayCast3D rayForward;
+	private RayCast3D rayLeft;
+	private RayCast3D rayRight;
+	private RayCast3D[] rays;
+
+	private DroneFormation formation;
+	private int formationIndex;
 	private bool isFollowing;
+	private float oscillationModifier;
+	private CoroutineHandle? followCoroutine;
 
-	public void StartFollowing(Drone player)
+	public override void _Ready()
 	{
-		GD.Print("SmallDrone start following player!");
-		Player = player;
-		isFollowing = true;
+		var raycastNames = new[]
+		{
+			"RayForward", "RayForwardLeft", "RayForwardRight", 
+			"RayLeft", "RayRight", 
+			"RayBack", "RayBackLeft", "RayBackRight"
+		};
+		rays = new RayCast3D[raycastNames.Length];
+		for (int index = 0; index < raycastNames.Length; index++)
+		{
+			rays[index] = GetNode<RayCast3D>(raycastNames[index]);
+		}
 	}
 
-	public void StopFollowing()
+	public void SetFormation(DroneFormation formation, int formationIndex)
 	{
-		Player = null;
-		isFollowing = false;
-		Velocity = Vector3.Zero;
-	}
-
-	// TODO: Convert into coroutine...
-	public override void _PhysicsProcess(double delta)
-	{
-		if (!isFollowing || Player is null)
-			return;
-
-		var deltaTime = (float)delta;
+		if (followCoroutine is not null)
+			Timing.KillCoroutines((CoroutineHandle)followCoroutine);
 		
-		// Calculate desired world position with offset
-		var desiredPosition = Player.GlobalTransform.Origin + Player.GlobalTransform.Basis * FollowOffset;
-		var direction = desiredPosition - GlobalTransform.Origin;
-		var distance = direction.Length();
-		if (distance > StopDistance)
-		{
-			direction = direction.Normalized();
-			var targetVelocity = direction * FollowSpeed;
-			Velocity = Velocity.Lerp(targetVelocity, Acceleration * deltaTime);
-		}
-		else
-		{
-			// Slow down smoothly when close enough
-			Velocity = Velocity.Lerp(Vector3.Zero, Acceleration * deltaTime);
-		}
-
-		MoveAndSlide();
-		RotateTowardsMovement(deltaTime);
+		this.formation = formation;
+		this.formationIndex = formationIndex;
+		isFollowing = true;
+		oscillationModifier = GD.Randf();
+		followCoroutine = Timing.RunCoroutine(FollowCoroutine().CancelWith(this), Segment.PhysicsProcess);
 	}
 
-	private void RotateTowardsMovement(float deltaTime)
+	private IEnumerator<double> FollowCoroutine()
 	{
-		if (Velocity.Length() < 0.1f)
+		while (isFollowing)
+		{
+			yield return Timing.WaitForOneFrame;
+			
+			var deltaTime = (float)Timing.DeltaTime;
+			
+			// Calculate desired world position with offset and subtle vertical motion
+			var targetPosition = formation.GetSlotPosition(formationIndex);
+			var timePassed = Time.GetTicksMsec() / 1000f;
+			targetPosition.Y += Mathf.Sin(timePassed + oscillationModifier * OscillationMagnitude * deltaTime) * OscillationHeight;
+			var direction = targetPosition - GlobalTransform.Origin;
+		
+			var springForce = direction * SpringStrength;
+			var dampingForce = -Velocity * Damping;
+			var avoidanceForce = GetAvoidanceForce();
+			var acceleration = springForce + dampingForce + avoidanceForce;
+			Velocity += acceleration * deltaTime;
+
+			// Clamp speed
+			if (Velocity.Length() > MaxSpeed)
+				Velocity = Velocity.Normalized() * MaxSpeed;
+
+			MoveAndSlide();
+			RotateSmoothly(deltaTime);
+		}
+	}
+
+	private Vector3 GetAvoidanceForce()
+	{
+		var force = Vector3.Zero;
+		foreach (var ray in rays)
+		{
+			if (!ray.IsColliding())
+				continue;
+
+			var hitPoint = ray.GetCollisionPoint();
+			var hitNormal = ray.GetCollisionNormal();
+			var distance = GlobalPosition.DistanceTo(hitPoint);
+			var strength = 1f - (distance / AvoidanceDistance);
+			strength = Mathf.Clamp(strength, 0f, 1f);
+			force += hitNormal * strength * AvoidanceStrength;
+		}
+
+		return force;
+	}
+
+	private void RotateSmoothly(float deltaTime)
+	{
+		if (Velocity.Length() < 0.05f)
 			return;
 
-		var lookDirection = Velocity.Normalized();
-		var targetBasis = Basis.LookingAt(lookDirection, Vector3.Up);
+		var forward = Velocity.Normalized() with { Y = 0f };
+		var targetBasis = Basis.LookingAt(forward, Vector3.Up);
+		targetBasis = targetBasis.Rotated(Vector3.Right, -Velocity.Z * 0.02f);
+		targetBasis = targetBasis.Rotated(Vector3.Forward, Velocity.X * 0.02f);
+
 		GlobalTransform = new Transform3D(
-			GlobalTransform.Basis.Slerp(targetBasis, 5f * deltaTime),
+			GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * deltaTime),
 			GlobalTransform.Origin);
 	}
 	

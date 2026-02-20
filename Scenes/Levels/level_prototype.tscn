@@ -1,0 +1,166 @@
+[gd_scene format=3 uid="uid://c7pyigpgubc26"]
+
+[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Scenes/Player/player_drone.tscn" id="2_njymd"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="2_ui0js"]
+[ext_resource type="PackedScene" uid="uid://mvx24qs1y7qq" path="res://Scenes/Player/player_look_at_target.tscn" id="3_ui0js"]
+[ext_resource type="Texture2D" uid="uid://bj7h2fc5jx4ax" path="res://addons/phantom_camera/examples/textures/3D/checker_pattern_dark.png" id="4_dck2r"]
+[ext_resource type="PackedScene" uid="uid://dyvuo8kmnm5x6" path="res://Scenes/Rescue NPC/small_drone_delivery_area.tscn" id="4_njymd"]
+[ext_resource type="Script" uid="uid://cadb4mck5b5xu" path="res://Scripts/System/DeliverySystem.cs" id="4_nyyqa"]
+[ext_resource type="Script" uid="uid://c7jhilqthwltt" path="res://Scripts/Core/EventRepository.cs" id="5_nyyqa"]
+[ext_resource type="PackedScene" uid="uid://cowohnbnirfej" path="res://Scenes/Rescue NPC/small_drone_rescue_area.tscn" id="6_3ktn8"]
+[ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Scenes/Rescue NPC/small_drone.tscn" id="7_makrs"]
+[ext_resource type="PackedScene" uid="uid://1hp7ptjeyoo3" path="res://Scenes/Player/camera_rig.tscn" id="8_njymd"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_vk57k"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vk57k"]
+albedo_texture = ExtResource("4_dck2r")
+uv1_triplanar = true
+
+[node name="LevelPrototype" type="Node3D" unique_id=776801642]
+
+[node name="World" type="CSGCombiner3D" parent="." unique_id=789329366]
+use_collision = true
+collision_layer = 8
+
+[node name="Floor" type="CSGMesh3D" parent="World" unique_id=735207990]
+transform = Transform3D(1000, 0, 0, 0, 1, 0, 0, 0, 1000, 0, 0, 0)
+layers = 8
+mesh = SubResource("BoxMesh_vk57k")
+material = SubResource("StandardMaterial3D_vk57k")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="World" unique_id=1155076021]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 9.966766, 0.6804199)
+layers = 8
+size = Vector3(3, 18.933533, 3.6391602)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="World" unique_id=914283954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 7.1458664, 0.6804199)
+layers = 8
+size = Vector3(3, 13.291733, 3.6391602)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="World" unique_id=774894173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.6249676, 0.6804199)
+layers = 8
+size = Vector3(3, 6.249935, 3.6391602)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="World" unique_id=1516869391]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 5.3991537, 3.5270386)
+layers = 8
+size = Vector3(3, 9.798307, 9.332397)
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="World" unique_id=1167418185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 5.3991537, 22.955732)
+layers = 8
+size = Vector3(3, 9.798307, 9.332397)
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="World" unique_id=61284089]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5700703, 3.1236491, 25.664381)
+layers = 8
+size = Vector3(11.334961, 5.2472982, 3.9151)
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="World" unique_id=1524838363]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7551546, 10.341236, 25.597048)
+layers = 8
+size = Vector3(1.7027283, 9.148069, 3.9151)
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="World" unique_id=768018151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5702825, 7.6877317, 25.597048)
+layers = 8
+size = Vector3(1.7027283, 14.455078, 3.9151)
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="World" unique_id=51731105]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4037256, 13.780963, 25.597048)
+layers = 8
+size = Vector3(6.5251923, 2.2686157, 3.9151)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="World" unique_id=1397539494]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 10.97635, 13.24308)
+layers = 8
+size = Vector3(3, 3.5195231, 9.900314)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1369684563]
+transform = Transform3D(0.60046834, -0.69249034, 0.3998686, -0.07449421, 0.44943815, 0.8902, -0.79617107, -0.5643248, 0.21828689, 3.743391, 7.1381116, 6.1001625)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=1506999565]
+transform = Transform3D(-0.272831, 0.81228346, -0.515518, 0.068364486, 0.5508615, 0.83179206, 0.9596299, 0.19169551, -0.20582344, -8.517353, 7.070095, 0.3451459)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1771524191]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -11.565957, 8.945386, 15.327319)
+top_level = true
+
+[node name="PhantomCameraHost" type="Node" parent="Camera3D" unique_id=1616441494]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("2_ui0js")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="EventRepository" type="Node" parent="." unique_id=891231131]
+script = ExtResource("5_nyyqa")
+
+[node name="DeliverySystemManager" type="Node" parent="." unique_id=703558304]
+script = ExtResource("4_nyyqa")
+
+[node name="Small Drone Rescue Areas" type="Node" parent="." unique_id=1870667335]
+
+[node name="SmallDroneRescueArea" parent="Small Drone Rescue Areas" unique_id=396461400 node_paths=PackedStringArray("SmallDrone") instance=ExtResource("6_3ktn8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.0491858, 10.764235, 0.3173507)
+SmallDrone = NodePath("../../Small Drones/SmallDrone")
+
+[node name="Small Drone Delivery Areas" type="Node" parent="." unique_id=1170443837]
+
+[node name="SmallDroneDeliveryArea" parent="Small Drone Delivery Areas" unique_id=907295059 instance=ExtResource("4_njymd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5216184, 5.2118545, 31.520237)
+
+[node name="Small Drones" type="Node" parent="." unique_id=2115586378]
+
+[node name="SmallDrone" parent="Small Drones" unique_id=457154522 instance=ExtResource("7_makrs")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 3.0491858, 10.764235, 0.3173507)
+
+[node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1763783081]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6275835, 3.8329759, 4.974858)
+
+[node name="PlayerDrone" parent="." unique_id=339431069 node_paths=PackedStringArray("CameraRig") instance=ExtResource("2_njymd")]
+transform = Transform3D(-4.371138e-08, 0, -1, 0, 1, 0, 1, 0, -4.371138e-08, -8.829433, 7.980015, 15.327319)
+CameraRig = NodePath("../CameraRig")
+
+[node name="PlayerLookAtTarget" parent="." unique_id=543389103 node_paths=PackedStringArray("Drone") instance=ExtResource("3_ui0js")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.867171, 7.980015, 15.327319)
+Drone = NodePath("../PlayerDrone")
+
+[node name="CameraRig" parent="." unique_id=1872946797 instance=ExtResource("8_njymd")]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -11.565957, 8.945386, 15.327319)
+
+[node name="HUD" type="Control" parent="." unique_id=652438954]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerEnergyGauge" type="ProgressBar" parent="HUD" unique_id=528634609]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 34.0
+offset_right = -30.0
+offset_bottom = 61.0
+grow_horizontal = 0
+value = 20.14
+show_percentage = false
+
+[node name="Label" type="Label" parent="HUD" unique_id=1334122299]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 13.0
+offset_right = 160.0
+offset_bottom = 60.0
+text = "Score: 0"
+vertical_alignment = 1
+
+[editable path="CameraRig"]
