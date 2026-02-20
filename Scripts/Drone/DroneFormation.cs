@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-namespace RescueDrone;
+﻿namespace RescueDrone;
 
 using System.Collections.Generic;
 using Godot;
