@@ -11,13 +11,9 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_njt5m"]
 size = Vector3(1, 0.45214844, 0.6347656)
 
-[node name="RescueDrone" type="CharacterBody3D" unique_id=457154522]
+[node name="SmallDrone" type="CharacterBody3D" unique_id=457154522]
 motion_mode = 1
 script = ExtResource("1_rbbha")
-FollowSpeed = 50.0
-Acceleration = 2.5
-StopDistance = 1.5
-FollowOffset = Vector3(2, 1, 0)
 SpringStrength = 16.0
 MaxSpeed = 14.0
 
@@ -49,3 +45,18 @@ mesh = SubResource("CylinderMesh_rbbha")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=164966847]
 shape = SubResource("BoxShape3D_njt5m")
+
+[node name="RayForward" type="RayCast3D" parent="." unique_id=1618332973]
+exclude_parent = false
+target_position = Vector3(0, 0, -4)
+collision_mask = 8
+
+[node name="RayLeft" type="RayCast3D" parent="." unique_id=1010860703]
+exclude_parent = false
+target_position = Vector3(-2, 0, -3)
+collision_mask = 8
+
+[node name="RayRight" type="RayCast3D" parent="." unique_id=924086880]
+exclude_parent = false
+target_position = Vector3(2, 0, -3)
+collision_mask = 8

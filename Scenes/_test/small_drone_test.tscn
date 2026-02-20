@@ -1,0 +1,114 @@
+[gd_scene format=3 uid="uid://cplqlnsccxvgl"]
+
+[ext_resource type="Script" uid="uid://c7jhilqthwltt" path="res://Scripts/Core/EventRepository.cs" id="1_n6b6q"]
+[ext_resource type="PackedScene" uid="uid://cowohnbnirfej" path="res://Scenes/Rescue NPC/small_drone_rescue_area.tscn" id="2_m0fj3"]
+[ext_resource type="Script" uid="uid://mgutfsyyy8jv" path="res://Scripts/Drone/SmallDronePickupArea.cs" id="2_tdbi5"]
+[ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Scenes/Rescue NPC/small_drone.tscn" id="3_m0fj3"]
+[ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Scenes/Player/player_drone.tscn" id="5_aehdy"]
+[ext_resource type="PackedScene" uid="uid://dyvuo8kmnm5x6" path="res://Scenes/Rescue NPC/small_drone_delivery_area.tscn" id="6_n6b6q"]
+[ext_resource type="PackedScene" uid="uid://mvx24qs1y7qq" path="res://Scenes/Player/player_look_at_target.tscn" id="6_ooya6"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_sjvqn"]
+[ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="8_aaiei"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="9_70ww4"]
+[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/Drone/PlayerPhantomCameraOnMovement.cs" id="10_ica6n"]
+[ext_resource type="PackedScene" uid="uid://1hp7ptjeyoo3" path="res://Scenes/Player/camera_rig.tscn" id="12_n6b6q"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_7x1fn"]
+radius = 3.7877047
+
+[sub_resource type="Resource" id="Resource_yxhrx"]
+script = ExtResource("9_70ww4")
+
+[node name="SmallDroneTest" type="Node3D" unique_id=913673792]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=884813950]
+transform = Transform3D(0.9693725, 0.08053722, 0.23201439, -0.24559502, 0.31788334, 0.9157692, 0, -0.9447031, 0.3279269, 3.4043818, 5.73154, 7.778878)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1577038853]
+transform = Transform3D(-1, 0, -1.509958e-07, 0, 1, 0, 1.509958e-07, 0, -1, 9.645535, 0.84718895, -11.202003)
+top_level = true
+
+[node name="PhantomCameraHost" type="Node" parent="Camera3D" unique_id=1165102914]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("7_sjvqn")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="EventRepository" type="Node" parent="." unique_id=281820939]
+script = ExtResource("1_n6b6q")
+
+[node name="Small Drone Rescue Areas" type="Node" parent="." unique_id=544333837]
+
+[node name="SmallDroneRescueArea" parent="Small Drone Rescue Areas" unique_id=396461400 instance=ExtResource("2_m0fj3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.739465, 0, -5.309411)
+
+[node name="SmallDroneRescueArea2" type="Area3D" parent="Small Drone Rescue Areas" unique_id=403191947 node_paths=PackedStringArray("SmallDrone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.138653, 0, -3.541542)
+collision_layer = 0
+input_ray_pickable = false
+script = ExtResource("2_tdbi5")
+SmallDrone = NodePath("../../Small Drones/RescueDrone2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Small Drone Rescue Areas/SmallDroneRescueArea2" unique_id=872886780]
+shape = SubResource("SphereShape3D_7x1fn")
+
+[node name="SmallDroneRescueArea3" type="Area3D" parent="Small Drone Rescue Areas" unique_id=798329883 node_paths=PackedStringArray("SmallDrone")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.561804, 0, -21.222681)
+collision_layer = 0
+input_ray_pickable = false
+script = ExtResource("2_tdbi5")
+SmallDrone = NodePath("../../Small Drones/RescueDrone3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Small Drone Rescue Areas/SmallDroneRescueArea3" unique_id=1801700619]
+shape = SubResource("SphereShape3D_7x1fn")
+
+[node name="Small Drones" type="Node" parent="." unique_id=453042311]
+
+[node name="RescueDrone" parent="Small Drones" unique_id=457154522 instance=ExtResource("3_m0fj3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.739465, 0, -5.309411)
+OscillationMagnitude = 0.065
+OscillationHeight = 0.1
+
+[node name="RescueDrone2" parent="Small Drones" unique_id=1099049702 instance=ExtResource("3_m0fj3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.138653, 0, -3.541542)
+OscillationMagnitude = 0.065
+OscillationHeight = 0.1
+
+[node name="RescueDrone3" parent="Small Drones" unique_id=119478606 instance=ExtResource("3_m0fj3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.561804, 0, -21.222681)
+OscillationMagnitude = 0.065
+OscillationHeight = 0.1
+
+[node name="SmallDroneDeliveryArea" parent="." unique_id=907295059 instance=ExtResource("6_n6b6q")]
+
+[node name="PlayerDrone" parent="." unique_id=339431069 node_paths=PackedStringArray("CameraRig") instance=ExtResource("5_aehdy")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 9.645535, 0, -8.577826)
+CameraRig = NodePath("../CameraRig")
+CameraDistance = 2.5
+
+[node name="PlayerLookAtTarget" parent="." unique_id=543389103 node_paths=PackedStringArray("Drone") instance=ExtResource("6_ooya6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.645535, 0, -4.5778255)
+Drone = NodePath("../PlayerDrone")
+
+[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=1426228702 node_paths=PackedStringArray("follow_target")]
+transform = Transform3D(-0.99999917, 0, 0, 0, 0.9458361, 0.32464465, 0, 0.32464477, -0.9458357, 9.645535, 0.35, -14.577826)
+top_level = true
+visible = false
+script = ExtResource("8_aaiei")
+follow_mode = 2
+follow_target = NodePath("../PlayerDrone/CameraTarget")
+tween_resource = SubResource("Resource_yxhrx")
+follow_offset = Vector3(0, 0.35, -6)
+follow_damping = true
+align_transform_with_view = Callable()
+align_position_with_view = Callable()
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[node name="PlayerCameraReact" type="Node" parent="PhantomCamera3D" unique_id=1195668491 node_paths=PackedStringArray("Drone")]
+script = ExtResource("10_ica6n")
+Drone = NodePath("../../PlayerDrone")
+
+[node name="CameraRig" parent="." unique_id=1872946797 instance=ExtResource("12_n6b6q")]
+transform = Transform3D(-1, 0, -1.509958e-07, 0, 1, 0, 1.509958e-07, 0, -1, 9.645535, 0.84718895, -11.202003)
+
+[editable path="PlayerDrone"]
