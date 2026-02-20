@@ -1,7 +1,7 @@
+namespace RescueDrone;
+
 using System.Collections.Generic;
 using MEC;
-
-namespace RescueDrone;
 
 using Godot;
 

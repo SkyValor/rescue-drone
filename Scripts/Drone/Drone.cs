@@ -6,30 +6,26 @@ public partial class Drone : CharacterBody3D
 {
 	[Export] public DroneController Controller { get; set; }
 	[Export] public DroneEnergy Energy { get; set; }
-	[Export] private DroneMovement Movement { get; set; }
-	[Export] private DroneRotationHandler RotationHandler { get; set; }
-	[Export] public DroneFormation DroneFormation { get; set; }
 	[Export] public Node3D CameraTarget { get; set; }
 	[Export] public Node3D CameraRig { get; set; }
+	[Export] public DroneFormation DroneFormation { get; set; }
+	[Export] private DroneMovement Movement { get; set; }
+	[Export] private DroneRotationHandler RotationHandler { get; set; }
 
-	[Export] private float CameraForwardOffset { get; set; } = 3.0f;
-	[Export] private float CameraHeightOffset { get; set; } = 1.0f;
-	
-	[Export] private float CameraTurnInfluence { get; set; } = 15.0f;
-	[Export] private float CameraFollowSpeed { get; set; } = 5.0f;
-	
 	[Export] public float LookForwardOffset { get; set; } = 5f;
 	[Export] public float CameraDistance { get; set; } = 8f;
 	[Export] public float CameraHeight { get; set; } = 2f;
 
 	[Export] private float CameraRotatingLag { get; set; } = 3f;
 	[Export] private float CameraPositionLag { get; set; } = 5f;
+
+	[Export] private float FOVWhenAlone { get; set; } = 75f;
+	[Export] private float FOVWhenFollowed { get; set; } = 100f;
 	
 	[Export] private bool MovementEnabled { get; set; } = true;
 	[Export] private bool RotationEnabled { get; set; } = true;
 
 	private float cameraYaw;
-	private float currentTurnInfluence;
 	
 	public override void _Ready()
 	{
@@ -51,6 +47,17 @@ public partial class Drone : CharacterBody3D
 		Controller.RollInput += OnRollInput;
 		Controller.YawInput += OnYawInput;
 		Controller.ThrottleInput += OnThrottleInput;
+	}
+
+	public override void _ExitTree()
+	{
+		if (Controller is null)
+			return;
+		
+		Controller.PitchInput -= OnPitchInput;
+		Controller.RollInput -= OnRollInput;
+		Controller.YawInput -= OnYawInput;
+		Controller.ThrottleInput -= OnThrottleInput;
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -99,6 +106,18 @@ public partial class Drone : CharacterBody3D
 		
 		CameraRig.GlobalPosition = CameraRig.GlobalPosition.Lerp(desiredPosition, CameraPositionLag * delta);
 		CameraRig.LookAt(CameraTarget.GlobalPosition, Vector3.Up);
+	}
+
+	// TODO: Create a central repository for signals. Decouple this class from any camera.
+	// Make this class call the signal repo and alert about the change of followers.
+	// The PhantomCamera reaction should listen for that signal and increase/decrease the FOV value.
+	
+	private void OnFollowersChanged(ushort followers)
+	{
+		if (followers == 0)
+		{
+			
+		}
 	}
 
 	private void OnPitchInput(float input)

@@ -1,4 +1,6 @@
-﻿namespace RescueDrone;
+﻿using System;
+
+namespace RescueDrone;
 
 using System.Collections.Generic;
 using Godot;
@@ -8,7 +10,7 @@ public partial class DroneFormation : Node3D
     [Export] private float Spacing { get; set; } = 3f;
     [Export] private float VerticalSpacing { get; set; } = 1.5f;
 
-    private readonly List<SmallDrone> followers = new();
+    private readonly List<SmallDrone> followers = [];
 
     public void AddDrone(SmallDrone drone)
     {
@@ -16,12 +18,14 @@ public partial class DroneFormation : Node3D
             return;
         
         followers.Add(drone);
+        EventRepository.Instance.InvokePlayerSmallDronesFollowing((ushort)followers.Count);
         drone.SetFormation(this, followers.Count - 1);
     }
 
     public void RemoveDrone(SmallDrone drone)
     {
         followers.Remove(drone);
+        EventRepository.Instance.InvokePlayerSmallDronesFollowing((ushort)followers.Count);
         ReassignIndexes();
     }
 

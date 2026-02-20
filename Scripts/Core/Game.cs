@@ -43,7 +43,7 @@ public partial class Game : Node
 		var cameraPosition = playerDrone.GlobalPosition + playerBackDir * 2f + Vector3.Up;
 		phantomCameraNode.GlobalPosition = cameraPosition;
 		
-		var followNode = phantomCameraNode.FindChild("DroneMovementPhantomCameraReact") as DronePhantomCameraFollow;
+		var followNode = phantomCameraNode.FindChild("DroneMovementPhantomCameraReact") as PlayerPhantomCameraOnMovement;
 		followNode?.SetDrone(playerDrone);
 
 		var phantomCamera = phantomCameraNode.AsPhantomCamera3D();

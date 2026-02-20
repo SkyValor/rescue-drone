@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cplqlnsccxvgl"]
 
+[ext_resource type="Script" uid="uid://c7jhilqthwltt" path="res://Scripts/Core/EventRepository.cs" id="1_3tl1i"]
 [ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Models/rescue_drone.tscn" id="1_nqx8v"]
 [ext_resource type="Script" uid="uid://mgutfsyyy8jv" path="res://Scripts/Drone/SmallDronePickupArea.cs" id="1_pknx5"]
 [ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Scenes/Player/player_drone.tscn" id="2_eqdof"]
@@ -7,7 +8,8 @@
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="4_n0qmj"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="5_kylvf"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="6_pknx5"]
-[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/Drone/DronePhantomCameraFollow.cs" id="7_kylvf"]
+[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/Drone/PlayerPhantomCameraOnMovement.cs" id="7_kylvf"]
+[ext_resource type="Script" uid="uid://b8hhnqsugykly" path="res://addons/phantom_camera/scripts/resources/camera_3d_resource.gd" id="9_yxhrx"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_7x1fn"]
 radius = 3.7877047
@@ -18,7 +20,14 @@ script = ExtResource("6_pknx5")
 [sub_resource type="Resource" id="Resource_pknx5"]
 script = ExtResource("6_pknx5")
 
+[sub_resource type="Resource" id="Resource_ucy00"]
+script = ExtResource("9_yxhrx")
+metadata/_custom_type_script = "uid://b8hhnqsugykly"
+
 [node name="SmallDroneTest" type="Node3D" unique_id=913673792]
+
+[node name="EventRepository" type="Node" parent="." unique_id=281820939]
+script = ExtResource("1_3tl1i")
 
 [node name="SmallDroneAreas" type="Node" parent="." unique_id=544333837]
 
@@ -116,6 +125,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 9.64
 script = ExtResource("5_kylvf")
 priority = 5
 tween_resource = SubResource("Resource_pknx5")
+camera_3d_resource = SubResource("Resource_ucy00")
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [editable path="PlayerDrone"]
