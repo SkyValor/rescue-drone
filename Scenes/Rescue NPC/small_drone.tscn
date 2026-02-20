@@ -12,10 +12,13 @@
 size = Vector3(1, 0.45214844, 0.6347656)
 
 [node name="SmallDrone" type="CharacterBody3D" unique_id=457154522]
+collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_rbbha")
-SpringStrength = 16.0
+SpringStrength = 24.0
+Damping = 16.0
 MaxSpeed = 14.0
+AvoidanceStrength = 25.0
 
 [node name="Body Mesh" type="Node3D" parent="." unique_id=100820672]
 
@@ -51,12 +54,37 @@ exclude_parent = false
 target_position = Vector3(0, 0, -4)
 collision_mask = 8
 
-[node name="RayLeft" type="RayCast3D" parent="." unique_id=1010860703]
+[node name="RayForwardLeft" type="RayCast3D" parent="." unique_id=1010860703]
 exclude_parent = false
 target_position = Vector3(-2, 0, -3)
 collision_mask = 8
 
-[node name="RayRight" type="RayCast3D" parent="." unique_id=924086880]
+[node name="RayForwardRight" type="RayCast3D" parent="." unique_id=924086880]
 exclude_parent = false
 target_position = Vector3(2, 0, -3)
+collision_mask = 8
+
+[node name="RayRight" type="RayCast3D" parent="." unique_id=1161104672]
+exclude_parent = false
+target_position = Vector3(4, 0, 0)
+collision_mask = 8
+
+[node name="RayLeft" type="RayCast3D" parent="." unique_id=1454972835]
+exclude_parent = false
+target_position = Vector3(-4, 0, 0)
+collision_mask = 8
+
+[node name="RayBack" type="RayCast3D" parent="." unique_id=1090942118]
+exclude_parent = false
+target_position = Vector3(0, 0, 4)
+collision_mask = 8
+
+[node name="RayBackLeft" type="RayCast3D" parent="." unique_id=960654043]
+exclude_parent = false
+target_position = Vector3(-2, 0, 3)
+collision_mask = 8
+
+[node name="RayBackRight" type="RayCast3D" parent="." unique_id=339002216]
+exclude_parent = false
+target_position = Vector3(2, 0, 3)
 collision_mask = 8

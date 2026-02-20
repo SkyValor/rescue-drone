@@ -32,7 +32,7 @@ _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(15, 40), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [node name="PlayerDrone" type="CharacterBody3D" unique_id=339431069 node_paths=PackedStringArray("Controller", "Energy", "CameraTarget", "DroneFormation", "Movement", "RotationHandler")]
-collision_mask = 0
+collision_mask = 10
 motion_mode = 1
 platform_on_leave = 2
 script = ExtResource("1_fw6iu")

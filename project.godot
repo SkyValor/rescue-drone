@@ -85,6 +85,7 @@ throttle_down={
 [layer_names]
 
 3d_physics/layer_1="Player"
+3d_physics/layer_2="npc_drones"
 3d_physics/layer_4="Building"
 
 [phantom_camera]

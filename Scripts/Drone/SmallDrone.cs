@@ -29,10 +29,17 @@ public partial class SmallDrone : CharacterBody3D
 
 	public override void _Ready()
 	{
-		rayForward = GetNode<RayCast3D>("RayForward");
-		rayLeft = GetNode<RayCast3D>("RayLeft");
-		rayRight = GetNode<RayCast3D>("RayRight");
-		rays = [rayForward, rayLeft, rayRight];
+		var raycastNames = new[]
+		{
+			"RayForward", "RayForwardLeft", "RayForwardRight", 
+			"RayLeft", "RayRight", 
+			"RayBack", "RayBackLeft", "RayBackRight"
+		};
+		rays = new RayCast3D[raycastNames.Length];
+		for (int index = 0; index < raycastNames.Length; index++)
+		{
+			rays[index] = GetNode<RayCast3D>(raycastNames[index]);
+		}
 	}
 
 	public void SetFormation(DroneFormation formation, int formationIndex)
