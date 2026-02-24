@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://ditddc73twa5r"]
+
+[ext_resource type="PackedScene" uid="uid://c6nciuqcb0gms" path="res://Assets/drone_orange/scene.gltf" id="1_i6puj"]
+
+[node name="Node3D" type="Node3D" unique_id=1208624150]
+
+[node name="Sketchfab_Scene" parent="." unique_id=1974110588 instance=ExtResource("1_i6puj")]
