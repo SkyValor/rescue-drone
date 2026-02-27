@@ -13,14 +13,17 @@ public abstract partial class SmallDroneReactArea : Area3D
 
     public override void _Ready()
     {
-        BodyEntered += OnBodyEntered;
-        BodyExited += OnBodyExited;
-
         var collisionShape = GetNode<CollisionShape3D>("CollisionShape3D");
         if (collisionShape?.Shape is SphereShape3D sphere) 
             areaRadius = sphere.Radius;
     }
-    
+
+    public override void _EnterTree()
+    {
+        BodyEntered += OnBodyEntered;
+        BodyExited += OnBodyExited;
+    }
+
     public override void _ExitTree()
     {
         BodyEntered -= OnBodyEntered;

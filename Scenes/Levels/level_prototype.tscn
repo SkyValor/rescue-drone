@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://cowohnbnirfej" path="res://Scenes/Rescue NPC/small_drone_rescue_area.tscn" id="6_3ktn8"]
 [ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Scenes/Rescue NPC/small_drone.tscn" id="7_makrs"]
 [ext_resource type="PackedScene" uid="uid://1hp7ptjeyoo3" path="res://Scenes/Player/camera_rig.tscn" id="8_njymd"]
+[ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/Drone/Waypoint.cs" id="8_nyyqa"]
+[ext_resource type="PackedScene" uid="uid://c0vdhqd0tqsrv" path="res://Scenes/Enemy NPC/enemy_drone_yellow.tscn" id="9_3ktn8"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_vk57k"]
 
@@ -116,6 +118,38 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5216184, 5.2118545, 31.520
 
 [node name="SmallDrone" parent="Small Drones" unique_id=457154522 instance=ExtResource("7_makrs")]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 3.0491858, 10.764235, 0.3173507)
+
+[node name="Waypoints" type="Node" parent="." unique_id=406464864]
+
+[node name="Waypoint" type="Node3D" parent="Waypoints" unique_id=2082278142 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5790653, 11.630283, 4.867742)
+script = ExtResource("8_nyyqa")
+Connections = [NodePath("../Waypoint2"), NodePath("../Waypoint3")]
+
+[node name="Waypoint2" type="Node3D" parent="Waypoints" unique_id=1926229289 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7919645, 11.630283, 25.747393)
+script = ExtResource("8_nyyqa")
+Connections = [NodePath("../Waypoint3"), NodePath("../Waypoint")]
+
+[node name="Waypoint3" type="Node3D" parent="Waypoints" unique_id=101738068 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7919645, 2.2824478, 14.239333)
+script = ExtResource("8_nyyqa")
+Connections = [NodePath("../Waypoint4"), NodePath("../Waypoint"), NodePath("../Waypoint2")]
+
+[node name="Waypoint4" type="Node3D" parent="Waypoints" unique_id=2039188624 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.683832, 2.2824478, 14.239333)
+script = ExtResource("8_nyyqa")
+Connections = [NodePath("../Waypoint3")]
+
+[node name="EnemyDroneYellow" parent="." unique_id=1302784249 node_paths=PackedStringArray("Waypoints") instance=ExtResource("9_3ktn8")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 7.5787807, 11.660477, 3.4427986)
+collision_layer = 2
+collision_mask = 3
+SpringStrength = 8.0
+Damping = 6.0
+MaxSpeed = 2.0
+Waypoints = [NodePath("../Waypoints/Waypoint"), NodePath("../Waypoints/Waypoint2"), NodePath("../Waypoints/Waypoint3"), NodePath("../Waypoints/Waypoint4")]
+VisionMask = 1
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1763783081]
 unique_name_in_owner = true
