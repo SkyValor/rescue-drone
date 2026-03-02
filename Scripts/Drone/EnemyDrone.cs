@@ -29,6 +29,7 @@ public partial class EnemyDrone : CharacterBody3D
 	[Export] private Array<Waypoint> Waypoints { get; set; }
 	[Export] private float VisionRange { get; set; }
 	[Export] private int VisionMask { get; set; }
+	[Export] private float PatrolLookoutAngle { get; set; } = 45f;
 	[Export] private float SearchDuration { get; set; }
 
 	private EnemyState state = EnemyState.Idle;
@@ -103,7 +104,35 @@ public partial class EnemyDrone : CharacterBody3D
 		MoveAndSlide();
 		RotateSmoothly(deltaTime);
 	}
+	
+	// TODO: Make HasLineOfSight its own coroutine and be running while enemy is not Attacking.
+	// When the enemy detects the player, break out of this coroutine and change the state. This will break out of any other coroutines.
 
+	private bool HasLineOfSight()
+	{
+		if (player is null)
+			return false;
+
+		var toPlayer = player.GlobalPosition - GlobalPosition;
+		if (toPlayer.Length() > VisionRange)
+			return false;
+
+		var spaceState = GetWorld3D().DirectSpaceState;
+		var query = PhysicsRayQueryParameters3D.Create(
+			from: GlobalPosition,
+			to: player.GlobalPosition, 
+			collisionMask: (uint) VisionMask,
+			exclude: [GetRid()]);
+
+		var result = spaceState.IntersectRay(query);
+		if (result.Count == 0)
+			return false;
+
+		var collider = result["collider"];
+		GD.Print("What is collider...");
+		return false;
+	}
+	
 	private Waypoint GetClosestWaypoint()
 	{
 		Waypoint closestWaypoint = null;
@@ -128,31 +157,6 @@ public partial class EnemyDrone : CharacterBody3D
 			connections.Remove(previousWaypoint);
 
 		return connections.Count == 0 ? previousWaypoint : connections.PickRandom();
-	}
-
-	private bool HasLineOfSight()
-	{
-		if (player is null)
-			return false;
-
-		var toPlayer = player.GlobalPosition - GlobalPosition;
-		if (toPlayer.Length() > VisionRange)
-			return false;
-
-		var spaceState = GetWorld3D().DirectSpaceState;
-		var query = PhysicsRayQueryParameters3D.Create(
-			from: GlobalPosition, 
-			to: player.GlobalPosition, 
-			collisionMask: (uint) VisionMask,
-			exclude: [GetRid()]);
-
-		var result = spaceState.IntersectRay(query);
-		if (result.Count == 0)
-			return false;
-
-		var collider = result["collider"];
-		GD.Print("What is collider...");
-		return false;
 	}
 
 	private void RotateSmoothly(float deltaTime)
