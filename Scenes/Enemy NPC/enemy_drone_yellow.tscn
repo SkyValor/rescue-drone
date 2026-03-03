@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c0vdhqd0tqsrv"]
 
-[ext_resource type="Script" uid="uid://dt770q1kpfpdw" path="res://Scripts/Drone/EnemyDrone.cs" id="1_lutf3"]
+[ext_resource type="Script" uid="uid://dt770q1kpfpdw" path="res://Scripts/Drone/Enemy/EnemyDrone.cs" id="1_lutf3"]
 [ext_resource type="PackedScene" uid="uid://dvic66dcoda8y" path="res://Assets/drone_yellow/scene.gltf" id="2_47bv1"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lutf3"]

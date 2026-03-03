@@ -1,10 +1,12 @@
 namespace RescueDrone;
 
-using System;
+using Chickensoft.GodotNodeInterfaces;
 using Godot;
 using Godot.Collections;
 
-public partial class EnemyDrone : CharacterBody3D
+public interface IEnemyDrone : ICharacterBody3D;
+
+public partial class EnemyDrone : CharacterBody3D, IEnemyDrone
 {
 	public enum EnemyState
 	{
@@ -32,6 +34,9 @@ public partial class EnemyDrone : CharacterBody3D
 	[Export] private float PatrolLookoutAngle { get; set; } = 45f;
 	[Export] private float SearchDuration { get; set; }
 
+	private EnemyLogic EnemyStateMachine { get; set; }
+	private EnemyLogic.IBinding EnemyBinding { get; set; }
+
 	private EnemyState state = EnemyState.Idle;
 	private Waypoint currentWaypoint;
 	private Waypoint previousWaypoint;
@@ -39,24 +44,32 @@ public partial class EnemyDrone : CharacterBody3D
 	private Vector3 lastKnownPlayerPosition;
 	private float searchTimer;
 
+	public override void _Ready()
+	{
+		EnemyStateMachine = new EnemyLogic();
+		EnemyStateMachine.Set(this as IEnemyDrone);
+		EnemyStateMachine.Set(Waypoints);
+		EnemyStateMachine.Set(new EnemyLogic.Settings(SpringStrength, Damping, MaxSpeed));
+
+		EnemyBinding = EnemyStateMachine.Bind();
+		EnemyBinding.Handle((in EnemyLogic.Output.VelocityChanged output) =>
+			Velocity = output.Velocity);
+		
+		EnemyStateMachine.Start();
+	}
+
+	public override void _ExitTree()
+	{
+		EnemyStateMachine.Stop();
+		EnemyBinding.Dispose();
+	}
+
 	public override void _PhysicsProcess(double delta)
 	{
-		var deltaTime = (float)delta;
-		switch (state)
-		{
-			case EnemyState.Idle:
-				ProcessIdle();
-				break;
-			case EnemyState.Patrol:
-				ProcessPatrol(deltaTime);
-				break;
-			case EnemyState.Attacking:
-				break;
-			case EnemyState.Searching:
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
-		}
+		EnemyStateMachine.Input(new EnemyLogic.Input.PhysicsTick(delta));
+
+		MoveAndSlide();
+		RotateSmoothly(delta);
 	}
 
 	private void ProcessIdle()
@@ -159,7 +172,7 @@ public partial class EnemyDrone : CharacterBody3D
 		return connections.Count == 0 ? previousWaypoint : connections.PickRandom();
 	}
 
-	private void RotateSmoothly(float deltaTime)
+	private void RotateSmoothly(double deltaTime)
 	{
 		if (Velocity.Length() < 0.05f)
 			return;
@@ -170,7 +183,7 @@ public partial class EnemyDrone : CharacterBody3D
 		targetBasis = targetBasis.Rotated(Vector3.Forward, Velocity.X * 0.02f);
 		
 		GlobalTransform = new Transform3D(
-			GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * deltaTime),
+			GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * (float)deltaTime),
 			GlobalPosition);
 	}
 	
