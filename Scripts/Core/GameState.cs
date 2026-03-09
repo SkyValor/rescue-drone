@@ -1,4 +1,4 @@
-﻿namespace RescueDrone.Scripts.Core;
+﻿namespace RescueDrone;
 
 public enum GameState
 {

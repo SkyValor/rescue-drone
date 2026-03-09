@@ -33,10 +33,38 @@ public partial class DroneCameraLookAtTarget : Node3D
         SetPositionRelativeToDrone();
     }
 
-    public void SetDrone(Drone drone) => Drone = drone;
+    public override void _ExitTree()
+    {
+        SetDrone(null);
+    }
+
+    public void SetDrone(Drone drone)
+    {
+        if (drone is not null)
+            UnsubscribeEvents();
+        
+        Drone = drone;
+        if (Drone is null) 
+            return;
+        
+        SetPositionRelativeToDrone();
+        SubscribeEvents();
+    }
     
     private void OnYawInput(float input) => yawInput = input;
     private void OnThrottleInput(float input) => throttleInput = input;
+
+    private void SubscribeEvents()
+    {
+        Drone.Controller.YawInput += OnYawInput;
+        Drone.Controller.ThrottleInput += OnThrottleInput;
+    }
+
+    private void UnsubscribeEvents()
+    {
+        Drone.Controller.YawInput -= OnYawInput;
+        Drone.Controller.ThrottleInput -= OnThrottleInput;
+    }
 
     private void SetPositionRelativeToDrone()
     {

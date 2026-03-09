@@ -28,7 +28,13 @@ public partial class DronePhantomCameraFollow : Node
 
     public void SetDrone(Drone drone)
     {
+        if (Drone is not null)
+            UnsubscribeFromInputEvents();
+        
         Drone = drone;
+        if (Drone is null)
+            return;
+        
         SaveDefaultOffset();
         SubscribeToInputEvents();
     }

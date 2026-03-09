@@ -1,0 +1,6 @@
+The texture "thn_ref4i" is a environnement map
+
+This model use a color node for have yellow color
+
+Mario Kart Wii Thunder model
+Ripped by Tyler Cretal

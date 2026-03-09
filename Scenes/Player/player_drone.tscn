@@ -8,7 +8,7 @@
 [ext_resource type="Script" uid="uid://c7otxclavhkbd" path="res://Scripts/Drone/DroneEnergy.cs" id="6_l1ajr"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_c8tkg"]
-size = Vector3(1.3222656, 1.2810059, 0.93188477)
+size = Vector3(1.3342285, 1.0830078, 0.93188477)
 
 [sub_resource type="Curve" id="Curve_1awyl"]
 _limits = [0.0, 230.0, 0.0, 45.0]
@@ -43,6 +43,7 @@ RotationHandler = NodePath("RotationHandler")
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.765, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2029201119]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07269287, 0, 0)
 shape = SubResource("BoxShape3D_c8tkg")
 
 [node name="DronePhantomCameraTarget" type="Node3D" parent="." unique_id=1137291192]

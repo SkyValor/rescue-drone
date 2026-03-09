@@ -50,7 +50,7 @@ public partial class DroneEnergy : Node
     public void DepleteEnergy(ushort amount)
     {
         var before = CurrentEnergy;
-        CurrentEnergy = (ushort) Mathf.Max(0, CurrentEnergy - amount);
+        CurrentEnergy = (ushort) Mathf.Clamp(CurrentEnergy - amount, 0, MaxEnergy);
         if (CurrentEnergy != before)
             EnergyChanged?.Invoke(CurrentEnergy, MaxEnergy);
     }
@@ -58,13 +58,14 @@ public partial class DroneEnergy : Node
     public void RestoreEnergy(ushort amount)
     {
         var before = CurrentEnergy;
-        CurrentEnergy = (ushort) Mathf.Min(MaxEnergy, CurrentEnergy + amount);
+        CurrentEnergy = (ushort) Mathf.Clamp(CurrentEnergy + amount, 0, MaxEnergy);
         if (CurrentEnergy != before)
             EnergyChanged?.Invoke(CurrentEnergy, MaxEnergy);
     }
 
     private IEnumerator<double> PassiveEnergyConsumptionCoroutine()
     {
+        var passiveConsumption = (ushort) PassiveEnergyConsumption;
         while (CurrentEnergy != 0)
         {
             yield return Timing.WaitForOneFrame;
@@ -74,8 +75,7 @@ public partial class DroneEnergy : Node
                 continue;
             
             currentTickTime -= TickRate;
-            CurrentEnergy = (ushort) Mathf.Max(0, CurrentEnergy - PassiveEnergyConsumption);
-            EnergyChanged?.Invoke(CurrentEnergy, MaxEnergy);
+            DepleteEnergy(passiveConsumption);
         }
     }
     

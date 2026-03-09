@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://kf3cgiqsp0pn"]
+
+[ext_resource type="Script" uid="uid://dhk721fqt2pt7" path="res://Scripts/Systems/EnergyPickup.cs" id="1_bfr6t"]
+[ext_resource type="PackedScene" uid="uid://bp6wfv80y1bh2" path="res://Assets/Lightning bolt export 1.fbx" id="1_cvhp5"]
+
+[sub_resource type="Environment" id="Environment_bfr6t"]
+glow_enabled = true
+glow_intensity = 0.8
+glow_blend_mode = 0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cvhp5"]
+size = Vector3(0.71191406, 1.2480469, 0.6640625)
+
+[sub_resource type="Animation" id="Animation_bfr6t"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("lightning_model:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("lightning_model:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_cvhp5"]
+resource_name = "idle"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("lightning_model:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, -0.05, 0), Vector3(0, 0.05, 0), Vector3(0, -0.05, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("lightning_model:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.75, 2.25, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.2617994, 0), Vector3(0, -0.2617994, 0), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bfr6t"]
+_data = {
+&"RESET": SubResource("Animation_bfr6t"),
+&"idle": SubResource("Animation_cvhp5")
+}
+
+[node name="EnergyPickUp" type="Area3D" unique_id=1420493738]
+monitorable = false
+script = ExtResource("1_bfr6t")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=358134747]
+environment = SubResource("Environment_bfr6t")
+
+[node name="lightning_model" parent="." unique_id=1675826088 instance=ExtResource("1_cvhp5")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+
+[node name="Collider" type="CollisionShape3D" parent="." unique_id=1149701669]
+unique_name_in_owner = true
+shape = SubResource("BoxShape3D_cvhp5")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1332555069]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_bfr6t")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1509558237]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.051882505, -0.007853448, 0)
+visible = false
+light_energy = 1.432
+light_indirect_energy = 1.865
+light_size = 0.519
+light_specular = 0.0
+omni_range = 0.407
+omni_attenuation = 1.324

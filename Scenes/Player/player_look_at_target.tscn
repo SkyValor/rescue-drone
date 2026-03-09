@@ -2,9 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bs83vae0wc5u4" path="res://Scripts/Drone/DroneCameraLookAtTarget.cs" id="1_0korp"]
 
-[node name="PlayerLookAtTarget" type="Node3D" unique_id=543389103 node_paths=PackedStringArray("Drone")]
+[node name="PlayerLookAtTarget" type="Node3D" unique_id=543389103]
 script = ExtResource("1_0korp")
-Drone = NodePath("")
 MainOffset = Vector3(0, 0, -9)
 OnYawOffsetAdditive = Vector3(12, 0, 0)
 OnThrottleOffsetAdditive = Vector3(0, 4, 0)
