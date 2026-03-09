@@ -127,17 +127,17 @@ script = ExtResource("8_nyyqa")
 Connections = [NodePath("../Waypoint2"), NodePath("../Waypoint3")]
 
 [node name="Waypoint2" type="Node3D" parent="Waypoints" unique_id=1926229289 node_paths=PackedStringArray("Connections")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7919645, 11.630283, 25.747393)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7919645, 11.630283, 19.464224)
 script = ExtResource("8_nyyqa")
 Connections = [NodePath("../Waypoint3"), NodePath("../Waypoint")]
 
 [node name="Waypoint3" type="Node3D" parent="Waypoints" unique_id=101738068 node_paths=PackedStringArray("Connections")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7919645, 2.2824478, 14.239333)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7919636, 7.8027363, 14.823594)
 script = ExtResource("8_nyyqa")
 Connections = [NodePath("../Waypoint4"), NodePath("../Waypoint"), NodePath("../Waypoint2")]
 
 [node name="Waypoint4" type="Node3D" parent="Waypoints" unique_id=2039188624 node_paths=PackedStringArray("Connections")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.683832, 2.2824478, 14.239333)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9136477, 8.256864, 19.199432)
 script = ExtResource("8_nyyqa")
 Connections = [NodePath("../Waypoint3")]
 
@@ -150,12 +150,13 @@ Damping = 6.0
 MaxSpeed = 2.0
 Waypoints = [NodePath("../Waypoints/Waypoint"), NodePath("../Waypoints/Waypoint2"), NodePath("../Waypoints/Waypoint3"), NodePath("../Waypoints/Waypoint4")]
 VisionMask = 1
+LookoutDuration = 2.5
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1763783081]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6275835, 3.8329759, 4.974858)
 
-[node name="PlayerDrone" parent="." unique_id=339431069 node_paths=PackedStringArray("CameraRig") instance=ExtResource("2_njymd")]
+[node name="PlayerDrone" parent="." unique_id=339431069 node_paths=PackedStringArray("CameraRig") groups=["player"] instance=ExtResource("2_njymd")]
 transform = Transform3D(-4.371138e-08, 0, -1, 0, 1, 0, 1, 0, -4.371138e-08, -8.829433, 7.980015, 15.327319)
 CameraRig = NodePath("../CameraRig")
 

@@ -1,13 +1,23 @@
 namespace RescueDrone;
 
+using System.Collections.Generic;
+using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
+using Chickensoft.Introspection;
 using Godot;
 using Godot.Collections;
+using MEC;
 
-public interface IEnemyDrone : ICharacterBody3D;
-
-public partial class EnemyDrone : CharacterBody3D, IEnemyDrone
+public interface IEnemyDrone : ICharacterBody3D
 {
+	DroneMovementByDirection DroneMovement { get; set; }
+}
+
+[Meta(typeof(IAutoConnect), typeof(IProvider))]
+public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDrone>
+{
+	public override void _Notification(int what) => this.Notify(what);
+	
 	public enum EnemyState
 	{
 		Idle,
@@ -15,6 +25,10 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone
 		Attacking,
 		Searching
 	}
+	
+	private enum LookoutDirection { Left, Right }
+	
+	#region Exports
 
 	[ExportGroup("Drone Movement Stats")]
 	[Export] private float SpringStrength { get; set; } = 12f;		// How strongly it pulls
@@ -31,31 +45,48 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone
 	[Export] private Array<Waypoint> Waypoints { get; set; }
 	[Export] private float VisionRange { get; set; }
 	[Export] private int VisionMask { get; set; }
-	[Export] private float PatrolLookoutAngle { get; set; } = 45f;
-	[Export] private float SearchDuration { get; set; }
+	[Export] private float LookoutAngle { get; set; } = 45f;
+	[Export] private float LookoutDuration { get; set; }
+
+	#endregion
+	
+	[Node] public DroneMovementByDirection DroneMovement { get; set; }
+
+	EnemyDrone IProvide<EnemyDrone>.Value() => this;
 
 	private EnemyLogic EnemyStateMachine { get; set; }
 	private EnemyLogic.IBinding EnemyBinding { get; set; }
 
-	private EnemyState state = EnemyState.Idle;
+	private EnemyState currentState = EnemyState.Idle;
 	private Waypoint currentWaypoint;
 	private Waypoint previousWaypoint;
 	private Drone player;
 	private Vector3 lastKnownPlayerPosition;
-	private float searchTimer;
 
+	private bool isOnLookout;
+	private bool movingToWaypoint;
+	private CoroutineHandle lookoutCoroutine;
+	private CoroutineHandle moveToWaypointCoroutine;
+	
 	public override void _Ready()
 	{
-		EnemyStateMachine = new EnemyLogic();
-		EnemyStateMachine.Set(this as IEnemyDrone);
-		EnemyStateMachine.Set(Waypoints);
-		EnemyStateMachine.Set(new EnemyLogic.Settings(SpringStrength, Damping, MaxSpeed));
-
-		EnemyBinding = EnemyStateMachine.Bind();
-		EnemyBinding.Handle((in EnemyLogic.Output.VelocityChanged output) =>
-			Velocity = output.Velocity);
-		
-		EnemyStateMachine.Start();
+		// EnemyStateMachine = new EnemyLogic();
+		player = GetTree().GetNodesInGroup("player")[0] as Drone;
+		this.Provide();
+		//
+		// EnemyStateMachine.Set(this as IEnemyDrone);
+		// EnemyStateMachine.Set(Waypoints);
+		// EnemyStateMachine.Set(DroneMovement);
+		// EnemyStateMachine.Set(new EnemyLogic.Settings(LookoutDuration: 4f, LookoutAngle: 35f));
+		//
+		// EnemyBinding = EnemyStateMachine.Bind();
+		// EnemyBinding
+		// 	.Handle((in EnemyLogic.Output.VelocityChanged output) =>
+		// 		Velocity = output.Velocity)
+		// 	.Handle((in EnemyLogic.Output.RotationRequest output) =>
+		// 		DroneMovement.RotateToTarget(output.TargetRotation, output.Delta));
+			
+		//EnemyStateMachine.Start();
 	}
 
 	public override void _ExitTree()
@@ -64,17 +95,36 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone
 		EnemyBinding.Dispose();
 	}
 
+	public override void _Process(double delta)
+	{
+		var forward = -GlobalTransform.Basis.Z;
+		DebugDraw3D.DrawLine(
+			a: GlobalPosition, 
+			b: GlobalPosition + forward * 1.5f,
+			Colors.DarkRed);
+	}
+
 	public override void _PhysicsProcess(double delta)
 	{
-		EnemyStateMachine.Input(new EnemyLogic.Input.PhysicsTick(delta));
+		//EnemyStateMachine.Input(new EnemyLogic.Input.PhysicsTick((float)delta));
 
-		MoveAndSlide();
-		RotateSmoothly(delta);
+		switch (currentState)
+		{
+			case EnemyState.Idle:
+				ProcessIdle();
+				break;
+			case EnemyState.Patrol:
+				ProcessPatrol((float)delta);
+				break;
+		}
+
+		//MoveAndSlide();
+		//RotateSmoothly(delta);
 	}
 
 	private void ProcessIdle()
 	{
-		state = HasLineOfSight() ? EnemyState.Attacking : EnemyState.Patrol;
+		currentState = HasLineOfSight() ? EnemyState.Attacking : EnemyState.Patrol;
 	}
 
 	private void ProcessPatrol(float deltaTime)
@@ -82,45 +132,158 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone
 		if (HasLineOfSight())
 		{
 			GD.Print("Line of sight discovers player. Engaging...");
-			state = EnemyState.Attacking;
+			currentState = EnemyState.Attacking;
 			return;
 		}
+		
+		if (isOnLookout || movingToWaypoint) 
+			return;
 
-		currentWaypoint ??= GetClosestWaypoint();
 		if (currentWaypoint is null)
 		{
-			GD.PrintErr("Enemy drone cannot get closest waypoint.");
+			currentWaypoint = GetClosestWaypoint();
+			MoveToWaypoint();
 			return;
 		}
 		
-		var distanceToWaypoint = GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition);
-		if (distanceToWaypoint < 0.25f)
+		if (previousWaypoint is null)
 		{
+			// This is the first waypoint we travel to. Immediately travel to next one.
 			var nextWaypoint = GetNextWaypoint();
 			previousWaypoint = currentWaypoint;
-			currentWaypoint = nextWaypoint;
+			currentWaypoint = nextWaypoint;	// TODO: GetNextWaypoint() can return null
+			MoveToWaypoint();
+			return;
 		}
 		
-		var targetPosition = currentWaypoint.GlobalPosition;
-		var direction = targetPosition - GlobalPosition;
-
-		var springForce = direction * SpringStrength;
-		var dampingForce = -Velocity * Damping;
-		//var avoidanceForce = GetAvoidanceForce();
-		var acceleration = springForce + dampingForce;
-		Velocity += acceleration * deltaTime;
-		
-		// Clamp speed
-		if (Velocity.Length() > MaxSpeed)
-			Velocity = Velocity.Normalized() * MaxSpeed;
-
-		MoveAndSlide();
-		RotateSmoothly(deltaTime);
+		InitiateLookout();
 	}
 	
 	// TODO: Make HasLineOfSight its own coroutine and be running while enemy is not Attacking.
 	// When the enemy detects the player, break out of this coroutine and change the state. This will break out of any other coroutines.
 
+	private void MoveToWaypoint()
+	{
+		movingToWaypoint = true;
+		moveToWaypointCoroutine = Timing.RunCoroutine(MoveToWaypointCoroutine().CancelWith(this), Segment.PhysicsProcess);
+	}
+
+	private void StopMovingToWaypoint()
+	{
+		movingToWaypoint = false;
+		Timing.KillCoroutines(moveToWaypointCoroutine);
+	}
+	
+	private IEnumerator<double> MoveToWaypointCoroutine()
+	{
+		while (GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition) > 0.05f)
+		{
+			yield return Timing.WaitForOneFrame;
+
+			var deltaTime = (float)Timing.DeltaTime;
+			var targetPosition = currentWaypoint.GlobalPosition;
+			var direction = targetPosition - GlobalPosition;
+
+			var springForce = direction * SpringStrength;
+			var dampingForce = -Velocity * Damping;
+			//var avoidanceForce = GetAvoidanceForce();
+			var acceleration = springForce + dampingForce;
+			Velocity += acceleration * deltaTime;
+		
+			// Clamp speed
+			if (Velocity.Length() > MaxSpeed)
+				Velocity = Velocity.Normalized() * MaxSpeed;
+
+			MoveAndSlide();
+			RotateSmoothly(deltaTime);
+		}
+
+		movingToWaypoint = false;
+	}
+	
+	private void InitiateLookout()
+	{
+		isOnLookout = true;
+		lookoutCoroutine = Timing.RunCoroutine(LookoutCoroutine().CancelWith(this), Segment.PhysicsProcess);
+	}
+
+	private void InterruptLookout()
+	{
+		isOnLookout = false;
+		Timing.KillCoroutines(lookoutCoroutine);
+	}
+
+	private IEnumerator<double> LookoutCoroutine()
+	{
+		GD.Print("Lookout start at " + Time.GetTicksMsec() / 1000f);
+		var forward = -GlobalTransform.Basis.Z;
+		var directionLeft = forward.Rotated(Vector3.Up, -Mathf.DegToRad(LookoutAngle));
+		var directionRight = forward.Rotated(Vector3.Up, Mathf.DegToRad(LookoutAngle));
+
+		var targetRotationY = Mathf.DegToRad(30);
+		var rotationSpeed = 5f;
+
+		var leftPoint = GlobalPosition + directionLeft * 1.5f;
+		var rightPoint = GlobalPosition + directionRight * 1.5f;
+
+		var dirLeft = GlobalPosition.AngleTo(leftPoint);
+		var dirRight = GlobalPosition.AngleTo(rightPoint);
+		
+		GD.Print($"Left: {directionLeft} , {dirLeft} | Right: {directionRight} , {dirRight}");
+
+		//while (GlobalRotation.Dot(directionLeft) > 0.05f)
+		while (!GlobalRotation.IsEqualApprox(directionLeft))
+		{
+			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
+			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
+			
+			// Slowly rotate towards directionLeft
+			//GlobalRotation = GlobalRotation.MoveToward(directionLeft, (float)Timing.DeltaTime * 2.5f);
+			var currentY = GlobalRotation.Y;
+			var target = Mathf.LerpAngle(currentY, targetRotationY, rotationSpeed * Timing.DeltaTime);
+			GlobalRotation = GlobalRotation with { Y = (float)target };
+			yield return Timing.WaitForOneFrame;
+		}
+		
+		var timeRemaining = LookoutDuration;
+		while (timeRemaining > 0f)
+		{
+			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
+			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
+			
+			timeRemaining -= (float)Timing.DeltaTime;
+			yield return Timing.WaitForOneFrame;
+		}
+
+		while (!GlobalRotation.IsEqualApprox(directionRight))
+		{
+			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
+			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
+			
+			// Slowly rotate towards directionRight
+			GlobalRotation = GlobalRotation.MoveToward(directionRight, (float)Timing.DeltaTime * 2.5f);
+			yield return Timing.WaitForOneFrame;
+		}
+
+		timeRemaining = LookoutDuration;
+		while (timeRemaining > 0f)
+		{
+			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
+			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
+			
+			timeRemaining -= (float)Timing.DeltaTime;
+			yield return Timing.WaitForOneFrame;
+		}
+		
+		GD.Print("Lookout end at " + Time.GetTicksMsec() / 1000f);
+		isOnLookout = false;
+		
+		var nextWaypoint = GetNextWaypoint();
+		previousWaypoint = currentWaypoint;
+		currentWaypoint = nextWaypoint;
+		MoveToWaypoint();
+	}
+	
 	private bool HasLineOfSight()
 	{
 		if (player is null)
