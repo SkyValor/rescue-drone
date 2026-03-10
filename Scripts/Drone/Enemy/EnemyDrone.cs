@@ -99,20 +99,18 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	public override void _PhysicsProcess(double delta)
 	{
-		//EnemyStateMachine.Input(new EnemyLogic.Input.PhysicsTick((float)delta));
-
 		switch (currentState)
 		{
 			case EnemyState.Idle:
 				ProcessIdle();
 				break;
 			case EnemyState.Patrol:
-				ProcessPatrol((float)delta);
+				ProcessPatrol();
+				break;
+			case EnemyState.Attacking:
+				ProcessAttack();
 				break;
 		}
-
-		//MoveAndSlide();
-		//RotateSmoothly(delta);
 	}
 
 	private void ProcessIdle()
@@ -120,11 +118,13 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		currentState = HasLineOfSight() ? EnemyState.Attacking : EnemyState.Patrol;
 	}
 
-	private void ProcessPatrol(float deltaTime)
+	private void ProcessPatrol()
 	{
 		if (HasLineOfSight())
 		{
 			GD.Print("Line of sight discovers player. Engaging...");
+			StopMovingToWaypoint();
+			StopLookout();
 			currentState = EnemyState.Attacking;
 			return;
 		}
@@ -159,6 +159,11 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	{
 		movingToWaypoint = true;
 		moveToWaypointCoroutine = Timing.RunCoroutine(MoveToWaypointCoroutine().CancelWith(this), Segment.PhysicsProcess);
+	}
+
+	private void ProcessAttack()
+	{
+		
 	}
 
 	private void StopMovingToWaypoint()
@@ -200,7 +205,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		lookoutCoroutine = Timing.RunCoroutine(LookoutCoroutine().CancelWith(this), Segment.PhysicsProcess);
 	}
 
-	private void InterruptLookout()
+	private void StopLookout()
 	{
 		isOnLookout = false;
 		Timing.KillCoroutines(lookoutCoroutine);
@@ -233,20 +238,24 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		if (player is null)
 			return false;
 
+		return PlayerInRange() && PlayerInVisionRange() && NoBuildingInBetween();
+	}
+
+	private bool PlayerInRange()
+	{
 		var distanceToPlayer = player.GlobalPosition.DistanceTo(GlobalPosition);
-		if (distanceToPlayer > VisionRange)
-			return false;
+		return distanceToPlayer < VisionRange;
+	}
 
+	private bool PlayerInVisionRange()
+	{
+		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
+		var forward = -GlobalTransform.Basis.Z;
+		return forward.Dot(directionToPlayer) >= 0.8f;
+	}
 
-		var playerVec = (GlobalPosition - player.GlobalPosition).Normalized();
-		var forward = GlobalTransform.Basis.Z;
-		var dot = forward.Dot(playerVec);
-		GD.Print(dot);
-		
-		var angleToPlayer = forward.AngleTo(player.GlobalPosition);
-		if (angleToPlayer > VisionAngle)
-			return false;
-		
+	private bool NoBuildingInBetween()
+	{
 		var spaceState = GetWorld3D().DirectSpaceState;
 		var query = PhysicsRayQueryParameters3D.Create(
 			from: GlobalPosition,
@@ -255,13 +264,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 			exclude: [GetRid()]);
 
 		var result = spaceState.IntersectRay(query);
-		if (result.Count == 0)
-			return false;
-
-		// var collider = result["collider"];
-		// if (collider.Obj is Drone) GD.Print("Player detected");
-		
-		return false;
+		return result.Count == 0;
 	}
 	
 	private Waypoint GetClosestWaypoint()
