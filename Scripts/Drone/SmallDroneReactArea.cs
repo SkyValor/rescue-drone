@@ -33,10 +33,10 @@ public abstract partial class SmallDroneReactArea : Area3D
             countdownToAction.Timeout -= OnCountdownTimeout;
     }
     
-    public override void _Process(double delta)
-    {
-        DebugDraw3D.DrawSphere(GlobalPosition, areaRadius, DebugColor);
-    }
+    // public override void _Process(double delta)
+    // {
+    //     DebugDraw3D.DrawSphere(GlobalPosition, areaRadius, DebugColor);
+    // }
     
     private void OnBodyEntered(Node3D other)
     {

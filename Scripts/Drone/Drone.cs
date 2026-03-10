@@ -61,12 +61,12 @@ public partial class Drone : CharacterBody3D
 	{
 		base._PhysicsProcess(delta);
 		
-		if (CameraTarget is not null)
-			DebugDraw3D.DrawSphere(CameraTarget.GlobalPosition, 0.5f, Colors.BlueViolet);
+		// if (CameraTarget is not null)
+			// DebugDraw3D.DrawSphere(CameraTarget.GlobalPosition, 0.5f, Colors.BlueViolet);
 		
-		var forward = -GlobalTransform.Basis.Z;
-		var forwardPoint = GlobalPosition + forward * 5f;
-		DebugDraw3D.DrawBox(forwardPoint, Quaternion.Identity, Vector3.One, Colors.Red, true);
+		// var forward = -GlobalTransform.Basis.Z;
+		// var forwardPoint = GlobalPosition + forward * 5f;
+		// DebugDraw3D.DrawBox(forwardPoint, Quaternion.Identity, Vector3.One, Colors.Red, true);
 		
 		var deltaTime = (float) delta;
 		Controller?.Tick();

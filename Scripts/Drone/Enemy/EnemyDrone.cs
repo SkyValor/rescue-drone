@@ -44,6 +44,8 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	[ExportGroup("Drone Movement Waypoints")]
 	[Export] private Array<Waypoint> Waypoints { get; set; }
 	[Export] private float VisionRange { get; set; }
+	[Export] private float VisionAngle { get; set; } = 30f;
+	
 	[Export] private int VisionMask { get; set; }
 	[Export] private float LookoutAngle { get; set; } = 45f;
 	[Export] private float LookoutDuration { get; set; }
@@ -93,15 +95,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	{
 		EnemyStateMachine.Stop();
 		EnemyBinding.Dispose();
-	}
-
-	public override void _Process(double delta)
-	{
-		var forward = -GlobalTransform.Basis.Z;
-		DebugDraw3D.DrawLine(
-			a: GlobalPosition, 
-			b: GlobalPosition + forward * 1.5f,
-			Colors.DarkRed);
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -215,73 +208,24 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	private IEnumerator<double> LookoutCoroutine()
 	{
-		GD.Print("Lookout start at " + Time.GetTicksMsec() / 1000f);
-		var forward = -GlobalTransform.Basis.Z;
-		var directionLeft = forward.Rotated(Vector3.Up, -Mathf.DegToRad(LookoutAngle));
-		var directionRight = forward.Rotated(Vector3.Up, Mathf.DegToRad(LookoutAngle));
-
-		var targetRotationY = Mathf.DegToRad(30);
-		var rotationSpeed = 5f;
-
-		var leftPoint = GlobalPosition + directionLeft * 1.5f;
-		var rightPoint = GlobalPosition + directionRight * 1.5f;
-
-		var dirLeft = GlobalPosition.AngleTo(leftPoint);
-		var dirRight = GlobalPosition.AngleTo(rightPoint);
+		const double tweenDuration = 1.0;
+		var initialY = GlobalRotationDegrees.Y;
+		var targetRotation = GlobalRotationDegrees with { Y = initialY + LookoutAngle };
 		
-		GD.Print($"Left: {directionLeft} , {dirLeft} | Right: {directionRight} , {dirRight}");
+		// Rotate smoothly to the left and wait
+		var rotationTween = CreateTween();
+		rotationTween.TweenProperty(this, "rotation_degrees", targetRotation, tweenDuration);
+		rotationTween.Play();
+		yield return Timing.WaitForSeconds(tweenDuration + LookoutDuration);
 
-		//while (GlobalRotation.Dot(directionLeft) > 0.05f)
-		while (!GlobalRotation.IsEqualApprox(directionLeft))
-		{
-			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
-			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
-			
-			// Slowly rotate towards directionLeft
-			//GlobalRotation = GlobalRotation.MoveToward(directionLeft, (float)Timing.DeltaTime * 2.5f);
-			var currentY = GlobalRotation.Y;
-			var target = Mathf.LerpAngle(currentY, targetRotationY, rotationSpeed * Timing.DeltaTime);
-			GlobalRotation = GlobalRotation with { Y = (float)target };
-			yield return Timing.WaitForOneFrame;
-		}
-		
-		var timeRemaining = LookoutDuration;
-		while (timeRemaining > 0f)
-		{
-			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
-			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
-			
-			timeRemaining -= (float)Timing.DeltaTime;
-			yield return Timing.WaitForOneFrame;
-		}
+		// Rotate smoothly to the right and wait
+		targetRotation = GlobalRotationDegrees with { Y = initialY - LookoutAngle };
+		rotationTween = CreateTween();
+		rotationTween.TweenProperty(this, "rotation_degrees", targetRotation, tweenDuration * 2f);
+		yield return Timing.WaitForSeconds(tweenDuration * 2f + LookoutDuration);
 
-		while (!GlobalRotation.IsEqualApprox(directionRight))
-		{
-			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
-			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
-			
-			// Slowly rotate towards directionRight
-			GlobalRotation = GlobalRotation.MoveToward(directionRight, (float)Timing.DeltaTime * 2.5f);
-			yield return Timing.WaitForOneFrame;
-		}
-
-		timeRemaining = LookoutDuration;
-		while (timeRemaining > 0f)
-		{
-			DebugDraw3D.DrawLine(GlobalPosition, leftPoint, Colors.GreenYellow);
-			DebugDraw3D.DrawLine(GlobalPosition, rightPoint, Colors.GreenYellow);
-			
-			timeRemaining -= (float)Timing.DeltaTime;
-			yield return Timing.WaitForOneFrame;
-		}
-		
-		GD.Print("Lookout end at " + Time.GetTicksMsec() / 1000f);
 		isOnLookout = false;
-		
-		var nextWaypoint = GetNextWaypoint();
-		previousWaypoint = currentWaypoint;
-		currentWaypoint = nextWaypoint;
-		MoveToWaypoint();
+		GoToNextWaypoint();
 	}
 	
 	private bool HasLineOfSight()
@@ -289,10 +233,20 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		if (player is null)
 			return false;
 
-		var toPlayer = player.GlobalPosition - GlobalPosition;
-		if (toPlayer.Length() > VisionRange)
+		var distanceToPlayer = player.GlobalPosition.DistanceTo(GlobalPosition);
+		if (distanceToPlayer > VisionRange)
 			return false;
 
+
+		var playerVec = (GlobalPosition - player.GlobalPosition).Normalized();
+		var forward = GlobalTransform.Basis.Z;
+		var dot = forward.Dot(playerVec);
+		GD.Print(dot);
+		
+		var angleToPlayer = forward.AngleTo(player.GlobalPosition);
+		if (angleToPlayer > VisionAngle)
+			return false;
+		
 		var spaceState = GetWorld3D().DirectSpaceState;
 		var query = PhysicsRayQueryParameters3D.Create(
 			from: GlobalPosition,
@@ -304,8 +258,9 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		if (result.Count == 0)
 			return false;
 
-		var collider = result["collider"];
-		GD.Print("What is collider...");
+		// var collider = result["collider"];
+		// if (collider.Obj is Drone) GD.Print("Player detected");
+		
 		return false;
 	}
 	
@@ -324,6 +279,14 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		}
 			
 		return closestWaypoint;
+	}
+
+	private void GoToNextWaypoint()
+	{
+		var nextWaypoint = GetNextWaypoint();
+		previousWaypoint = currentWaypoint;
+		currentWaypoint = nextWaypoint;
+		MoveToWaypoint();
 	}
 	
 	private Waypoint GetNextWaypoint()

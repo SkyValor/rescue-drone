@@ -149,8 +149,9 @@ SpringStrength = 8.0
 Damping = 6.0
 MaxSpeed = 2.0
 Waypoints = [NodePath("../Waypoints/Waypoint"), NodePath("../Waypoints/Waypoint2"), NodePath("../Waypoints/Waypoint3"), NodePath("../Waypoints/Waypoint4")]
+VisionRange = 5.0
 VisionMask = 1
-LookoutDuration = 2.5
+LookoutDuration = 2.0
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1763783081]
 unique_name_in_owner = true
