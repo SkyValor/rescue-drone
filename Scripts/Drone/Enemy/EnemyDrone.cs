@@ -10,7 +10,7 @@ using MEC;
 
 public interface IEnemyDrone : ICharacterBody3D
 {
-	DroneMovementByDirection DroneMovement { get; set; }
+	DroneMovementByPosition DroneMovement { get; set; }
 }
 
 [Meta(typeof(IAutoConnect), typeof(IProvider))]
@@ -25,8 +25,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		Attacking,
 		Searching
 	}
-	
-	private enum LookoutDirection { Left, Right }
 	
 	#region Exports
 
@@ -52,7 +50,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	#endregion
 	
-	[Node] public DroneMovementByDirection DroneMovement { get; set; }
+	[Node] public DroneMovementByPosition DroneMovement { get; set; }
 
 	EnemyDrone IProvide<EnemyDrone>.Value() => this;
 
@@ -67,8 +65,11 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	private bool isOnLookout;
 	private bool movingToWaypoint;
+	private bool isAttacking;
+	
 	private CoroutineHandle lookoutCoroutine;
 	private CoroutineHandle moveToWaypointCoroutine;
+	private CoroutineHandle attackCoroutine;
 	
 	public override void _Ready()
 	{
@@ -112,11 +113,17 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 				break;
 		}
 	}
+	
+	#region Idle state
 
 	private void ProcessIdle()
 	{
 		currentState = HasLineOfSight() ? EnemyState.Attacking : EnemyState.Patrol;
 	}
+	
+	#endregion
+
+	#region Patrol state
 
 	private void ProcessPatrol()
 	{
@@ -160,12 +167,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		movingToWaypoint = true;
 		moveToWaypointCoroutine = Timing.RunCoroutine(MoveToWaypointCoroutine().CancelWith(this), Segment.PhysicsProcess);
 	}
-
-	private void ProcessAttack()
-	{
-		
-	}
-
+	
 	private void StopMovingToWaypoint()
 	{
 		movingToWaypoint = false;
@@ -176,24 +178,8 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	{
 		while (GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition) > 0.05f)
 		{
+			DroneMovement.MoveTo(currentWaypoint.GlobalPosition, (float) Timing.DeltaTime);
 			yield return Timing.WaitForOneFrame;
-
-			var deltaTime = (float)Timing.DeltaTime;
-			var targetPosition = currentWaypoint.GlobalPosition;
-			var direction = targetPosition - GlobalPosition;
-
-			var springForce = direction * SpringStrength;
-			var dampingForce = -Velocity * Damping;
-			//var avoidanceForce = GetAvoidanceForce();
-			var acceleration = springForce + dampingForce;
-			Velocity += acceleration * deltaTime;
-		
-			// Clamp speed
-			if (Velocity.Length() > MaxSpeed)
-				Velocity = Velocity.Normalized() * MaxSpeed;
-
-			MoveAndSlide();
-			RotateSmoothly(deltaTime);
 		}
 
 		movingToWaypoint = false;
@@ -233,38 +219,12 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		GoToNextWaypoint();
 	}
 	
-	private bool HasLineOfSight()
+	private void GoToNextWaypoint()
 	{
-		if (player is null)
-			return false;
-
-		return PlayerInRange() && PlayerInVisionRange() && NoBuildingInBetween();
-	}
-
-	private bool PlayerInRange()
-	{
-		var distanceToPlayer = player.GlobalPosition.DistanceTo(GlobalPosition);
-		return distanceToPlayer < VisionRange;
-	}
-
-	private bool PlayerInVisionRange()
-	{
-		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
-		var forward = -GlobalTransform.Basis.Z;
-		return forward.Dot(directionToPlayer) >= 0.8f;
-	}
-
-	private bool NoBuildingInBetween()
-	{
-		var spaceState = GetWorld3D().DirectSpaceState;
-		var query = PhysicsRayQueryParameters3D.Create(
-			from: GlobalPosition,
-			to: player.GlobalPosition, 
-			collisionMask: (uint) VisionMask,
-			exclude: [GetRid()]);
-
-		var result = spaceState.IntersectRay(query);
-		return result.Count == 0;
+		var nextWaypoint = GetNextWaypoint();
+		previousWaypoint = currentWaypoint;
+		currentWaypoint = nextWaypoint;
+		MoveToWaypoint();
 	}
 	
 	private Waypoint GetClosestWaypoint()
@@ -283,14 +243,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 			
 		return closestWaypoint;
 	}
-
-	private void GoToNextWaypoint()
-	{
-		var nextWaypoint = GetNextWaypoint();
-		previousWaypoint = currentWaypoint;
-		currentWaypoint = nextWaypoint;
-		MoveToWaypoint();
-	}
 	
 	private Waypoint GetNextWaypoint()
 	{
@@ -300,20 +252,67 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 		return connections.Count == 0 ? previousWaypoint : connections.PickRandom();
 	}
+	
+	#endregion
 
-	private void RotateSmoothly(double deltaTime)
+	#region Attack state
+	
+	private void ProcessAttack()
 	{
-		if (Velocity.Length() < 0.05f)
-			return;
+		if (HasLineOfSight())
+		{
+			lastKnownPlayerPosition = player.GlobalPosition;
+		}
+	}
 
-		var forward = Velocity.Normalized() with { Y = 0f };
-		var targetBasis = Basis.LookingAt(forward, Vector3.Up);
-		targetBasis = targetBasis.Rotated(Vector3.Right, -Velocity.Z * 0.02f);
-		targetBasis = targetBasis.Rotated(Vector3.Forward, Velocity.X * 0.02f);
-		
-		GlobalTransform = new Transform3D(
-			GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * (float)deltaTime),
-			GlobalPosition);
+	private IEnumerator<double> AttackCoroutine()
+	{
+		while (currentState is EnemyState.Attacking)
+		{
+			yield return Timing.WaitForOneFrame;
+
+			if (HasLineOfSight())
+			{
+				lastKnownPlayerPosition = player.GlobalPosition;
+				
+			}
+		}
+	}
+	
+	#endregion
+	
+	private bool HasLineOfSight()
+	{
+		if (player is null)
+			return false;
+
+		return PlayerInRange() && PlayerInVisionRange() && NoBuildingInBetween();
+	}
+
+	private bool PlayerInRange()
+	{
+		var distanceToPlayer = player.GlobalPosition.DistanceTo(GlobalPosition);
+		return distanceToPlayer < VisionRange;
+	}
+
+	private bool PlayerInVisionRange()
+	{
+		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
+		var forward = -GlobalTransform.Basis.Z;
+		return forward.AngleTo(directionToPlayer) < 0.2f;
+	}
+
+	private bool NoBuildingInBetween()
+	{
+		var spaceState = GetWorld3D().DirectSpaceState;
+		var query = PhysicsRayQueryParameters3D.Create(
+			from: GlobalPosition,
+			to: player.GlobalPosition, 
+			collisionMask: (uint) VisionMask,
+			exclude: [GetRid()]);
+
+		var result = spaceState.IntersectRay(query);
+		return result.Count == 0;
 	}
 	
 }

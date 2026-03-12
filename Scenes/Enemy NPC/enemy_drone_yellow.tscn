@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dt770q1kpfpdw" path="res://Scripts/Drone/Enemy/EnemyDrone.cs" id="1_lutf3"]
 [ext_resource type="PackedScene" uid="uid://dvic66dcoda8y" path="res://Assets/drone_yellow/scene.gltf" id="2_47bv1"]
-[ext_resource type="Script" uid="uid://ddrvtcpvtd8bx" path="res://Scripts/Drone/DroneMovementByDirection.cs" id="3_47bv1"]
+[ext_resource type="Script" uid="uid://dfw7wsppby1v7" path="res://Scripts/Drone/DroneMovementByPosition.cs" id="3_47bv1"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lutf3"]
 size = Vector3(0.94506836, 0.7248535, 0.74121094)

@@ -32,7 +32,7 @@ public partial class EnemyLogic
                             }
                             
                             GD.Print("First waypoint: " + currentWaypoint.GlobalPosition);
-                            droneMovement.SeekTarget(currentWaypoint);
+                            // droneMovement.SeekTarget(currentWaypoint);
                             return;
                         }
                         
@@ -40,7 +40,7 @@ public partial class EnemyLogic
                         var nextWaypoint = GetNextWaypoint(); // TODO: Can return null
                         previousWaypoint = currentWaypoint;
                         currentWaypoint = nextWaypoint;
-                        droneMovement.SeekTarget(currentWaypoint);
+                        // droneMovement.SeekTarget(currentWaypoint);
                     });
                 }
                 
