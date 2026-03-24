@@ -53,6 +53,11 @@ public partial class DroneMovementByPosition : Node3D
         RotateSmoothly(deltaTime);
     }
 
+    public void RotateBy(float angle)
+    {
+        
+    }
+
     private void RotateSmoothly(float deltaTime)
     {
         var velocity = Drone.Velocity;

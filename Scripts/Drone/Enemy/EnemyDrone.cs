@@ -29,9 +29,10 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	#region Exports
 
 	[ExportGroup("Drone Movement Stats")]
-	[Export] private float SpringStrength { get; set; } = 12f;		// How strongly it pulls
-	[Export] private float Damping { get; set; } = 8f;				// How much it resists oscillation
-	[Export] private float MaxSpeed { get; set; } = 10f;			// Clamp top speed
+	[Export] private float SpringStrength { get; set; } = 12f;
+	[Export] private float Damping { get; set; } = 8f;
+	[Export] private float MaxSpeed { get; set; } = 10f;
+	[Export] private float PlayerMinDistance { get; set; } = 3f;	
 
 	[Export] private float OscillationMagnitude { get; set; } = 0.05f;
 	[Export] private float OscillationHeight { get; set; } = 0.5f;
@@ -42,7 +43,8 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	[ExportGroup("Drone Movement Waypoints")]
 	[Export] private Array<Waypoint> Waypoints { get; set; }
 	[Export] private float VisionRange { get; set; }
-	[Export] private float VisionAngle { get; set; } = 30f;
+	[Export] private float VisionAngle { get; set; } = 60f;
+	[Export] private float VisionAngleToAttack { get; set; } = 20f;
 	
 	[Export] private int VisionMask { get; set; }
 	[Export] private float LookoutAngle { get; set; } = 45f;
@@ -51,6 +53,8 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	#endregion
 	
 	[Node] public DroneMovementByPosition DroneMovement { get; set; }
+	[Node] public EnemyWeapon WeaponComponent { get; set; }
+	[Node] public CollisionShape3D VisionCollision { get; set; }
 
 	EnemyDrone IProvide<EnemyDrone>.Value() => this;
 
@@ -76,20 +80,20 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		// EnemyStateMachine = new EnemyLogic();
 		player = GetTree().GetNodesInGroup("player")[0] as Drone;
 		this.Provide();
+		
+		//  EnemyStateMachine.Set(this as IEnemyDrone);
+		//  EnemyStateMachine.Set(Waypoints);
+		//  EnemyStateMachine.Set(DroneMovement);
+		//  EnemyStateMachine.Set(new EnemyLogic.Settings(LookoutDuration: 4f, LookoutAngle: 35f));
 		//
-		// EnemyStateMachine.Set(this as IEnemyDrone);
-		// EnemyStateMachine.Set(Waypoints);
-		// EnemyStateMachine.Set(DroneMovement);
-		// EnemyStateMachine.Set(new EnemyLogic.Settings(LookoutDuration: 4f, LookoutAngle: 35f));
-		//
-		// EnemyBinding = EnemyStateMachine.Bind();
-		// EnemyBinding
-		// 	.Handle((in EnemyLogic.Output.VelocityChanged output) =>
-		// 		Velocity = output.Velocity)
-		// 	.Handle((in EnemyLogic.Output.RotationRequest output) =>
-		// 		DroneMovement.RotateToTarget(output.TargetRotation, output.Delta));
-			
-		//EnemyStateMachine.Start();
+		//  EnemyBinding = EnemyStateMachine.Bind();
+		//  EnemyBinding
+		//  	.Handle((in EnemyLogic.Output.VelocityChanged output) =>
+		//  		Velocity = output.Velocity)
+		//  	.Handle((in EnemyLogic.Output.RotationRequest output) =>
+		//  		DroneMovement.RotateToTarget(output.TargetRotation, output.Delta));
+		// 	
+		// EnemyStateMachine.Start();
 	}
 
 	public override void _ExitTree()
@@ -132,6 +136,11 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 			GD.Print("Line of sight discovers player. Engaging...");
 			StopMovingToWaypoint();
 			StopLookout();
+			
+			// Cleanup state
+			currentWaypoint = null;
+			previousWaypoint = null;
+			
 			currentState = EnemyState.Attacking;
 			return;
 		}
@@ -262,6 +271,35 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		if (HasLineOfSight())
 		{
 			lastKnownPlayerPosition = player.GlobalPosition;
+
+			// var velocity = new Vector3();
+			// var selfHorizontalPosition = GlobalPosition with { Y = 0f };
+			// var playerHorizontalPosition = player.GlobalPosition with { Y = 0f };
+
+			// if (selfHorizontalPosition.DistanceTo(playerHorizontalPosition) >= PlayerMinDistance)
+			// {
+			// 	var direction = player.GlobalPosition - GlobalPosition;
+			// 	velocity += direction.Normalized() * 
+			// }
+			
+			if (GlobalPosition.DistanceTo(lastKnownPlayerPosition) >= PlayerMinDistance)
+				DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
+
+			// if (PlayerInVisionRange(VisionAngleToAttack))
+			// {
+			// 	// Shoot the player
+			// 	GD.Print("Shooting");
+			// 	WeaponComponent.TryShooting();
+			// }
+		}
+		else if (GlobalPosition.DistanceTo(lastKnownPlayerPosition) > 2f)
+		{
+			DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
+		}
+		else
+		{
+			GD.Print("Lost sight of player. Going back to patrol state.");
+			currentState = EnemyState.Patrol;
 		}
 	}
 
@@ -274,7 +312,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 			if (HasLineOfSight())
 			{
 				lastKnownPlayerPosition = player.GlobalPosition;
-				
+				DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
 			}
 		}
 	}
@@ -286,7 +324,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		if (player is null)
 			return false;
 
-		return PlayerInRange() && PlayerInVisionRange() && NoBuildingInBetween();
+		return PlayerInRange() && PlayerInVisionRange(VisionAngle) && NoBuildingInBetween();
 	}
 
 	private bool PlayerInRange()
@@ -295,11 +333,12 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		return distanceToPlayer < VisionRange;
 	}
 
-	private bool PlayerInVisionRange()
+	private bool PlayerInVisionRange(float visionRange)
 	{
 		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
-		var forward = -GlobalTransform.Basis.Z;
-		return forward.AngleTo(directionToPlayer) < 0.2f;
+		var forwardHorizontal = -GlobalTransform.Basis.Z with { Y = 0f };
+		var angle = Mathf.RadToDeg(forwardHorizontal.AngleTo(directionToPlayer));
+		return angle < visionRange / 2f;
 	}
 
 	private bool NoBuildingInBetween()
