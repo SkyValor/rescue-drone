@@ -1,13 +1,21 @@
 [gd_scene format=3 uid="uid://bxituc32a3gm4"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_j3it6"]
+[ext_resource type="Script" uid="uid://mflyr6s5stw7" path="res://Scripts/Drone/Enemy/EnemyBullet.cs" id="1_peouh"]
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_peouh"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_j3it6"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_peouh"]
+radial_segments = 8
+rings = 8
 
 [node name="Bullet" type="RigidBody3D" unique_id=1667457555]
+collision_layer = 256
+gravity_scale = 0.0
+script = ExtResource("1_peouh")
+Speed = 3.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=881635569]
-shape = SubResource("CapsuleShape3D_j3it6")
+shape = SubResource("SphereShape3D_j3it6")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=101904914]
-mesh = SubResource("CapsuleMesh_peouh")
+mesh = SubResource("SphereMesh_peouh")

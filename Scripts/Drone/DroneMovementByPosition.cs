@@ -38,9 +38,34 @@ public partial class DroneMovementByPosition : Node3D
         RotateSmoothly(deltaTime);
     }
 
-    public void MoveTo(Vector3 targetPosition, float deltaTime)
+    public void MoveTo(Vector3 targetPosition, double deltaTime)
     {
+        var delta = (float) deltaTime;
         var direction = targetPosition - GlobalPosition;
+        var springForce = direction * SpringStrength;
+        var dampingForce = -Drone.Velocity * Damping;
+        var acceleration = springForce + dampingForce;
+        Drone.Velocity += acceleration * delta;
+        
+        if (Drone.Velocity.Length() > MaxSpeed)
+            Drone.Velocity = Drone.Velocity.Normalized() * MaxSpeed;
+        
+        Drone.MoveAndSlide();
+        RotateSmoothly(delta);
+    }
+
+    public void MoveTowards(Node3D target, double deltaTime)
+    {
+        MoveBy(direction: target.GlobalPosition - GlobalPosition, (float) deltaTime);
+    }
+
+    public void MoveAwayFrom(Node3D target, double deltaTime)
+    {
+        MoveBy(direction: GlobalPosition - target.GlobalPosition, (float) deltaTime);
+    }
+    
+    public void MoveBy(Vector3 direction, float deltaTime)
+    {
         var springForce = direction * SpringStrength;
         var dampingForce = -Drone.Velocity * Damping;
         var acceleration = springForce + dampingForce;
@@ -50,15 +75,32 @@ public partial class DroneMovementByPosition : Node3D
             Drone.Velocity = Drone.Velocity.Normalized() * MaxSpeed;
         
         Drone.MoveAndSlide();
-        RotateSmoothly(deltaTime);
+        // RotateSmoothly(deltaTime);
     }
 
-    public void RotateBy(float angle)
+    public void RotateBy()
     {
         
     }
 
-    private void RotateSmoothly(float deltaTime)
+    public void LookAt(Node3D target, float deltaTime)
+    {
+        var forwardDirection = -GlobalTransform.Basis.Z;
+        var targetDirection = target.GlobalPosition - GlobalPosition;
+
+        var rotatedDirection = forwardDirection.MoveToward(targetDirection, 2f * deltaTime);
+
+        var myBasis = Basis.Identity;
+        
+        // var targetBasis = Basis.Rotated(Vector3.Up, );
+        //     
+        // Basis.LookingAt(targetDirection, Vector3.Up);
+        //
+        // Drone.GlobalTransform = new Transform3D(
+        //     Drone.Basis.Orthonormalized().Slerp())
+    }
+
+    private void RotateSmoothly(float delta)
     {
         var velocity = Drone.Velocity;
         if (velocity.Length() < 0.05f)
@@ -70,7 +112,7 @@ public partial class DroneMovementByPosition : Node3D
         targetBasis = targetBasis.Rotated(Vector3.Forward, velocity.X * 0.02f);
 
         Drone.GlobalTransform = new Transform3D(
-            Drone.GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * deltaTime),
+            Drone.GlobalTransform.Basis.Orthonormalized().Slerp(targetBasis, 3f * delta),
             GlobalPosition);
     }
     

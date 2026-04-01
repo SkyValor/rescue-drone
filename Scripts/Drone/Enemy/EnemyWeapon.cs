@@ -11,6 +11,7 @@ public partial class EnemyWeapon : Node3D
     
     [Export] public PackedScene BulletPrefab { get; set; }
     [Export] public float WeaponCooldown { get; set; }
+    [Node] private Node3D BulletSpawnPoint { get; set; }
 
     private Timer timer;
     private bool weaponLoaded;
@@ -34,13 +35,15 @@ public partial class EnemyWeapon : Node3D
             timer.Timeout -= OnCooldownFinished;
     }
 
-    public void TryShooting()
+    public void TryShooting(Vector3 targetPoint)
     {
         if (!weaponLoaded)
             return;
-        
-        // TODO: Instantiate the bullet and point it towards target
-        
+
+        GD.Print("Enemy drone shooting!");
+        var bullet = BulletPrefab.Instantiate<EnemyBullet>();
+        GetTree().Root.AddChild(bullet);
+        bullet.LookAt(targetPoint, Vector3.Up);
         OnWeaponFired();
     }
 

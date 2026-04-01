@@ -13,7 +13,7 @@ public interface IEnemyDrone : ICharacterBody3D
 	DroneMovementByPosition DroneMovement { get; set; }
 }
 
-[Meta(typeof(IAutoConnect), typeof(IProvider))]
+[Meta(typeof(IAutoNode), typeof(IProvider))]
 public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDrone>
 {
 	public override void _Notification(int what) => this.Notify(what);
@@ -27,7 +27,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	}
 	
 	#region Exports
-
 	[ExportGroup("Drone Movement Stats")]
 	[Export] private float SpringStrength { get; set; } = 12f;
 	[Export] private float Damping { get; set; } = 8f;
@@ -46,38 +45,51 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	[Export] private float VisionAngle { get; set; } = 60f;
 	[Export] private float VisionAngleToAttack { get; set; } = 20f;
 	
-	[Export] private int VisionMask { get; set; }
+	[Export] private int VisionMaskEnvironment { get; set; }
 	[Export] private float LookoutAngle { get; set; } = 45f;
 	[Export] private float LookoutDuration { get; set; }
 
+	[ExportGroup("Attack State")] 
+	[Export] private float AttackDistance { get; set; } = 2.5f;
 	#endregion
 	
+	#region Nodes
 	[Node] public DroneMovementByPosition DroneMovement { get; set; }
 	[Node] public EnemyWeapon WeaponComponent { get; set; }
-	[Node] public CollisionShape3D VisionCollision { get; set; }
+	[Node] public Area3D VisionArea { get; private set; }
+	[Node] public Timer VisionTimer { get; private set; }
+	[Node] public RayCast3D VisionRaycast { get; private set; }
+	[Node] private MeshInstance3D MeshInstance3D { get; set; }
+	#endregion
 
 	EnemyDrone IProvide<EnemyDrone>.Value() => this;
 
-	private EnemyLogic EnemyStateMachine { get; set; }
+	#region State Machine
+	public EnemyLogic EnemyStateMachine { get; set; }
 	private EnemyLogic.IBinding EnemyBinding { get; set; }
-
+	#endregion
+	
 	private EnemyState currentState = EnemyState.Idle;
 	private Waypoint currentWaypoint;
 	private Waypoint previousWaypoint;
 	private Drone player;
 	private Vector3 lastKnownPlayerPosition;
+	private bool playerOnSight;
 
 	private bool isOnLookout;
 	private bool movingToWaypoint;
 	private bool isAttacking;
+
+	private bool closingDistanceToPlayer;
 	
 	private CoroutineHandle lookoutCoroutine;
 	private CoroutineHandle moveToWaypointCoroutine;
 	private CoroutineHandle attackCoroutine;
-	
-	public override void _Ready()
+
+	public void OnReady()
 	{
 		// EnemyStateMachine = new EnemyLogic();
+
 		player = GetTree().GetNodesInGroup("player")[0] as Drone;
 		this.Provide();
 		
@@ -96,28 +108,56 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		// EnemyStateMachine.Start();
 	}
 
+	public void OnEnterTree()
+	{
+		// VisionTimer.Timeout += OnVisionTimeout_LookForPlayer;
+	}
+
 	public override void _ExitTree()
 	{
-		EnemyStateMachine.Stop();
-		EnemyBinding.Dispose();
+		if (VisionTimer is not null)
+			VisionTimer.Timeout -= OnVisionTimeout_LookForPlayer;
+		
+		// EnemyStateMachine.Stop();
+		// EnemyBinding.Dispose();
+	}
+
+	public override void _Process(double delta)
+	{
+		var debugColor = playerOnSight ? Colors.Green : Colors.Brown;
+		DebugDraw3D.DrawLine(GlobalPosition, lastKnownPlayerPosition, debugColor);
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
-		switch (currentState)
+		var forward = -Basis.Z;
+		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
+		if (Mathf.RadToDeg(directionToPlayer.AngleTo(forward)) <= 90f / 2 && BuildingRayCastClear())
 		{
-			case EnemyState.Idle:
-				ProcessIdle();
-				break;
-			case EnemyState.Patrol:
-				ProcessPatrol();
-				break;
-			case EnemyState.Attacking:
-				ProcessAttack();
-				break;
+			playerOnSight = true;
+			lastKnownPlayerPosition = player.GlobalPosition;
 		}
+		else
+		{
+			playerOnSight = false;
+		}
+		
+		LookAtPlayerKnownPosition(delta);
+		
+		// switch (currentState)
+		// {
+		// 	case EnemyState.Idle:
+		// 		ProcessIdle();
+		// 		break;
+		// 	case EnemyState.Patrol:
+		// 		ProcessPatrol();
+		// 		break;
+		// 	case EnemyState.Attacking:
+		// 		ProcessAttack(delta);
+		// 		break;
+		// }
 	}
-	
+
 	#region Idle state
 
 	private void ProcessIdle()
@@ -266,41 +306,74 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	#region Attack state
 	
-	private void ProcessAttack()
+	private void ProcessAttack(double delta)
 	{
 		if (HasLineOfSight())
 		{
-			lastKnownPlayerPosition = player.GlobalPosition;
-
-			// var velocity = new Vector3();
-			// var selfHorizontalPosition = GlobalPosition with { Y = 0f };
-			// var playerHorizontalPosition = player.GlobalPosition with { Y = 0f };
-
-			// if (selfHorizontalPosition.DistanceTo(playerHorizontalPosition) >= PlayerMinDistance)
-			// {
-			// 	var direction = player.GlobalPosition - GlobalPosition;
-			// 	velocity += direction.Normalized() * 
-			// }
-			
-			if (GlobalPosition.DistanceTo(lastKnownPlayerPosition) >= PlayerMinDistance)
-				DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
-
-			// if (PlayerInVisionRange(VisionAngleToAttack))
-			// {
-			// 	// Shoot the player
-			// 	GD.Print("Shooting");
-			// 	WeaponComponent.TryShooting();
-			// }
+			AttackOnSight(delta);
 		}
 		else if (GlobalPosition.DistanceTo(lastKnownPlayerPosition) > 2f)
 		{
-			DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
+			DroneMovement.MoveTo(lastKnownPlayerPosition, delta);
 		}
 		else
 		{
 			GD.Print("Lost sight of player. Going back to patrol state.");
 			currentState = EnemyState.Patrol;
 		}
+	}
+
+	private void AttackOnSight(double delta)
+	{
+		var playerPosition = player.GlobalPosition;
+		LookAtPlayerKnownPosition(delta);
+
+		var currentDistance = GlobalPosition.DistanceTo(playerPosition);
+		if (currentDistance > AttackDistance)
+		{
+			DroneMovement.MoveTowards(player, delta);
+		}
+		else if (currentDistance < PlayerMinDistance)
+		{
+			DroneMovement.MoveAwayFrom(player, delta);
+		}
+		
+		// Check if enemy is looking at player.
+		var directionToPlayer = (playerPosition - GlobalPosition).Normalized();
+		var forwardDirection = -GlobalTransform.Basis.Z with { Y = 0f };
+		var angle = Mathf.RadToDeg(forwardDirection.AngleTo(directionToPlayer));
+		GD.Print("Angle is " + angle);
+		if (angle < 30f / 2)
+		{
+			// Enemy is looking at player.
+			WeaponComponent.TryShooting(playerPosition);
+		}
+		
+		lastKnownPlayerPosition = playerPosition;
+		
+		// if (GlobalPosition.DistanceTo(playerPosition) < AttackDistance - 1f)
+		// {
+		// 	// Drone is too close to player, move back
+		// 	DroneMovement.MoveTowards(player, delta);
+		// }
+		// else
+		// {
+		// 	// Drone is too far from player, move forward
+		// 	DroneMovement.MoveAwayFrom(player, delta);
+		// }
+		
+		
+		
+		
+		// if (GlobalPosition.DistanceTo(lastKnownPlayerPosition) >= PlayerMinDistance)
+		// DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
+
+		// if (PlayerInVisionRange(VisionAngleToAttack))
+		// {
+		// 	// Shoot the player
+		// 	GD.Print("Shooting");
+		// 	WeaponComponent.TryShooting();
+		// }
 	}
 
 	private IEnumerator<double> AttackCoroutine()
@@ -318,6 +391,59 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	}
 	
 	#endregion
+	
+	private void LookAtPlayerKnownPosition(double delta)
+	{
+		var directionToPlayer = GlobalPosition.DirectionTo(lastKnownPlayerPosition);
+		var rotation = Rotation;
+		rotation.Y = (float) Mathf.LerpAngle(rotation.Y, Mathf.Atan2(-directionToPlayer.X, -directionToPlayer.Z), delta * 2f);
+		Rotation = rotation;
+	}
+
+	private void OnVisionTimeout_LookForPlayer()
+	{
+		var overlaps = VisionArea.GetOverlappingBodies();
+		if (overlaps.Count == 0)
+		{
+			playerOnSight = false;
+			return;
+		}
+
+		var spaceState = GetWorld3D().DirectSpaceState;
+		var origin = GlobalPosition;
+		var end = player.GlobalPosition;
+		var query = PhysicsRayQueryParameters3D.Create(origin, end, 1);
+		var result = spaceState.IntersectRay(query);
+
+		if (result["collider"].As<Drone>() == player)
+		{
+			playerOnSight = true;
+			lastKnownPlayerPosition = player.GlobalPosition;
+		}
+		else
+		{
+			playerOnSight = false;
+		}
+
+		// foreach (var overlap in overlaps)
+		// {
+		// 	var overlapPosition = overlap.GlobalPosition;
+		// 	VisionRaycast.LookAt(overlapPosition, Vector3.Up);
+		// 	VisionRaycast.ForceRaycastUpdate();
+		// 	if (!VisionRaycast.IsColliding() || VisionRaycast.GetCollider() is not CharacterBody3D collider)
+		// 		return;
+		// 	
+		// 	if (collider.Name.Equals("PlayerDrone"))
+		// 	{
+		// 		lastKnownPlayerPosition = overlapPosition;
+		// 		playerOnSight = true;
+		// 	}
+		// 	else
+		// 	{
+		// 		playerOnSight = false;
+		// 	}
+		// }
+	}
 	
 	private bool HasLineOfSight()
 	{
@@ -341,13 +467,30 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		return angle < visionRange / 2f;
 	}
 
+	private bool BuildingRayCastClear()
+	{
+		VisionRaycast.LookAt(player.GlobalPosition, Vector3.Up);
+		VisionRaycast.ForceRaycastUpdate();
+
+		if (VisionRaycast.IsColliding())
+		{
+			var collider = VisionRaycast.GetCollider();
+			if (collider is Node node)
+				GD.Print(node.Name);
+
+			return false;
+		}
+
+		return true;
+	}
+
 	private bool NoBuildingInBetween()
 	{
 		var spaceState = GetWorld3D().DirectSpaceState;
 		var query = PhysicsRayQueryParameters3D.Create(
 			from: GlobalPosition,
-			to: player.GlobalPosition, 
-			collisionMask: (uint) VisionMask,
+			to: lastKnownPlayerPosition, 
+			collisionMask: 4,
 			exclude: [GetRid()]);
 
 		var result = spaceState.IntersectRay(query);

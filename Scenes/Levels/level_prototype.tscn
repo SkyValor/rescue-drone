@@ -19,11 +19,18 @@
 albedo_texture = ExtResource("4_dck2r")
 uv1_triplanar = true
 
+[sub_resource type="BoxMesh" id="BoxMesh_3ktn8"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3ktn8"]
+size = Vector3(3.5592957, 19.123459, 4.378113)
+
 [node name="LevelPrototype" type="Node3D" unique_id=776801642]
 
 [node name="World" type="CSGCombiner3D" parent="." unique_id=789329366]
+visible = false
 use_collision = true
-collision_layer = 8
+collision_layer = 0
+collision_mask = 0
 
 [node name="Floor" type="CSGMesh3D" parent="World" unique_id=735207990]
 transform = Transform3D(1000, 0, 0, 0, 1, 0, 0, 0, 1000, 0, 0, 0)
@@ -33,6 +40,7 @@ material = SubResource("StandardMaterial3D_vk57k")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="World" unique_id=1155076021]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 9.966766, 0.6804199)
+visible = false
 layers = 8
 size = Vector3(3, 18.933533, 3.6391602)
 
@@ -80,6 +88,20 @@ size = Vector3(6.5251923, 2.2686157, 3.9151)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 10.97635, 13.24308)
 layers = 8
 size = Vector3(3, 3.5195231, 9.900314)
+
+[node name="WorldGeometry" type="Node" parent="." unique_id=655321585]
+
+[node name="RigidBody3D" type="StaticBody3D" parent="WorldGeometry" unique_id=1699193795]
+collision_layer = 8
+collision_mask = 0
+
+[node name="Buidling1" type="MeshInstance3D" parent="WorldGeometry/RigidBody3D" unique_id=1162229648]
+transform = Transform3D(3.326706, 0, 0, 0, 19.026226, 0, 0, 0, 4.2903075, -1.1881671, 9.820511, 0.20913076)
+mesh = SubResource("BoxMesh_3ktn8")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WorldGeometry/RigidBody3D" unique_id=970956589]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1528168, 9.807259, 0.21755981)
+shape = SubResource("BoxShape3D_3ktn8")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1369684563]
 transform = Transform3D(0.60046834, -0.69249034, 0.3998686, -0.07449421, 0.44943815, 0.8902, -0.79617107, -0.5643248, 0.21828689, 3.743391, 7.1381116, 6.1001625)
@@ -141,17 +163,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9136477, 8.256864, 19.19943
 script = ExtResource("8_nyyqa")
 Connections = [NodePath("../Waypoint3")]
 
-[node name="EnemyDroneYellow" parent="." unique_id=1302784249 node_paths=PackedStringArray("Waypoints") instance=ExtResource("9_3ktn8")]
-transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 7.5787807, 11.660477, 3.4427986)
-collision_layer = 2
-collision_mask = 3
-SpringStrength = 8.0
-Damping = 6.0
-MaxSpeed = 2.0
-Waypoints = [NodePath("../Waypoints/Waypoint"), NodePath("../Waypoints/Waypoint2"), NodePath("../Waypoints/Waypoint3"), NodePath("../Waypoints/Waypoint4")]
-VisionRange = 25.0
-VisionMask = 4
-LookoutDuration = 2.0
+[node name="EnemyDroneYellow" parent="." unique_id=1302784249 instance=ExtResource("9_3ktn8")]
+transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -1.4999149, 7.5336876, 15.675076)
+VisionMaskEnvironment = 4
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1763783081]
 unique_name_in_owner = true
@@ -169,7 +183,6 @@ Drone = NodePath("../PlayerDrone")
 transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -11.565957, 8.945386, 15.327319)
 
 [node name="HUD" type="Control" parent="." unique_id=652438954]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -198,6 +211,26 @@ offset_top = 13.0
 offset_right = 160.0
 offset_bottom = 60.0
 text = "Score: 0"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="HUD" unique_id=621775591]
+layout_mode = 0
+offset_left = 941.0
+offset_top = 66.0
+offset_right = 1014.0
+offset_bottom = 87.0
+theme_override_font_sizes/font_size = 11
+text = "Enemy state"
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="HUD" unique_id=137501330]
+layout_mode = 0
+offset_left = 1013.0
+offset_top = 66.0
+offset_right = 1142.0
+offset_bottom = 87.0
+theme_override_font_sizes/font_size = 11
+text = "Idle"
 vertical_alignment = 1
 
 [editable path="CameraRig"]
