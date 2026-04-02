@@ -1,9 +1,11 @@
 namespace RescueDrone;
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using Chickensoft.AutoInject;
 using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
 using Godot;
 using Godot.Collections;
 using MEC;
@@ -24,6 +26,12 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		Patrol,
 		Attacking,
 		Searching
+	}
+
+	public enum PatrolState
+	{
+		MoveToWaypoint,
+		Lookout
 	}
 	
 	#region Exports
@@ -47,7 +55,8 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	
 	[Export] private int VisionMaskEnvironment { get; set; }
 	[Export] private float LookoutAngle { get; set; } = 45f;
-	[Export] private float LookoutDuration { get; set; }
+	[Export] private float LookoutRotationTime { get; set; } = 1f;
+	[Export] private float LookoutHoldDuration { get; set; }
 
 	[ExportGroup("Attack State")] 
 	[Export] private float AttackDistance { get; set; } = 2.5f;
@@ -57,7 +66,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	[Node] public DroneMovementByPosition DroneMovement { get; set; }
 	[Node] public EnemyWeapon WeaponComponent { get; set; }
 	[Node] public Area3D VisionArea { get; private set; }
-	[Node] public Timer VisionTimer { get; private set; }
 	[Node] public RayCast3D VisionRaycast { get; private set; }
 	[Node] private MeshInstance3D MeshInstance3D { get; set; }
 	#endregion
@@ -66,146 +74,163 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	#region State Machine
 	public EnemyLogic EnemyStateMachine { get; set; }
-	private EnemyLogic.IBinding EnemyBinding { get; set; }
+	private LogicBlock<EnemyLogic.State>.IBinding EnemyBinding { get; set; }
 	#endregion
 	
 	private EnemyState currentState = EnemyState.Idle;
+	private PatrolState patrolState;
 	private Waypoint currentWaypoint;
 	private Waypoint previousWaypoint;
 	private Drone player;
-	private Vector3 lastKnownPlayerPosition;
+	private Vector3 playerLastKnownPosition;
 	private bool playerOnSight;
 
+	private bool isMovingToWaypoint;
 	private bool isOnLookout;
-	private bool movingToWaypoint;
 	private bool isAttacking;
 
-	private bool closingDistanceToPlayer;
-	
-	private CoroutineHandle lookoutCoroutine;
 	private CoroutineHandle moveToWaypointCoroutine;
-	private CoroutineHandle attackCoroutine;
+	private CoroutineHandle lookoutCoroutine;
 
-	public void OnReady()
+	public override void _Ready()
 	{
-		// EnemyStateMachine = new EnemyLogic();
-
+		EnemyStateMachine = new EnemyLogic();
 		player = GetTree().GetNodesInGroup("player")[0] as Drone;
-		this.Provide();
+		if (player is null) 
+			return;
 		
-		//  EnemyStateMachine.Set(this as IEnemyDrone);
-		//  EnemyStateMachine.Set(Waypoints);
-		//  EnemyStateMachine.Set(DroneMovement);
-		//  EnemyStateMachine.Set(new EnemyLogic.Settings(LookoutDuration: 4f, LookoutAngle: 35f));
-		//
-		//  EnemyBinding = EnemyStateMachine.Bind();
-		//  EnemyBinding
-		//  	.Handle((in EnemyLogic.Output.VelocityChanged output) =>
-		//  		Velocity = output.Velocity)
-		//  	.Handle((in EnemyLogic.Output.RotationRequest output) =>
-		//  		DroneMovement.RotateToTarget(output.TargetRotation, output.Delta));
-		// 	
-		// EnemyStateMachine.Start();
-	}
+		this.Provide();
 
-	public void OnEnterTree()
-	{
-		// VisionTimer.Timeout += OnVisionTimeout_LookForPlayer;
+		var settings = new EnemyLogic.Settings(VisionRange, PlayerMinDistance, 
+			LookoutAngle, LookoutRotationTime, LookoutHoldDuration);
+		
+		EnemyStateMachine.Set(this);
+		EnemyStateMachine.Set(Waypoints);
+		EnemyStateMachine.Set(settings);
+		EnemyStateMachine.Set(player);
+		
+		EnemyBinding = EnemyStateMachine.Bind();
+		// EnemyBinding
+		// .Handle((in EnemyLogic.Output.VelocityChanged output) =>
+		// Velocity = output.Velocity);
+		// .Handle((in EnemyLogic.Output.RotationRequest output) =>
+		// DroneMovement.RotateToTarget(output.TargetRotation, output.Delta));
+		EnemyStateMachine.Start();
 	}
 
 	public override void _ExitTree()
 	{
-		if (VisionTimer is not null)
-			VisionTimer.Timeout -= OnVisionTimeout_LookForPlayer;
-		
-		// EnemyStateMachine.Stop();
-		// EnemyBinding.Dispose();
+		EnemyStateMachine.Stop();
+		EnemyBinding.Dispose();
 	}
 
-	public override void _Process(double delta)
-	{
-		var debugColor = playerOnSight ? Colors.Green : Colors.Brown;
-		DebugDraw3D.DrawLine(GlobalPosition, lastKnownPlayerPosition, debugColor);
-	}
+	// public override void _Process(double delta)
+	// {
+	// 	var debugColor = playerOnSight ? Colors.Green : Colors.Brown;
+	// 	DebugDraw3D.DrawLine(GlobalPosition, playerLastKnownPosition, debugColor);
+	// }
 
 	public override void _PhysicsProcess(double delta)
 	{
-		var forward = -Basis.Z;
-		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
-		if (Mathf.RadToDeg(directionToPlayer.AngleTo(forward)) <= 90f / 2 && BuildingRayCastClear())
-		{
-			playerOnSight = true;
-			lastKnownPlayerPosition = player.GlobalPosition;
-		}
-		else
-		{
-			playerOnSight = false;
-		}
-		
-		LookAtPlayerKnownPosition(delta);
-		
-		// switch (currentState)
-		// {
-		// 	case EnemyState.Idle:
-		// 		ProcessIdle();
-		// 		break;
-		// 	case EnemyState.Patrol:
-		// 		ProcessPatrol();
-		// 		break;
-		// 	case EnemyState.Attacking:
-		// 		ProcessAttack(delta);
-		// 		break;
-		// }
+		EnemyStateMachine.Input(new EnemyLogic.Input.PhysicsTick((float) delta));
 	}
+
+	// public void OnPhysicsProcess(double delta)
+	// {
+	// 	playerOnSight = HasLineOfSight();
+	// 	if (playerOnSight)
+	// 		playerLastKnownPosition = player.GlobalPosition;
+	// 	
+	// 	LookAtPlayerKnownPosition(delta);
+	// 	
+	// 	switch (currentState)
+	// 	{
+	// 		case EnemyState.Idle:
+	// 			ProcessIdle();
+	// 			break;
+	// 		case EnemyState.Patrol:
+	// 			if (patrolState is PatrolState.MoveToWaypoint)
+	// 			{
+	// 				ProcessMoveToWaypoint(delta);
+	// 			}
+	// 			break;
+	// 		case EnemyState.Attacking:
+	// 			ProcessAttack(delta);
+	// 			break;
+	// 	}
+	// }
 
 	#region Idle state
 
 	private void ProcessIdle()
 	{
 		currentState = HasLineOfSight() ? EnemyState.Attacking : EnemyState.Patrol;
+		if (currentState is EnemyState.Patrol)
+			patrolState = PatrolState.MoveToWaypoint;
 	}
 	
 	#endregion
 
 	#region Patrol state
 
-	private void ProcessPatrol()
+	private void ProcessPatrol(double delta)
 	{
 		if (HasLineOfSight())
 		{
 			GD.Print("Line of sight discovers player. Engaging...");
-			StopMovingToWaypoint();
-			StopLookout();
-			
-			// Cleanup state
+			Timing.KillCoroutines(moveToWaypointCoroutine);
+			Timing.KillCoroutines(lookoutCoroutine);
+
+			isMovingToWaypoint = false;
+			isOnLookout = false;
 			currentWaypoint = null;
 			previousWaypoint = null;
 			
 			currentState = EnemyState.Attacking;
 			return;
 		}
-		
-		if (isOnLookout || movingToWaypoint) 
-			return;
 
+		if (isMovingToWaypoint || isOnLookout)
+			return;
+		
 		if (currentWaypoint is null)
 		{
-			currentWaypoint = GetClosestWaypoint();
-			MoveToWaypoint();
+			InitiatePatrolPath();
 			return;
 		}
-		
-		if (previousWaypoint is null)
+
+		var distanceToWaypoint = GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition);
+		if (distanceToWaypoint > 0.05f) 
 		{
-			// This is the first waypoint we travel to. Immediately travel to next one.
-			var nextWaypoint = GetNextWaypoint();
-			previousWaypoint = currentWaypoint;
-			currentWaypoint = nextWaypoint;	// TODO: GetNextWaypoint() can return null
-			MoveToWaypoint();
-			return;
+			DroneMovement.MoveTo(currentWaypoint.GlobalPosition, (float) delta);
 		}
+		else
+		{
+			InitiateLookout();
+		}
+	}
+
+	private void ProcessMoveToWaypoint(double delta)
+	{
+		currentWaypoint ??= GetClosestWaypoint();
 		
-		InitiateLookout();
+		var distanceToWaypoint = GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition);
+		if (distanceToWaypoint > 0.05f) 
+		{
+			DroneMovement.MoveTo(currentWaypoint.GlobalPosition, (float) delta);
+		}
+		else
+		{
+			// InitiateLookout();
+			patrolState = PatrolState.Lookout;
+			lookoutCoroutine = Timing.RunCoroutine(LookoutCoroutine().CancelWith(this), Segment.PhysicsProcess);
+		}
+	}
+	
+	private void InitiatePatrolPath() 
+	{
+		currentWaypoint = GetClosestWaypoint();
+		MoveToWaypoint();
 	}
 	
 	// TODO: Make HasLineOfSight its own coroutine and be running while enemy is not Attacking.
@@ -213,14 +238,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 	private void MoveToWaypoint()
 	{
-		movingToWaypoint = true;
 		moveToWaypointCoroutine = Timing.RunCoroutine(MoveToWaypointCoroutine().CancelWith(this), Segment.PhysicsProcess);
-	}
-	
-	private void StopMovingToWaypoint()
-	{
-		movingToWaypoint = false;
-		Timing.KillCoroutines(moveToWaypointCoroutine);
 	}
 	
 	private IEnumerator<double> MoveToWaypointCoroutine()
@@ -231,19 +249,13 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 			yield return Timing.WaitForOneFrame;
 		}
 
-		movingToWaypoint = false;
+		isMovingToWaypoint = false;
 	}
 	
 	private void InitiateLookout()
 	{
 		isOnLookout = true;
 		lookoutCoroutine = Timing.RunCoroutine(LookoutCoroutine().CancelWith(this), Segment.PhysicsProcess);
-	}
-
-	private void StopLookout()
-	{
-		isOnLookout = false;
-		Timing.KillCoroutines(lookoutCoroutine);
 	}
 
 	private IEnumerator<double> LookoutCoroutine()
@@ -256,13 +268,13 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		var rotationTween = CreateTween();
 		rotationTween.TweenProperty(this, "rotation_degrees", targetRotation, tweenDuration);
 		rotationTween.Play();
-		yield return Timing.WaitForSeconds(tweenDuration + LookoutDuration);
+		yield return Timing.WaitForSeconds(tweenDuration + LookoutHoldDuration);
 
 		// Rotate smoothly to the right and wait
 		targetRotation = GlobalRotationDegrees with { Y = initialY - LookoutAngle };
 		rotationTween = CreateTween();
 		rotationTween.TweenProperty(this, "rotation_degrees", targetRotation, tweenDuration * 2f);
-		yield return Timing.WaitForSeconds(tweenDuration * 2f + LookoutDuration);
+		yield return Timing.WaitForSeconds(tweenDuration * 2f + LookoutHoldDuration);
 
 		isOnLookout = false;
 		GoToNextWaypoint();
@@ -312,9 +324,9 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		{
 			AttackOnSight(delta);
 		}
-		else if (GlobalPosition.DistanceTo(lastKnownPlayerPosition) > 2f)
+		else if (GlobalPosition.DistanceTo(playerLastKnownPosition) > 2f)
 		{
-			DroneMovement.MoveTo(lastKnownPlayerPosition, delta);
+			DroneMovement.MoveTo(playerLastKnownPosition, delta);
 		}
 		else
 		{
@@ -349,7 +361,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 			WeaponComponent.TryShooting(playerPosition);
 		}
 		
-		lastKnownPlayerPosition = playerPosition;
+		playerLastKnownPosition = playerPosition;
 		
 		// if (GlobalPosition.DistanceTo(playerPosition) < AttackDistance - 1f)
 		// {
@@ -384,8 +396,8 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 
 			if (HasLineOfSight())
 			{
-				lastKnownPlayerPosition = player.GlobalPosition;
-				DroneMovement.MoveTo(lastKnownPlayerPosition, (float) Timing.DeltaTime);
+				playerLastKnownPosition = player.GlobalPosition;
+				DroneMovement.MoveTo(playerLastKnownPosition, (float) Timing.DeltaTime);
 			}
 		}
 	}
@@ -394,55 +406,10 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	
 	private void LookAtPlayerKnownPosition(double delta)
 	{
-		var directionToPlayer = GlobalPosition.DirectionTo(lastKnownPlayerPosition);
+		var directionToPlayer = GlobalPosition.DirectionTo(playerLastKnownPosition);
 		var rotation = Rotation;
 		rotation.Y = (float) Mathf.LerpAngle(rotation.Y, Mathf.Atan2(-directionToPlayer.X, -directionToPlayer.Z), delta * 2f);
 		Rotation = rotation;
-	}
-
-	private void OnVisionTimeout_LookForPlayer()
-	{
-		var overlaps = VisionArea.GetOverlappingBodies();
-		if (overlaps.Count == 0)
-		{
-			playerOnSight = false;
-			return;
-		}
-
-		var spaceState = GetWorld3D().DirectSpaceState;
-		var origin = GlobalPosition;
-		var end = player.GlobalPosition;
-		var query = PhysicsRayQueryParameters3D.Create(origin, end, 1);
-		var result = spaceState.IntersectRay(query);
-
-		if (result["collider"].As<Drone>() == player)
-		{
-			playerOnSight = true;
-			lastKnownPlayerPosition = player.GlobalPosition;
-		}
-		else
-		{
-			playerOnSight = false;
-		}
-
-		// foreach (var overlap in overlaps)
-		// {
-		// 	var overlapPosition = overlap.GlobalPosition;
-		// 	VisionRaycast.LookAt(overlapPosition, Vector3.Up);
-		// 	VisionRaycast.ForceRaycastUpdate();
-		// 	if (!VisionRaycast.IsColliding() || VisionRaycast.GetCollider() is not CharacterBody3D collider)
-		// 		return;
-		// 	
-		// 	if (collider.Name.Equals("PlayerDrone"))
-		// 	{
-		// 		lastKnownPlayerPosition = overlapPosition;
-		// 		playerOnSight = true;
-		// 	}
-		// 	else
-		// 	{
-		// 		playerOnSight = false;
-		// 	}
-		// }
 	}
 	
 	private bool HasLineOfSight()
@@ -450,7 +417,7 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		if (player is null)
 			return false;
 
-		return PlayerInRange() && PlayerInVisionRange(VisionAngle) && NoBuildingInBetween();
+		return PlayerInRange() && PlayerInVisionRange() && NoBuildingInBetween();
 	}
 
 	private bool PlayerInRange()
@@ -459,42 +426,18 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		return distanceToPlayer < VisionRange;
 	}
 
-	private bool PlayerInVisionRange(float visionRange)
+	private bool PlayerInVisionRange()
 	{
+		var forward = -Basis.Z;
 		var directionToPlayer = (player.GlobalPosition - GlobalPosition).Normalized();
-		var forwardHorizontal = -GlobalTransform.Basis.Z with { Y = 0f };
-		var angle = Mathf.RadToDeg(forwardHorizontal.AngleTo(directionToPlayer));
-		return angle < visionRange / 2f;
-	}
-
-	private bool BuildingRayCastClear()
-	{
-		VisionRaycast.LookAt(player.GlobalPosition, Vector3.Up);
-		VisionRaycast.ForceRaycastUpdate();
-
-		if (VisionRaycast.IsColliding())
-		{
-			var collider = VisionRaycast.GetCollider();
-			if (collider is Node node)
-				GD.Print(node.Name);
-
-			return false;
-		}
-
-		return true;
+		return Mathf.RadToDeg(directionToPlayer.AngleTo(forward)) <= 90f / 2;
 	}
 
 	private bool NoBuildingInBetween()
 	{
-		var spaceState = GetWorld3D().DirectSpaceState;
-		var query = PhysicsRayQueryParameters3D.Create(
-			from: GlobalPosition,
-			to: lastKnownPlayerPosition, 
-			collisionMask: 4,
-			exclude: [GetRid()]);
-
-		var result = spaceState.IntersectRay(query);
-		return result.Count == 0;
+		VisionRaycast.LookAt(player.GlobalPosition, Vector3.Up);
+		VisionRaycast.ForceRaycastUpdate();
+		return !VisionRaycast.IsColliding();
 	}
 	
 }

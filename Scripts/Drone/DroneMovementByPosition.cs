@@ -41,7 +41,7 @@ public partial class DroneMovementByPosition : Node3D
     public void MoveTo(Vector3 targetPosition, double deltaTime)
     {
         var delta = (float) deltaTime;
-        var direction = targetPosition - GlobalPosition;
+        var direction = GlobalPosition.DirectionTo(targetPosition);
         var springForce = direction * SpringStrength;
         var dampingForce = -Drone.Velocity * Damping;
         var acceleration = springForce + dampingForce;
@@ -51,7 +51,14 @@ public partial class DroneMovementByPosition : Node3D
             Drone.Velocity = Drone.Velocity.Normalized() * MaxSpeed;
         
         Drone.MoveAndSlide();
-        RotateSmoothly(delta);
+    }
+
+    public void RotateSmoothlyTo(Vector3 targetPosition, double deltaTime)
+    {
+        var targetDirection = GlobalPosition.DirectionTo(targetPosition);
+        var rotation = Drone.Rotation;
+        rotation.Y = (float) Mathf.LerpAngle(rotation.Y, Mathf.Atan2(-targetDirection.X, -targetDirection.Z), deltaTime * 2f);
+        Drone.Rotation = rotation;
     }
 
     public void MoveTowards(Node3D target, double deltaTime)
@@ -78,11 +85,6 @@ public partial class DroneMovementByPosition : Node3D
         // RotateSmoothly(deltaTime);
     }
 
-    public void RotateBy()
-    {
-        
-    }
-
     public void LookAt(Node3D target, float deltaTime)
     {
         var forwardDirection = -GlobalTransform.Basis.Z;
@@ -100,7 +102,7 @@ public partial class DroneMovementByPosition : Node3D
         //     Drone.Basis.Orthonormalized().Slerp())
     }
 
-    private void RotateSmoothly(float delta)
+    public void RotateSmoothly(float delta)
     {
         var velocity = Drone.Velocity;
         if (velocity.Length() < 0.05f)

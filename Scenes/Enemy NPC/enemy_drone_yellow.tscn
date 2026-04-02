@@ -27,6 +27,8 @@ platform_floor_layers = 4278190088
 platform_wall_layers = 8
 script = ExtResource("1_lutf3")
 Waypoints = []
+VisionRange = 20.0
+VisionAngle = 90.0
 
 [node name="DroneModel" parent="." unique_id=283621651 instance=ExtResource("2_47bv1")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
@@ -54,6 +56,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6442818)
 [node name="VisionArea" type="Area3D" parent="." unique_id=1007058661]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.2427175)
+visible = false
 collision_layer = 0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="VisionArea" unique_id=1486815150]
@@ -66,11 +69,6 @@ mesh = SubResource("CylinderMesh_ofc5j")
 [node name="Cone" type="CollisionShape3D" parent="VisionArea" unique_id=1686294153]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -7.0924377)
 shape = SubResource("ConcavePolygonShape3D_khmxc")
-
-[node name="VisionTimer" type="Timer" parent="." unique_id=1887415736]
-unique_name_in_owner = true
-wait_time = 0.25
-autostart = true
 
 [node name="VisionRaycast" type="RayCast3D" parent="." unique_id=1659992041]
 unique_name_in_owner = true

@@ -14,10 +14,10 @@ public partial class Waypoint : Node3D
 
     public override void _Process(double delta)
     {
-        // DebugDraw3D.DrawSphere(GlobalPosition, 0.5f, Colors.Orange);
+        DebugDraw3D.DrawSphere(GlobalPosition, 0.5f, sphereColor);
         
-        // foreach (var connection in Connections)
-            // DebugDraw3D.DrawLine(GlobalPosition, connection.GlobalPosition, lineColor);
+        foreach (var connection in Connections)
+            DebugDraw3D.DrawLine(GlobalPosition, connection.GlobalPosition, lineColor);
     }
     
 }

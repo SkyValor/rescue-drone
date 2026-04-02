@@ -3,6 +3,11 @@
 public partial class EnemyLogic
 {
     public record Settings(
-        float LookoutDuration,
-        float LookoutAngle);
+        float VisionRange,
+
+        float PlayerMinDistance,
+
+        float LookoutAngle,
+        float LookoutRotationTime,
+        float LookoutHoldDuration);
 }
