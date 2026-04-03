@@ -1,7 +1,15 @@
 ﻿namespace RescueDrone;
 
-public sealed class Data
+using Godot;
+
+public partial class EnemyLogic
 {
-    public float LookoutDuration;
-    public float LookoutTimeRemaining;
+    public sealed class Data
+    {
+        public Vector3 LastPlayerKnownPosition;
+
+        public float LookoutDuration;
+        public float LookoutTimeRemaining;
+    }
 }
+

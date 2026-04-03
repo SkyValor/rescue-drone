@@ -24,7 +24,7 @@ public partial class EnemyLogic
                 var player = Get<Drone>();
                 var enemy = Get<EnemyDrone>();
                 var settings = Get<Settings>();
-                if (HasLineOfSight(enemy, player, settings))
+                if (PlayerIsInLineOfSight(enemy, player, settings))
                 {
                     GD.Print("LineOfSight");
                     LastPlayerKnownPosition = player.GlobalPosition;

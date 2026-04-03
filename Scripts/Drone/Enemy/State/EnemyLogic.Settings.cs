@@ -7,7 +7,11 @@ public partial class EnemyLogic
 
         float PlayerMinDistance,
 
-        float LookoutAngle,
-        float LookoutRotationTime,
-        float LookoutHoldDuration);
+        float PatrolLookoutAngle,
+        float PatrolLookoutRotationTime,
+        float PatrolLookoutHoldDuration,
+        
+        float SearchLookoutAngle,
+        float SearchLookoutRotationTime,
+        float SearchLookoutHoldDuration);
 }

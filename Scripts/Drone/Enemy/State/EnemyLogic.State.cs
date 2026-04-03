@@ -9,7 +9,7 @@ public partial class EnemyLogic
     [Meta]
     public partial record State : StateLogic<State>
     {
-        private static bool HasLineOfSight(EnemyDrone enemy, Drone player, Settings settings)
+        private static bool PlayerIsInLineOfSight(EnemyDrone enemy, Drone player, Settings settings)
         {
             return 
                 PlayerInRange(enemy, player, settings.VisionRange) && 

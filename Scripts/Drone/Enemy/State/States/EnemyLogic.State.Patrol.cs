@@ -2,6 +2,7 @@ namespace RescueDrone;
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Godot;
 using Godot.Collections;
 
 public partial class EnemyLogic
@@ -18,7 +19,7 @@ public partial class EnemyLogic
 			{
 				this.OnEnter(() =>
 				{
-					Godot.GD.Print("Patrol");
+					GD.Print("Patrol");
 					currentWaypoint = GetClosestWaypoint();
 				});
 				
@@ -29,17 +30,39 @@ public partial class EnemyLogic
 				});
 			}
 
-			public Transition On(in Input.PhysicsTick input)
+			public virtual Transition On(in Input.PhysicsTick input)
 			{
 				var player = Get<Drone>();
 				var enemy = Get<EnemyDrone>();
 				var settings = Get<Settings>();
-				if (HasLineOfSight(enemy, player, settings))
+				
+				if (PlayerIsInLineOfSight(enemy, player, settings))
 				{
-					var playerPosition = player.GlobalPosition;
-					return To<Attack>().With(attackState => ((Attack) attackState).LastPlayerKnownPosition = playerPosition);
+					GD.Print("Line of sight to player.");
+					Get<Data>().LastPlayerKnownPosition = player.GlobalPosition;
+					return To<Attack>();
+				}
+				
+				var distanceToWaypoint = enemy.GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition);
+				if (distanceToWaypoint < 0.05f)
+				{
+					return To<Lookout>().With(state =>
+					{
+						var lookoutState = (Lookout) state;
+						lookoutState.LookoutAngle = settings.PatrolLookoutAngle;
+						lookoutState.LookoutRotationTime = settings.PatrolLookoutRotationTime;
+						lookoutState.LookoutHoldDuration = settings.PatrolLookoutHoldDuration;
+						lookoutState.OnLookoutFinished = () =>
+						{
+							var nextWaypoint = GetNextWaypoint();
+							previousWaypoint = currentWaypoint;
+							currentWaypoint = nextWaypoint;
+							return To<Patrol>();
+						};
+					});
 				}
 
+				Output(new Output.MoveTowards(currentWaypoint.GlobalPosition, input.DeltaTime));
 				return ToSelf();
 			}
 

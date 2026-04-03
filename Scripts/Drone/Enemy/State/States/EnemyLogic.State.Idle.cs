@@ -12,7 +12,7 @@ public partial class EnemyLogic
             public Transition On(in Input.PhysicsTick input)
             {
                 Godot.GD.Print("Idle");
-                return HasLineOfSight(Get<EnemyDrone>(), Get<Drone>(), Get<Settings>()) 
+                return PlayerIsInLineOfSight(Get<EnemyDrone>(), Get<Drone>(), Get<Settings>()) 
                     ? To<Attack>() 
                     : To<Patrol.GoToWaypoint>();
             }
