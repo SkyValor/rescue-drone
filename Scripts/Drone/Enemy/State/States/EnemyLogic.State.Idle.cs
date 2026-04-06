@@ -1,20 +1,23 @@
 ﻿namespace RescueDrone;
 
-using Chickensoft.Introspection;
+using Godot;
 
 public partial class EnemyLogic
 {
     public partial record State
     {
-        [Meta]
-        public partial record Idle : State, IGet<Input.PhysicsTick>
+        public record Idle : State, IGet<Input.PhysicsTick>
         {
             public Transition On(in Input.PhysicsTick input)
             {
-                Godot.GD.Print("Idle");
-                return PlayerIsInLineOfSight(Get<EnemyDrone>(), Get<Drone>(), Get<Settings>()) 
-                    ? To<Attack>() 
-                    : To<Patrol.GoToWaypoint>();
+                var player = Get<Drone>();
+                if (PlayerIsInLineOfSight(Get<EnemyDrone>(), player, Get<Settings>()))
+                {
+                    Get<Data>().LastPlayerKnownPosition = player.GlobalPosition;
+                    return To<Attack>();
+                }
+
+                return To<Patrol>();
             }
         }
     }

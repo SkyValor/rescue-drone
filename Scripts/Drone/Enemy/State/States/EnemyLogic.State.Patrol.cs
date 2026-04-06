@@ -1,6 +1,6 @@
 namespace RescueDrone;
 
-using Chickensoft.Introspection;
+using System;
 using Chickensoft.LogicBlocks;
 using Godot;
 using Godot.Collections;
@@ -9,13 +9,12 @@ public partial class EnemyLogic
 {
 	public partial record State
 	{
-		[Meta]
-		public abstract partial record Patrol : State, IGet<Input.PhysicsTick>
+		public record Patrol : State, IGet<Input.PhysicsTick>
 		{
 			private Waypoint currentWaypoint;
 			private Waypoint previousWaypoint;
 
-			protected Patrol()
+			public Patrol()
 			{
 				this.OnEnter(() =>
 				{
@@ -30,7 +29,7 @@ public partial class EnemyLogic
 				});
 			}
 
-			public virtual Transition On(in Input.PhysicsTick input)
+			public Transition On(in Input.PhysicsTick input)
 			{
 				var player = Get<Drone>();
 				var enemy = Get<EnemyDrone>();
@@ -38,7 +37,6 @@ public partial class EnemyLogic
 				
 				if (PlayerIsInLineOfSight(enemy, player, settings))
 				{
-					GD.Print("Line of sight to player.");
 					Get<Data>().LastPlayerKnownPosition = player.GlobalPosition;
 					return To<Attack>();
 				}
@@ -46,24 +44,29 @@ public partial class EnemyLogic
 				var distanceToWaypoint = enemy.GlobalPosition.DistanceTo(currentWaypoint.GlobalPosition);
 				if (distanceToWaypoint < 0.05f)
 				{
-					return To<Lookout>().With(state =>
-					{
-						var lookoutState = (Lookout) state;
-						lookoutState.LookoutAngle = settings.PatrolLookoutAngle;
-						lookoutState.LookoutRotationTime = settings.PatrolLookoutRotationTime;
-						lookoutState.LookoutHoldDuration = settings.PatrolLookoutHoldDuration;
-						lookoutState.OnLookoutFinished = () =>
-						{
-							var nextWaypoint = GetNextWaypoint();
-							previousWaypoint = currentWaypoint;
-							currentWaypoint = nextWaypoint;
-							return To<Patrol>();
-						};
-					});
+					return To<Lookout>().With(SetupLookoutState(settings));
 				}
 
 				Output(new Output.MoveTowards(currentWaypoint.GlobalPosition, input.DeltaTime));
 				return ToSelf();
+			}
+
+			private Action<State> SetupLookoutState(Settings settings)
+			{
+				return state =>
+				{
+					var lookoutState = (Lookout) state;
+					lookoutState.LookoutAngle = settings.PatrolLookoutAngle;
+					lookoutState.LookoutRotationTime = settings.PatrolLookoutRotationTime;
+					lookoutState.LookoutHoldDuration = settings.PatrolLookoutHoldDuration;
+					lookoutState.OnLookoutFinishedAction = () =>
+					{
+						var nextWaypoint = GetNextWaypoint();
+						previousWaypoint = currentWaypoint;
+						currentWaypoint = nextWaypoint;
+					};
+					lookoutState.OnLookoutFinishedNextState = typeof(Patrol);
+				};
 			}
 
 			private Waypoint GetClosestWaypoint()

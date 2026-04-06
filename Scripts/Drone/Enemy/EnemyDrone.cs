@@ -87,11 +87,12 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 		EnemyStateMachine.Set(new EnemyLogic.Data());
 		
 		EnemyBinding = EnemyStateMachine.Bind();
-		// EnemyBinding
-		// .Handle((in EnemyLogic.Output.VelocityChanged output) =>
-		// Velocity = output.Velocity);
-		// .Handle((in EnemyLogic.Output.RotationRequest output) =>
-		// DroneMovement.RotateToTarget(output.TargetRotation, output.Delta));
+		EnemyBinding.Handle((in EnemyLogic.Output.MoveTowards output) =>
+		{
+			DroneMovement.MoveTo(output.TargetPosition, output.Delta);
+			DroneMovement.RotateSmoothlyTo(output.TargetPosition, output.Delta);
+		});
+		
 		EnemyStateMachine.Start();
 	}
 
@@ -105,9 +106,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	{
 		EnemyStateMachine.Input(new EnemyLogic.Input.PhysicsTick((float) delta));
 	}
-
-	// TODO: Make HasLineOfSight its own coroutine and be running while enemy is not Attacking.
-	// When the enemy detects the player, break out of this coroutine and change the state. This will break out of any other coroutines.
 
 	#region Attack state
 

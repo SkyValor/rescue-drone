@@ -164,7 +164,7 @@ script = ExtResource("8_nyyqa")
 Connections = [NodePath("../Waypoint3")]
 
 [node name="EnemyDroneYellow" parent="." unique_id=1302784249 node_paths=PackedStringArray("Waypoints") instance=ExtResource("9_3ktn8")]
-transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -1.4999149, 7.5336876, 15.675076)
+transform = Transform3D(-1, 0, 8.742277e-08, 0, 1, 0, -8.742277e-08, 0, -1, 18.004436, 7.5336876, -1.8873577)
 PlayerMinDistance = 5.0
 Waypoints = [NodePath("../Waypoints/Waypoint"), NodePath("../Waypoints/Waypoint2"), NodePath("../Waypoints/Waypoint3"), NodePath("../Waypoints/Waypoint4")]
 VisionMaskEnvironment = 4

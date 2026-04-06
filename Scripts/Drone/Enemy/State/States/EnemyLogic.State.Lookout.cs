@@ -17,16 +17,25 @@ public partial class EnemyLogic
             public float LookoutAngle { get; set; }
             public float LookoutRotationTime { get; set; }
             public float LookoutHoldDuration { get; set; }
-            public Func<Transition> OnLookoutFinished { get; set; }
+            public Action OnLookoutFinishedAction { get; set; }
+            public Type OnLookoutFinishedNextState { get; set; }
             
-            private readonly float initialY;
+            private float initialY;
             private Tween rotationTween;
             
             public Lookout()
             {
-                this.OnEnter(() => GD.Print("SearchLookout"));
-                initialY = Get<EnemyDrone>().RotationDegrees.Y;
-                Input(new Input.InitiateRotatingLeft());
+                this.OnEnter(() =>
+                {
+                    initialY = Get<EnemyDrone>().RotationDegrees.Y;
+                    Input(new Input.InitiateRotatingLeft());
+                });
+                this.OnExit(() =>
+                {
+                    OnLookoutFinishedNextState = null;
+                    if (rotationTween != null && rotationTween.IsValid())
+                        rotationTween.Kill();
+                });
             }
 
             public Transition On(in Input.PhysicsTick input)
@@ -36,10 +45,11 @@ public partial class EnemyLogic
                 var settings = Get<Settings>();
                 if (PlayerIsInLineOfSight(enemy, player, settings))
                 {
-                    GD.Print("Player is in line of sight!");
                     Get<Data>().LastPlayerKnownPosition = player.GlobalPosition;
                     return To<Attack>();
                 }
+                
+                DebugDraw3D.DrawLine(enemy.GlobalPosition, Get<Data>().LastPlayerKnownPosition, Colors.Brown);
 
                 return ToSelf();
             }
@@ -47,27 +57,34 @@ public partial class EnemyLogic
             public Transition On(in Input.InitiateRotatingLeft input)
             {
                 var enemy = Get<EnemyDrone>();
-                var targetRotation = enemy.RotationDegrees with { Y = initialY + LookoutAngle };
+                var targetRotation = enemy.RotationDegrees with { Y = initialY + LookoutAngle / 2f };
                 var onTweenFinished = Callable.From(() => Input(new Input.InitiateRotatingRight()));
-                TweenLookout(enemy, targetRotation, onTweenFinished);
+                TweenLookout(enemy, targetRotation, LookoutRotationTime, onTweenFinished);
                 return ToSelf();
             }
 
             public Transition On(in Input.InitiateRotatingRight input)
             {
                 var enemy = Get<EnemyDrone>();
-                var targetRotation = enemy.RotationDegrees with { Y = initialY - LookoutAngle };
+                var targetRotation = enemy.RotationDegrees with { Y = initialY - LookoutAngle / 2f };
                 var onTweenFinished = Callable.From(() => Input(new Input.FinishedLookout()));
-                TweenLookout(enemy, targetRotation, onTweenFinished);
+                TweenLookout(enemy, targetRotation, LookoutRotationTime * 2f, onTweenFinished);
                 return ToSelf();
             }
 
-            public Transition On(in Input.FinishedLookout input) => OnLookoutFinished?.Invoke() ?? To<Idle>();
+            public Transition On(in Input.FinishedLookout input)
+            {
+                OnLookoutFinishedAction?.Invoke();
+                if (OnLookoutFinishedNextState == typeof(Patrol))
+                    return To<Patrol>();
+                
+                return OnLookoutFinishedNextState == typeof(Search) ? To<Search>() : To<Idle>();
+            }
 
-            private void TweenLookout(EnemyDrone enemy, Vector3 targetRotation, Callable onTweenFinished)
+            private void TweenLookout(EnemyDrone enemy, Vector3 targetRotation, float duration, Callable onTweenFinished)
             {
                 rotationTween = enemy.CreateTween();
-                rotationTween.TweenProperty(enemy, "rotation_degrees", targetRotation, LookoutRotationTime);
+                rotationTween.TweenProperty(enemy, "rotation_degrees", targetRotation, duration);
                 rotationTween.TweenInterval(LookoutHoldDuration);
                 rotationTween.TweenCallback(onTweenFinished);
                 rotationTween.Play();
