@@ -1,0 +1,110 @@
+[gd_scene format=3 uid="uid://blo7khuh6ik0v"]
+
+[ext_resource type="Script" uid="uid://bh6srwcugondp" path="res://Scripts/SimpleCharacterController.cs" id="1_67m1m"]
+[ext_resource type="Script" uid="uid://b42ng08nlvqti" path="res://Scripts/VolumetricArea.cs" id="1_maitd"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_tl780"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_67m1m"]
+albedo_color = Color(0.3405303, 0.21113724, 0.09657235, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_maitd"]
+albedo_color = Color(0.30009153, 0.23511598, 0.08857147, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2jx0u"]
+albedo_color = Color(0.021837063, 0.09039759, 0.08841299, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_67m1m"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_maitd"]
+radius = 0.6
+
+[node name="Node3D" type="Node3D" unique_id=1591344168]
+script = ExtResource("1_maitd")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1653514083]
+navigation_mesh = SubResource("NavigationMesh_tl780")
+
+[node name="CSGBox3D1" type="CSGBox3D" parent="NavigationRegion3D" unique_id=468529783]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.101549, 0)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(1, 15, 5)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="NavigationRegion3D" unique_id=539845393]
+transform = Transform3D(0.96749765, 0, -0.25287998, 0, 1, 0, 0.25287998, 0, 0.96749765, -6.6640196, 6.1015472, 3.292429)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(1, 15, 5)
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="NavigationRegion3D" unique_id=301223304]
+transform = Transform3D(0.7012826, 0, -0.71288335, 0, 1, 0, 0.71288335, 0, 0.7012826, -13.64867, 6.101549, 6.105398)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(1, 15, 5)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="NavigationRegion3D" unique_id=343359216]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 9.652689, 3.1574574, -2.295412)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(1, 9.111816, 5)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="NavigationRegion3D" unique_id=194688012]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.533638, 6.101549, 6.2896338)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(6, 15, 5)
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1218005273]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3236599, 17.3614, 20.405125)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(12.643066, 11.108711, 5)
+material = SubResource("StandardMaterial3D_67m1m")
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="NavigationRegion3D" unique_id=421425042]
+transform = Transform3D(0.7454062, 0, -0.66661054, 0, 1, 0, 0.66661054, 0, 0.7454062, 14.57324, 20.264948, -18.487137)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(12.643066, 16.915806, 9.673706)
+material = SubResource("StandardMaterial3D_maitd")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="NavigationRegion3D" unique_id=895267542]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5813217, 0)
+use_collision = true
+collision_layer = 8
+collision_mask = 0
+size = Vector3(70, 1, 70)
+material = SubResource("StandardMaterial3D_2jx0u")
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1302108088]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.52218, 17.256626, 14.85068)
+motion_mode = 1
+script = ExtResource("1_67m1m")
+Speed = 20.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player" unique_id=1857585729]
+mesh = SubResource("SphereMesh_67m1m")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=1446070876]
+shape = SubResource("SphereShape3D_maitd")
+
+[node name="Camera3D" type="Camera3D" parent="Player" unique_id=613125488]
+transform = Transform3D(1, 0, 0, 0, 0.9712756, 0.23795713, 0, -0.23795713, 0.9712756, 0, 1.7466431, 2.618556)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1002721569]
+transform = Transform3D(1, 0, 0, 0, 0.81013376, 0.5862452, 0, -0.5862452, 0.81013376, 0, 29.848795, 10.574003)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=241742607]
+transform = Transform3D(-0.9058301, -0.42345673, 0.012518118, -0.3098178, 0.6420094, -0.7013109, 0.28893802, -0.6391467, -0.71274567, 0, 29.848795, -1.4726906)
+
+[node name="Area3D" type="Area3D" parent="." unique_id=678491374]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1413800524]

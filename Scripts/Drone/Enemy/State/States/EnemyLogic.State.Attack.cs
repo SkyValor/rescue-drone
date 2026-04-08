@@ -38,6 +38,9 @@ public partial class EnemyLogic
                 var distanceToKnownPosition = enemy.GlobalPosition.DistanceTo(data.LastPlayerKnownPosition);
                 if (playerOnSight && distanceToKnownPosition > settings.PlayerMinDistance)
                 {
+                    var direction = enemy.GlobalPosition.DirectionTo(data.LastPlayerKnownPosition);
+                    var check = enemy.ObstacleAvoidance.CheckObstacleInDirection(direction);
+                    
                     Output(new Output.MoveTowards(data.LastPlayerKnownPosition, input.DeltaTime));
                     return ToSelf();
                 }

@@ -24,9 +24,6 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	[Export] private float MaxSpeed { get; set; } = 10f;
 	[Export] private float PlayerMinDistance { get; set; } = 3f;	
 
-	[Export] private float OscillationMagnitude { get; set; } = 0.05f;
-	[Export] private float OscillationHeight { get; set; } = 0.5f;
-	
 	[Export] private float AvoidanceStrength { get; set; } = 20f;
 	[Export] private float AvoidanceDistance { get; set; } = 4f;
 	
@@ -55,6 +52,10 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	#region Nodes
 	[Node] public DroneMovementByPosition DroneMovement { get; set; }
 	[Node] public EnemyWeapon WeaponComponent { get; set; }
+	
+	[Node] public SphereCastingObstacleAvoidance ObstacleAvoidance { get; private set; }
+	[Node] public ShapeCast3D SphereCast { get; private set; }
+	
 	[Node] public Area3D VisionArea { get; private set; }
 	[Node] public RayCast3D VisionRaycast { get; private set; }
 	[Node] private MeshInstance3D MeshInstance3D { get; set; }
@@ -70,21 +71,20 @@ public partial class EnemyDrone : CharacterBody3D, IEnemyDrone, IProvide<EnemyDr
 	public override void _Ready()
 	{
 		EnemyStateMachine = new EnemyLogic();
-		var player = GetTree().GetNodesInGroup("player")[0] as Drone;
-		if (player is null) 
-			return;
-		
 		this.Provide();
 
 		var settings = new EnemyLogic.Settings(VisionRange, PlayerMinDistance, 
 			LookoutAngle, LookoutRotationTime, LookoutHoldDuration,
 			SearchLookoutAngle, SearchLookoutRotationTime, SearchLookoutHoldDuration);
-		
+
 		EnemyStateMachine.Set(this);
 		EnemyStateMachine.Set(Waypoints);
 		EnemyStateMachine.Set(settings);
-		EnemyStateMachine.Set(player);
 		EnemyStateMachine.Set(new EnemyLogic.Data());
+		
+		var nodes = GetTree().GetNodesInGroup("player");
+		if (nodes.Count > 0 && nodes[0] is Drone playerDrone)
+			EnemyStateMachine.Set(playerDrone);
 		
 		EnemyBinding = EnemyStateMachine.Bind();
 		EnemyBinding.Handle((in EnemyLogic.Output.MoveTowards output) =>
