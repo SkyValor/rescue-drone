@@ -5,10 +5,10 @@ using Godot;
 
 public class OctreeNode
 {
-    public List<OctreeObject> Objects = [];
-
     public readonly int Id;
     private static int nextId;
+    
+    public readonly List<OctreeObject> Objects = [];
 
     public Aabb Bounds;
     public OctreeNode[] Children;

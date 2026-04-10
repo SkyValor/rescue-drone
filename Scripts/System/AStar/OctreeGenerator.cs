@@ -1,4 +1,4 @@
-﻿namespace RescueDrone.Scripts;
+﻿namespace RescueDrone;
 
 using Godot;
 
@@ -7,19 +7,25 @@ public partial class OctreeGenerator : Node
     [Export] public Node3D[] Objects { get; private set; }
     [Export] public float MinNodeSize { get; private set; } = 1f;
 
-    public readonly Graph Waypoints = new();
+    public Octree Tree { get; private set; }
     
-    private Octree tree;
+    public readonly Graph Waypoints = new();
 
-    public override void _Ready()
+    // public override void _Ready()
+    // {
+    //     
+    // }
+
+    public override void _EnterTree()
     {
-        tree = new Octree(Objects, MinNodeSize, Waypoints);
+        Tree = new Octree(Objects, MinNodeSize, Waypoints);
     }
 
     public override void _Process(double delta)
     {
-        DebugDraw3D.DrawBox(tree.Bounds.GetCenter(), Quaternion.Identity, tree.Bounds.Size, Colors.Green, true);
-        tree.Root.DrawNode();
-        tree.Graph.DrawGraph();
+        DebugDraw3D.DrawBox(Tree.Bounds.GetCenter(), Quaternion.Identity, Tree.Bounds.Size, Colors.Green, true);
+        Tree.Root.DrawNode();
+        Tree.Graph.DrawGraph();
     }
+    
 }

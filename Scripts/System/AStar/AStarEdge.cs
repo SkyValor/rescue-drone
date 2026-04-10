@@ -1,15 +1,9 @@
 ﻿namespace RescueDrone;
 
-public class GraphEdge
+public class GraphEdge(GraphNode a, GraphNode b)
 {
-    public readonly GraphNode A;
-    public readonly GraphNode B;
-
-    public GraphEdge(GraphNode a, GraphNode b)
-    {
-        A = a;
-        B = b;
-    }
+    public readonly GraphNode A = a;
+    public readonly GraphNode B = b;
 
     public override bool Equals(object obj)
     {

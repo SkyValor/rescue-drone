@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dxcc80pqpydrj"]
+
+[ext_resource type="Script" uid="uid://t4bc2h6tttyh" path="res://Scripts/System/AStar/Mover.cs" id="1_o8mf3"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7eh4n"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7eh4n"]
+albedo_color = Color(0.46926695, 0.46696287, 1.92523e-07, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7eh4n"]
+
+[node name="AStarEnemy" type="CharacterBody3D" unique_id=1980390112]
+motion_mode = 1
+script = ExtResource("1_o8mf3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=341907554]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_7eh4n")
+surface_material_override/0 = SubResource("StandardMaterial3D_7eh4n")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=732449679]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_7eh4n")

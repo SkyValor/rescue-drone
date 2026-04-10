@@ -11,7 +11,7 @@ public class Graph
     public readonly Dictionary<OctreeNode, GraphNode> Nodes = new();
     public readonly HashSet<GraphEdge> Edges = [];
 
-    private List<GraphNode> pathList = [];
+    private readonly List<GraphNode> pathList = [];
     
     public int GetPathLength() => pathList.Count;
 
@@ -40,8 +40,8 @@ public class Graph
             return false;
         }
 
-        SortedSet<GraphNode> openSet = new SortedSet<GraphNode>(new NodeComparer());
-        HashSet<GraphNode> closedSet = [];
+        var openSet = new SortedSet<GraphNode>(new NodeComparer());
+        var closedSet = new HashSet<GraphNode>();
         int iterationCount = 0;
 
         start.G = 0;
@@ -102,7 +102,8 @@ public class Graph
         pathList.Reverse();
     }
 
-    private float Heuristic(GraphNode a, GraphNode b) => (a.OctreeNode.Bounds.GetCenter() - b.OctreeNode.Bounds.GetCenter()).LengthSquared();
+    private static float Heuristic(GraphNode a, GraphNode b) => 
+        (a.OctreeNode.Bounds.GetCenter() - b.OctreeNode.Bounds.GetCenter()).LengthSquared();
 
     public class NodeComparer : IComparer<GraphNode>
     {
