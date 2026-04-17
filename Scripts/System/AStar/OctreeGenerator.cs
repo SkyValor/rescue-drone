@@ -9,23 +9,16 @@ public partial class OctreeGenerator : Node
 
     public Octree Tree { get; private set; }
     
-    public readonly Graph Waypoints = new();
-
-    // public override void _Ready()
-    // {
-    //     
-    // }
+    public readonly AStarGraph Graph = new();
 
     public override void _EnterTree()
     {
-        Tree = new Octree(Objects, MinNodeSize, Waypoints);
+        Tree = new Octree(Objects, MinNodeSize, Graph);
     }
 
     public override void _Process(double delta)
     {
-        DebugDraw3D.DrawBox(Tree.Bounds.GetCenter(), Quaternion.Identity, Tree.Bounds.Size, Colors.Green, true);
-        Tree.Root.DrawNode();
-        Tree.Graph.DrawGraph();
+        Tree.DrawTree();
     }
     
 }

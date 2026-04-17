@@ -1,6 +1,5 @@
 ﻿namespace RescueDrone;
 
-using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -14,7 +13,7 @@ public partial class Mover : CharacterBody3D
     private int currentWaypoint;
     private OctreeNode currentNode;
     private Vector3 destination;
-    private Graph graph;
+    private AStarGraph graph;
 
     public override void _EnterTree()
     {
@@ -23,7 +22,7 @@ public partial class Mover : CharacterBody3D
 
     public override void _Ready()
     {
-        graph = OctreeGenerator.Waypoints;
+        graph = OctreeGenerator.Graph;
         currentNode = GetClosestNode(GlobalPosition);
         if (currentNode is null) GD.PrintErr("Mover has no starting current node.");
         GetRandomDestination();
@@ -34,15 +33,15 @@ public partial class Mover : CharacterBody3D
     public override void _Process(double delta)
     {
         if (graph is null || graph.GetPathLength() == 0) return;
-
+    
         DebugDraw3D.DrawSphere(graph.GetPathNode(0).Bounds.GetCenter(), 0.7f, Colors.Red);
         DebugDraw3D.DrawSphere(graph.GetPathNode(graph.GetPathLength() - 1).Bounds.GetCenter(), 0.7f, Colors.Blue);
-
+    
         for (int i = 0; i < graph.GetPathLength(); i++)
         {
             DebugDraw3D.DrawSphere(graph.GetPathNode(i).Bounds.GetCenter(), 0.5f,
                 i == currentWaypoint ? Colors.Gold : Colors.Green);
-
+    
             if (i < graph.GetPathLength() - 1)
             {
                 var start = graph.GetPathNode(i).Bounds.GetCenter();
@@ -112,7 +111,6 @@ public partial class Mover : CharacterBody3D
         do
         {
             var rand = GD.RandRange(0, graph.Nodes.Count - 1);
-            GD.Print(graph.Nodes.Count + " | " + rand);
             destinationNode = graph.Nodes.ElementAt(rand).Key;
         } while (!graph.AStar(currentNode, destinationNode));
         currentWaypoint = 0;

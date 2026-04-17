@@ -4,21 +4,27 @@
 [ext_resource type="PackedScene" uid="uid://dxcc80pqpydrj" path="res://Scenes/_test/AStar_Enemy.tscn" id="2_mbtm4"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_exoyg"]
+size = Vector3(5, 30, 5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mbtm4"]
+size = Vector3(5, 30, 5)
 
 [node name="Node3D" type="Node3D" unique_id=1688218885]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=350275159]
 transform = Transform3D(0.86770475, -0.28639826, 0.40628135, 0, 0.817336, 0.5761613, -0.49707997, -0.49993792, 0.70920634, 0.7830162, 16.418652, 19.309702)
 
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=1694906618]
+transform = Transform3D(-0.8343481, 0.31760207, -0.45054665, 0.48825914, 0.8051735, -0.33659866, 0.2558638, -0.5008242, -0.82686687, 0.7830162, 19.66641, 19.309702)
+
 [node name="AStarEnemy" parent="." unique_id=1980390112 node_paths=PackedStringArray("OctreeGenerator") instance=ExtResource("2_mbtm4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.314329, 0)
 Speed = 250.0
 Accuracy = 3.0
 OctreeGenerator = NodePath("../OctreeGenerator")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=677312085]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.0472717, 1.8440304, 13.462343)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.159695, 1.8440304, 20.805658)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=2046914817]
 mesh = SubResource("BoxMesh_exoyg")
@@ -27,7 +33,7 @@ mesh = SubResource("BoxMesh_exoyg")
 shape = SubResource("BoxShape3D_mbtm4")
 
 [node name="StaticBody3D6" type="StaticBody3D" parent="." unique_id=540780860]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.775158, -0.72888327, 3.8454924)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.518368, -0.72887945, 9.122449)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D6" unique_id=311902866]
 mesh = SubResource("BoxMesh_exoyg")
@@ -36,7 +42,7 @@ mesh = SubResource("BoxMesh_exoyg")
 shape = SubResource("BoxShape3D_mbtm4")
 
 [node name="StaticBody3D2" type="StaticBody3D" parent="." unique_id=1632219526]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4769354, 4.005681, -7.425339)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8065186, 4.005685, -6.7294693)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D2" unique_id=251777378]
 mesh = SubResource("BoxMesh_exoyg")
@@ -45,7 +51,7 @@ mesh = SubResource("BoxMesh_exoyg")
 shape = SubResource("BoxShape3D_mbtm4")
 
 [node name="StaticBody3D5" type="StaticBody3D" parent="." unique_id=1124410002]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5189705, 11.45949, -16.31251)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.602343, 11.45949, -22.978628)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D5" unique_id=547467456]
 mesh = SubResource("BoxMesh_exoyg")
@@ -54,7 +60,7 @@ mesh = SubResource("BoxMesh_exoyg")
 shape = SubResource("BoxShape3D_mbtm4")
 
 [node name="StaticBody3D3" type="StaticBody3D" parent="." unique_id=1207401047]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.170912, 7.8705473, -12.733658)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.251831, 7.870551, -14.737209)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D3" unique_id=1082779682]
 mesh = SubResource("BoxMesh_exoyg")
@@ -63,7 +69,7 @@ mesh = SubResource("BoxMesh_exoyg")
 shape = SubResource("BoxShape3D_mbtm4")
 
 [node name="StaticBody3D4" type="StaticBody3D" parent="." unique_id=1567195192]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7689805, -8.867242, 1.4614992)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.43097, -8.867242, 9.144195)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D4" unique_id=1750138324]
 mesh = SubResource("BoxMesh_exoyg")
@@ -74,6 +80,7 @@ shape = SubResource("BoxShape3D_mbtm4")
 [node name="OctreeGenerator" type="Node3D" parent="." unique_id=871865411 node_paths=PackedStringArray("Objects")]
 script = ExtResource("1_exoyg")
 Objects = [NodePath("../StaticBody3D"), NodePath("../StaticBody3D6"), NodePath("../StaticBody3D2"), NodePath("../StaticBody3D5"), NodePath("../StaticBody3D3"), NodePath("../StaticBody3D4")]
+MinNodeSize = 2.0
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=173415154]
 transform = Transform3D(0.8499892, -0.2943739, 0.43687806, -0.0076713115, 0.8223006, 0.5690017, -0.5267443, -0.4869967, 0.69668835, 14.226803, 19.894032, 16.328552)

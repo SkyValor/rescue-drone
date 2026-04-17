@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class Graph
+public class AStarGraph
 {
-    public const int MAX_ITERATIONS = 10000;
+    private const int MAX_ITERATIONS = 10000;
     
-    public readonly Dictionary<OctreeNode, GraphNode> Nodes = new();
-    public readonly HashSet<GraphEdge> Edges = [];
+    public readonly Dictionary<OctreeNode, AStarNode> Nodes = new();
+    public readonly HashSet<AStarEdge> Edges = [];
 
-    private readonly List<GraphNode> pathList = [];
+    private readonly List<AStarNode> pathList = [];
     
     public int GetPathLength() => pathList.Count;
 
@@ -40,8 +40,8 @@ public class Graph
             return false;
         }
 
-        var openSet = new SortedSet<GraphNode>(new NodeComparer());
-        var closedSet = new HashSet<GraphNode>();
+        var openSet = new SortedSet<AStarNode>(new NodeComparer());
+        var closedSet = new HashSet<AStarNode>();
         int iterationCount = 0;
 
         start.G = 0;
@@ -87,11 +87,10 @@ public class Graph
             }
         }
         
-        GD.Print("No path found.");
         return false;
     }
 
-    private void ReconstructPath(GraphNode current)
+    private void ReconstructPath(AStarNode current)
     {
         while (current is not null)
         {
@@ -102,12 +101,12 @@ public class Graph
         pathList.Reverse();
     }
 
-    private static float Heuristic(GraphNode a, GraphNode b) => 
+    private static float Heuristic(AStarNode a, AStarNode b) => 
         (a.OctreeNode.Bounds.GetCenter() - b.OctreeNode.Bounds.GetCenter()).LengthSquared();
 
-    public class NodeComparer : IComparer<GraphNode>
+    public class NodeComparer : IComparer<AStarNode>
     {
-        public int Compare(GraphNode x, GraphNode y)
+        public int Compare(AStarNode x, AStarNode y)
         {
             if (x is null || y is null) return 0;
             
@@ -119,7 +118,7 @@ public class Graph
     public void AddNode(OctreeNode octreeNode)
     {
         if (!Nodes.ContainsKey(octreeNode))
-            Nodes.Add(octreeNode, new GraphNode(octreeNode));
+            Nodes.Add(octreeNode, new AStarNode(octreeNode));
     }
 
     public void AddEdge(OctreeNode a, OctreeNode b)
@@ -129,7 +128,7 @@ public class Graph
 
         if (nodeA is null || nodeB is null) return;
         
-        var edge = new GraphEdge(nodeA, nodeB);
+        var edge = new AStarEdge(nodeA, nodeB);
         if (Edges.Add(edge))
         {
             nodeA.Edges.Add(edge);
@@ -140,15 +139,16 @@ public class Graph
     public void DrawGraph()
     {
         foreach (var edge in Edges)
-            DebugDraw3D.DrawLine(edge.A.OctreeNode.Bounds.GetCenter(), edge.B.OctreeNode.Bounds.GetCenter(), Colors.Red);
+            DebugDraw3D.DrawLine(edge.A.OctreeNode.Bounds.GetCenter(), edge.B.OctreeNode.Bounds.GetCenter(), Colors.Gray);
         
         foreach (var node in Nodes.Values)
-            DebugDraw3D.DrawSphere(node.OctreeNode.Bounds.GetCenter(), 0.2f, Colors.Red);
+            DebugDraw3D.DrawSphere(node.OctreeNode.Bounds.GetCenter(), 0.2f, Colors.Green);
     }
     
-    private GraphNode FindNode(OctreeNode octreeNode)
+    private AStarNode FindNode(OctreeNode octreeNode)
     {
-        Nodes.TryGetValue(octreeNode, out GraphNode node);
+        Nodes.TryGetValue(octreeNode, out AStarNode node);
         return node;
     }
+    
 }

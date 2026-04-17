@@ -11,6 +11,7 @@ public class OctreeNode
     public readonly List<OctreeObject> Objects = [];
 
     public Aabb Bounds;
+    public OctreeNode Parent;
     public OctreeNode[] Children;
     public bool IsLeaf => Children == null || Children.Length == 0;
     
@@ -21,7 +22,8 @@ public class OctreeNode
     {
         Id = nextId++;
         
-        Bounds = bounds;
+        // We grow this bounds so that it intercepts the neighbors.
+        Bounds = bounds.Grow(0.01f);
         this.minNodeSize = minNodeSize;
 
         var newSize = bounds.Size * 0.5f;
@@ -41,9 +43,9 @@ public class OctreeNode
         }
     }
 
-    public void Divide(Node3D obj) => Divide(new OctreeObject(obj));
+    public void Subdivide(Node3D obj) => Subdivide(new OctreeObject(obj));
 
-    private void Divide(OctreeObject obj)
+    private void Subdivide(OctreeObject obj)
     {
         if (Bounds.Size.X <= minNodeSize)
         {
@@ -58,7 +60,7 @@ public class OctreeNode
             Children[i] ??= new OctreeNode(childBounds[i], minNodeSize);
             if (obj.Intersects(childBounds[i]))
             {
-                Children[i].Divide(obj);
+                Children[i].Subdivide(obj);
                 intersectedChild = true;
             }
         }
@@ -74,14 +76,9 @@ public class OctreeNode
     public void DrawNode()
     {
         DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Green, true);
-
-        foreach (var obj in Objects)
-        {
-            if (obj.Intersects(Bounds))
-                DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Red, true);
-        }
         
-        if (Children is null || Children.Length == 0) return;
+        if (Children is null) return;
+        
         foreach (var child in Children)
             child?.DrawNode();
     }

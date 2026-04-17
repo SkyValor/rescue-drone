@@ -7,20 +7,19 @@ public class Octree
 {
     public OctreeNode Root;
     public Aabb Bounds;
-    public readonly Graph Graph;
+    public readonly AStarGraph AStar;
 
     private readonly List<OctreeNode> emptyLeaves = [];
 
-    public Octree(Node3D[] worldObjects, float minNodeSize, Graph graph)
+    public Octree(Node3D[] worldObjects, float minNodeSize, AStarGraph graph)
     {
-        Graph = graph;
+        AStar = graph;
         
         CalculateBounds(worldObjects);
         CreateTree(worldObjects, minNodeSize);
 
         GetEmptyLeaves(Root);
         GetEdges();
-        GD.Print(Graph.Edges.Count);
     }
 
     public OctreeNode FindClosestNode(Vector3 position) => FindClosestNode(Root, position);
@@ -42,6 +41,13 @@ public class Octree
         }
         return found;
     }
+
+    public void DrawTree()
+    {
+        DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Gray, true);
+        Root.DrawNode();
+        AStar.DrawGraph();
+    }
     
     // Calculate the overall bounds that encapsulate every world object.
     private void CalculateBounds(Node3D[] worldObjects)
@@ -51,17 +57,17 @@ public class Octree
             var collision = Utils.GetChildNode<CollisionShape3D>(obj);
             if (collision is null) continue;
             
-            var colliderVertices = GetColliderVertices(collision);
-            if (colliderVertices is null) continue;
+            var colliderSides = GetColliderSides(collision);
+            if (colliderSides is null) continue;
             
-            foreach (var colliderPoint in colliderVertices)
-                Bounds = Bounds.Expand(colliderPoint);
+            foreach (var colliderSide in colliderSides)
+                Bounds = Bounds.Expand(colliderSide);
         }
         
         SetBoundsMinMax();
     }
     
-    private static Vector3[] GetColliderVertices(CollisionShape3D collider)
+    private static Vector3[] GetColliderSides(CollisionShape3D collider)
     {
         // We are only working with BoxShape3D CollisionShapes.
         if (collider.Shape is not BoxShape3D shape) 
@@ -80,7 +86,7 @@ public class Octree
     
     private void SetBoundsMinMax()
     {
-        var size = Vector3.One * GetMax(Bounds.Size.X, Bounds.Size.Y, Bounds.Size.Z) * 0.6f;
+        var size = Vector3.One * GetMax(Bounds.Size.X, Bounds.Size.Y, Bounds.Size.Z);
         Bounds = Bounds.Expand(Bounds.GetCenter() - size);
         Bounds = Bounds.Expand(Bounds.GetCenter() + size);
     }
@@ -96,7 +102,7 @@ public class Octree
         Root = new OctreeNode(Bounds, minNodeSize);
         foreach (var obj in worldObjects)
         {
-            Root.Divide(obj);
+            Root.Subdivide(obj);
         }
     }
 
@@ -105,7 +111,7 @@ public class Octree
         if (node.IsLeaf && node.Objects.Count == 0)
         {
             emptyLeaves.Add(node);
-            Graph.AddNode(node);
+            AStar.AddNode(node);
             return;
         }
 
@@ -121,7 +127,7 @@ public class Octree
             for (int j = i + 1; j < node.Children.Length; j++)
             {
                 if (i == j) continue;
-                Graph.AddEdge(node.Children[i], node.Children[j]);
+                AStar.AddEdge(node.Children[i], node.Children[j]);
             }
         }
     }
@@ -133,8 +139,9 @@ public class Octree
             foreach (var otherLeaf in emptyLeaves)
             {
                 if (leaf.Equals(otherLeaf)) continue;
+                
                 if (leaf.Bounds.Intersects(otherLeaf.Bounds))
-                    Graph.AddEdge(leaf, otherLeaf);
+                    AStar.AddEdge(leaf, otherLeaf);
             }
         }
     }
