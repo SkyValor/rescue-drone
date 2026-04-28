@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Godot;
 
-public class Octree
+public class SparseVoxelOctree
 {
     public OctreeNode Root;
     public Aabb Bounds;
@@ -11,7 +11,7 @@ public class Octree
 
     private readonly List<OctreeNode> emptyLeaves = [];
 
-    public Octree(Node3D[] worldObjects, float minNodeSize, AStarGraph graph)
+    public SparseVoxelOctree(Node3D[] worldObjects, float minNodeSize, AStarGraph graph)
     {
         AStar = graph;
         

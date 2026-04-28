@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class AStarGraph
+public partial class AStarGraph
 {
     private const int MAX_ITERATIONS = 10000;
     
@@ -40,7 +40,7 @@ public class AStarGraph
             return false;
         }
 
-        var openSet = new SortedSet<AStarNode>(new NodeComparer());
+        var openSet = new SortedSet<AStarNode>(new AStarNodeComparer());
         var closedSet = new HashSet<AStarNode>();
         int iterationCount = 0;
 
@@ -89,31 +89,6 @@ public class AStarGraph
         
         return false;
     }
-
-    private void ReconstructPath(AStarNode current)
-    {
-        while (current is not null)
-        {
-            pathList.Add(current);
-            current = current.From;
-        }
-
-        pathList.Reverse();
-    }
-
-    private static float Heuristic(AStarNode a, AStarNode b) => 
-        (a.OctreeNode.Bounds.GetCenter() - b.OctreeNode.Bounds.GetCenter()).LengthSquared();
-
-    public class NodeComparer : IComparer<AStarNode>
-    {
-        public int Compare(AStarNode x, AStarNode y)
-        {
-            if (x is null || y is null) return 0;
-            
-            int compare = x.F.CompareTo(y.F);
-            return compare == 0 ? x.Id.CompareTo(y.Id) : compare;
-        }
-    }
     
     public void AddNode(OctreeNode octreeNode)
     {
@@ -144,6 +119,20 @@ public class AStarGraph
         foreach (var node in Nodes.Values)
             DebugDraw3D.DrawSphere(node.OctreeNode.Bounds.GetCenter(), 0.2f, Colors.Green);
     }
+
+    private void ReconstructPath(AStarNode current)
+    {
+        while (current is not null)
+        {
+            pathList.Add(current);
+            current = current.From;
+        }
+
+        pathList.Reverse();
+    }
+
+    private static float Heuristic(AStarNode a, AStarNode b) => 
+        (a.OctreeNode.Bounds.GetCenter() - b.OctreeNode.Bounds.GetCenter()).LengthSquared();
     
     private AStarNode FindNode(OctreeNode octreeNode)
     {
