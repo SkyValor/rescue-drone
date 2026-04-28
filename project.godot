@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="RescueDrone"
-run/main_scene="uid://bn83aalnxm3wi"
+run/main_scene="uid://01mhatjtagbw"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[audio]
+
+buses/default_bus_layout=""
 
 [autoload]
 
@@ -87,6 +91,7 @@ throttle_down={
 3d_physics/layer_1="Player"
 3d_physics/layer_2="npc_drones"
 3d_physics/layer_4="Building"
+3d_physics/layer_9="Projectiles"
 
 [phantom_camera]
 

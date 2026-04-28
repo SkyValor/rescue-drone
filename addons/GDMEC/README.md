@@ -1,7 +1,7 @@
 
 <h1 align="center"> More Effective Godot Coroutines (C#) </h1> <br>
 <p align="center">
-    <img alt="GDMEC Icon" title="GDMEC" src="https://github.com/WeaverDev/More-Effective-Godot-Coroutines/assets/22682921/52ce5162-872c-4f49-b5db-ee1336cddad3" width="350">
+	<img alt="GDMEC Icon" title="GDMEC" src="https://github.com/WeaverDev/More-Effective-Godot-Coroutines/assets/22682921/52ce5162-872c-4f49-b5db-ee1336cddad3" width="350">
 </p>
 
 <h4 align="center">
@@ -33,12 +33,12 @@ MEC has the following functions to yield on.
 ```cs
 IEnumerator<double> MyCoroutine()
 {
-    yield return Timing.WaitForOneFrame;
-    GD.Print("One frame has passed");
-    yield return Timing.WaitForSeconds(2.0);
-    GD.Print("Two seconds have passed");
-    yield return Timing.WaitUntilDone(Timing.RunCoroutine(DoSomethingElse());
-    GD.Print("Finished doing something else");
+	yield return Timing.WaitForOneFrame;
+	GD.Print("One frame has passed");
+	yield return Timing.WaitForSeconds(2.0);
+	GD.Print("Two seconds have passed");
+	yield return Timing.WaitUntilDone(Timing.RunCoroutine(DoSomethingElse());
+	GD.Print("Finished doing something else");
 }
 ```
 
