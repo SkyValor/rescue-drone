@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://c5xii2l6tf57a"]
+
+[ext_resource type="PackedScene" uid="uid://bifrj2i8cm67y" path="res://Assets/Kenney City Kit Roads/road-crossroad-path.fbx" id="1_kqcoi"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mewld"]
+size = Vector3(15, 1, 15)
+
+[node name="Road Crossroad" type="StaticBody3D" unique_id=817804756]
+metadata/_edit_group_ = true
+
+[node name="road-crossroad-path" parent="." unique_id=428147406 instance=ExtResource("1_kqcoi")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2124577876]
+shape = SubResource("BoxShape3D_mewld")

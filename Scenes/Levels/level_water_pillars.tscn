@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://bq4msfm07fk6w"]
+
+[ext_resource type="PackedScene" uid="uid://d342rt2vjfxec" path="res://Models/Modular Level Objects/4x4_black_section_cross.tscn" id="1_xhd6l"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_xhd6l"]
+lightmap_size_hint = Vector2i(14, 137)
+size = Vector3(5, 24.89, 5)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_xhd6l"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5qrls"]
+albedo_color = Color(0.18302757, 0.35772762, 0.5859706, 1)
+
+[node name="Node3D" type="Node3D" unique_id=1997815088]
+
+[node name="Prototyping" type="Node3D" parent="." unique_id=1065326575]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Prototyping" unique_id=2134205331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.506112, 0)
+visible = false
+mesh = SubResource("BoxMesh_xhd6l")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Prototyping" unique_id=959914289]
+transform = Transform3D(113.7032, 0, 0, 0, 1, 0, 0, 0, 114.05701, 0, 0, 0)
+visible = false
+mesh = SubResource("PlaneMesh_xhd6l")
+surface_material_override/0 = SubResource("StandardMaterial3D_5qrls")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="Prototyping" unique_id=704538912]
+mode = 1
+spin_degrees = 360.0
+spin_sides = 8
+
+[node name="Geometry" type="Node3D" parent="." unique_id=921274333]
+
+[node name="4x4_Black_SectionCross" parent="Geometry" unique_id=211241160 instance=ExtResource("1_xhd6l")]
+visible = false

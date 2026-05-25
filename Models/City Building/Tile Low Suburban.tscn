@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://ubo4qn4kbs3p"]
+
+[ext_resource type="PackedScene" uid="uid://puiels64xqbi" path="res://Models/City Building/mdl_tile_low_suburban.tscn" id="1_2w5xq"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cy6y5"]
+size = Vector3(15, 0.25, 15)
+
+[node name="TileLowSuburban" type="StaticBody3D" unique_id=1164840443]
+
+[node name="tile-low" parent="." unique_id=213431861 instance=ExtResource("1_2w5xq")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1159961864]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0)
+shape = SubResource("BoxShape3D_cy6y5")
