@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://l4wdtxpv8k1p"]
+
+[ext_resource type="PackedScene" uid="uid://cmn77djpdnghm" path="res://Assets/Kenney City Kit Suburban/building-type-a.fbx" id="1_cksvk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cksvk"]
+size = Vector3(18.289063, 6.0026855, 12.2323)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3r38c"]
+size = Vector3(1.1748047, 1.824646, 1.1347656)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_micsd"]
+size = Vector3(5.8408203, 0.78881836, 2.6154785)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1hjw8"]
+size = Vector3(5.8408203, 0.78881836, 2.6154785)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r8i65"]
+size = Vector3(1.6315918, 1.9613037, 2.2085571)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q63p5"]
+size = Vector3(1.6315918, 1.9613037, 2.2085571)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pphpa"]
+size = Vector3(1.7850952, 1.4368286, 2.1944733)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oxgjj"]
+size = Vector3(1.7850952, 1.4368286, 2.1944733)
+
+[node name="Suburban Building A" type="StaticBody3D" unique_id=1027320541]
+
+[node name="building-type-a" parent="." unique_id=1411277172 instance=ExtResource("1_cksvk")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=931072588]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.006958, 0.8446655)
+shape = SubResource("BoxShape3D_cksvk")
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="." unique_id=316058559]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.14064, 7.3809423, 0.86363214)
+depth = 6.5
+polygon = PackedVector2Array(-0.02908343, 2.146843, 6.8392005, -1.3081117, 6.6518836, -1.7347784, 5.9754615, -1.3913641, -6.0232234, -1.3913641, -6.6788325, -1.7451844, -6.897367, -1.3081117)
+
+[node name="CollisionPolygon3D2" type="CollisionPolygon3D" parent="." unique_id=1149104450]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -6.134279, 7.3809423, 0.86363214)
+depth = 6.5
+polygon = PackedVector2Array(-0.02908343, 2.146843, 6.8392005, -1.3081117, 6.6518836, -1.7347784, 5.9754615, -1.3913641, -6.0232234, -1.3913641, -6.6788325, -1.7451844, -6.897367, -1.3081117)
+
+[node name="CollisionPolygon3D3" type="CollisionPolygon3D" parent="." unique_id=1152204401]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 10.376909, 0.8636322)
+depth = 6.765
+polygon = PackedVector2Array(-0.029712737, 2.1609783, -6.929218, -1.2731647, -6.7002754, -1.7310505, -6.0446663, -1.3980427, 6.0060525, -1.3876362, 6.609629, -1.7310505, 6.8281655, -1.3043842)
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1834620387]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8925767, 9.285497, -0.81695515)
+shape = SubResource("BoxShape3D_3r38c")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=2047848668]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0036783, 0.3751778, -6.386565)
+shape = SubResource("BoxShape3D_micsd")
+
+[node name="CollisionShape3D6" type="CollisionShape3D" parent="." unique_id=1694098229]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.0015097, 0.3751778, -6.386565)
+shape = SubResource("BoxShape3D_1hjw8")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="." unique_id=178587411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.081437, 1.543818, -6.169982)
+shape = SubResource("BoxShape3D_r8i65")
+
+[node name="CollisionShape3D7" type="CollisionShape3D" parent="." unique_id=403825983]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.923751, 1.543818, -6.169982)
+shape = SubResource("BoxShape3D_q63p5")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="." unique_id=23580801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.887559, 1.2815804, -6.1913977)
+shape = SubResource("BoxShape3D_pphpa")
+
+[node name="CollisionShape3D8" type="CollisionShape3D" parent="." unique_id=52611678]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.117629, 1.2815804, -6.1913977)
+shape = SubResource("BoxShape3D_oxgjj")

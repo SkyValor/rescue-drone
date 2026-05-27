@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cxr2msdwhd1fx"]
+
+[ext_resource type="PackedScene" uid="uid://v7f7yg5swd20" path="res://Assets/Kenney City Kit Roads/road-slant-flat-curve.fbx" id="1_14w8t"]
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="2_cauer"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_41cqw"]
+albedo_texture = ExtResource("2_cauer")
+
+[node name="road-slant-flat-curve" unique_id=793456614 instance=ExtResource("1_14w8t")]
+
+[node name="road-slant-flat-curve" parent="." index="0" unique_id=689395487]
+surface_material_override/0 = SubResource("StandardMaterial3D_41cqw")

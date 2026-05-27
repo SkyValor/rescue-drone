@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bhl3llrynvk8h"]
+
+[ext_resource type="PackedScene" uid="uid://bifrj2i8cm67y" path="res://Assets/Kenney City Kit Roads/road-crossroad-path.fbx" id="1_t5fnl"]
+[ext_resource type="Material" uid="uid://ctlpe75au34lh" path="res://Models/City Building/mat_suburban_road_variation_b.tres" id="2_me5fi"]
+
+[node name="road-crossroad-path" unique_id=428147406 instance=ExtResource("1_t5fnl")]
+
+[node name="road-crossroad-path" parent="." index="0" unique_id=679325642]
+surface_material_override/0 = ExtResource("2_me5fi")

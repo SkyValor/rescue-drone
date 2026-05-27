@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://cgeuo1i518jpg"]
+
+[ext_resource type="PackedScene" uid="uid://0kubwowldtm8" path="res://Assets/Kenney City Kit Roads/bridge-pillar-wide.fbx" id="1_2juvp"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2juvp"]
+size = Vector3(1.954834, 1.4695129, 1.9768066)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mv5wq"]
+size = Vector3(1.4189453, 5.594883, 1.4287109)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oj6k7"]
+size = Vector3(1.7131348, 0.42558718, 1.7265625)
+
+[node name="Suburban Bridge Pillar Wide" type="StaticBody3D" unique_id=1590241630]
+
+[node name="bridge-pillar-wide" parent="." unique_id=107910122 instance=ExtResource("1_2juvp")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=766447065]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75971985, 0)
+shape = SubResource("BoxShape3D_2juvp")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1688168147]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.27178, 0)
+shape = SubResource("BoxShape3D_mv5wq")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=739525203]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.2632103, 0)
+shape = SubResource("BoxShape3D_oj6k7")

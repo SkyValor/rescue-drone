@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://ceyrlvfrjnrsr"]
+
+[ext_resource type="PackedScene" uid="uid://dbg4a6dr66o7d" path="res://Assets/Kenney City Kit Roads/road-split.fbx" id="1_fjrie"]
+[ext_resource type="Material" uid="uid://ctlpe75au34lh" path="res://Models/City Building/mat_suburban_road_variation_b.tres" id="2_4jffh"]
+
+[node name="road-split" unique_id=1385802122 instance=ExtResource("1_fjrie")]
+
+[node name="road-split" parent="." index="0" unique_id=178562363]
+surface_material_override/0 = ExtResource("2_4jffh")

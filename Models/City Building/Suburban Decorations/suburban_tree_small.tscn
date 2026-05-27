@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://kb2mlk42jkmb"]
+
+[ext_resource type="PackedScene" uid="uid://biklygt4c24jj" path="res://Assets/Kenney City Kit Suburban/tree-small.fbx" id="1_njo1x"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_njo1x"]
+size = Vector3(1, 2.0041504, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_njo1x"]
+radius = 1.0893555
+height = 6.5423584
+
+[node name="Suburban Tree Small" type="StaticBody3D" unique_id=1979731224]
+
+[node name="tree-small" parent="." unique_id=765932652 instance=ExtResource("1_njo1x")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2121148819]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95303696, 0)
+shape = SubResource("BoxShape3D_njo1x")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=2011581581]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.060609, 0)
+shape = SubResource("CapsuleShape3D_njo1x")

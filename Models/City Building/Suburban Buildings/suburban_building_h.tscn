@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://venca8tl4xcd"]
+
+[ext_resource type="PackedScene" uid="uid://can1khwd7w76d" path="res://Assets/Kenney City Kit Suburban/building-type-h.fbx" id="1_6at4r"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6at4r"]
+size = Vector3(18.291992, 6.0029297, 12.444946)
+
+[node name="Suburban Building H" type="StaticBody3D" unique_id=1654989960]
+
+[node name="building-type-h" parent="." unique_id=1243096939 instance=ExtResource("1_6at4r")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1112103094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0063476563, 3.0063477, 0.004211426)
+shape = SubResource("BoxShape3D_6at4r")
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="." unique_id=335449267]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 0, 0)
+depth = 19.24
+polygon = PackedVector2Array(0.024086846, 11.084026, 6.860798, 5.931721, 6.635882, 5.5501842, 6.0129337, 5.9749217, -5.950508, 6.0173955, -6.5592995, 5.5077105, -6.9274044, 5.904132)

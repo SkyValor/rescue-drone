@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bk4l5ebqbhn7q"]
+
+[ext_resource type="PackedScene" uid="uid://b4uysdo7yt3ly" path="res://Assets/Kenney City Kit Roads/road-slant-curve-barrier.fbx" id="1_6wdos"]
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="2_ldf6v"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ec6ls"]
+albedo_texture = ExtResource("2_ldf6v")
+
+[node name="road-slant-curve-barrier" unique_id=655243763 instance=ExtResource("1_6wdos")]
+
+[node name="road-slant-curve-barrier" parent="." index="0" unique_id=582696677]
+surface_material_override/0 = SubResource("StandardMaterial3D_ec6ls")

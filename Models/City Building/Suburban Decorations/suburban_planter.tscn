@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://ce4i6k1y347nw"]
+
+[ext_resource type="PackedScene" uid="uid://cqaqgtg27vrno" path="res://Assets/Kenney City Kit Suburban/planter.fbx" id="1_t4kvk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t4kvk"]
+size = Vector3(5.7616577, 0.74261475, 4.243164)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vykhj"]
+size = Vector3(1.82518, 2.1807098, 1.6320801)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bh2gn"]
+size = Vector3(1.8698082, 1.686058, 1.7902832)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mqcgs"]
+size = Vector3(1.6706381, 2.1965446, 1.7903442)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hjh0s"]
+size = Vector3(1.9954183, 1.6528378, 1.8365784)
+
+[node name="Suburban Planter" type="StaticBody3D" unique_id=2076466083]
+
+[node name="planter" parent="." unique_id=1804359931 instance=ExtResource("1_t4kvk")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=659434677]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.010650635, 0.36880493, -0.013183594)
+shape = SubResource("BoxShape3D_t4kvk")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1089932468]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0667953, 1.4384842, -0.8944092)
+shape = SubResource("BoxShape3D_vykhj")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=1448329098]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1620426, 1.1911583, 0.83319616)
+shape = SubResource("BoxShape3D_bh2gn")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="." unique_id=95433691]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0790596, 1.4464016, 0.88626623)
+shape = SubResource("BoxShape3D_mqcgs")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="." unique_id=1051717062]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1155301, 1.1745481, -0.91398096)
+shape = SubResource("BoxShape3D_hjh0s")
