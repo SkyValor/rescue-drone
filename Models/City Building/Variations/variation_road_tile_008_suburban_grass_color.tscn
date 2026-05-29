@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://dieekm4gsbm3n"]
+
+[ext_resource type="PackedScene" uid="uid://r2e0jq8od6p7" path="res://Assets/Kenney Road Tiles/roadTile_008.gltf" id="1_157u4"]
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="2_l4ro1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l4ro1"]
+albedo_texture = ExtResource("2_l4ro1")
+uv1_scale = Vector3(0.01, 0.01, 1)
+uv1_offset = Vector3(0.751, 0.605, 0)
+
+[node name="roadTile_008" unique_id=253076376 instance=ExtResource("1_157u4")]
+
+[node name="Mesh1 Group1 Model" parent="." index="0" unique_id=269077944]
+surface_material_override/0 = SubResource("StandardMaterial3D_l4ro1")

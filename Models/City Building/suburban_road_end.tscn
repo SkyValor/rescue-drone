@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://c0vhfq7y517ba"]
+
+[ext_resource type="PackedScene" uid="uid://cocidyhtjd4fn" path="res://Models/City Building/Variations/variation_road_end_b.tscn" id="3_8810e"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f85pv"]
+size = Vector3(15, 1, 15)
+
+[node name="Straight Road End" type="StaticBody3D" unique_id=2060532865]
+
+[node name="road-end" parent="." unique_id=567508308 instance=ExtResource("3_8810e")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=358610045]
+shape = SubResource("BoxShape3D_f85pv")

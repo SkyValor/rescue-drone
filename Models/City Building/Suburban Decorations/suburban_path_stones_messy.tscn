@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://d3uot6d7t33n"]
+
+[ext_resource type="PackedScene" uid="uid://dsy6r02jmytx2" path="res://Assets/Kenney City Kit Suburban/path-stones-messy.fbx" id="1_thpvx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_thpvx"]
+size = Vector3(2.2165527, 0.21734619, 5.385742)
+
+[node name="Suburban Path Stones Messy" type="StaticBody3D" unique_id=1175443298]
+
+[node name="path-stones-messy" parent="." unique_id=1006382338 instance=ExtResource("1_thpvx")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2093771249]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08358765, 0)
+shape = SubResource("BoxShape3D_thpvx")

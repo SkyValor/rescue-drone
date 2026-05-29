@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cht5mvjfdvto0"]
+
+[ext_resource type="PackedScene" uid="uid://dsy6r02jmytx2" path="res://Assets/Kenney City Kit Suburban/path-stones-messy.fbx" id="1_on16g"]
+
+[node name="Suburban Path Stones Messy" type="StaticBody3D" unique_id=1175443298]
+
+[node name="path-stones-messy" parent="." unique_id=1006382338 instance=ExtResource("1_on16g")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
