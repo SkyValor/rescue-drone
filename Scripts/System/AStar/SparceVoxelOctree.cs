@@ -44,9 +44,9 @@ public class SparseVoxelOctree
 
     public void DrawTree()
     {
-        DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Gray, true);
+        // DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Gray, true);
         Root.DrawNode();
-        AStar.DrawGraph();
+        // AStar.DrawGraph();
     }
     
     // Calculate the overall bounds that encapsulate every world object.

@@ -76,13 +76,13 @@ public partial class Drone : CharacterBody3D
 		if (RotationEnabled)
 			RotationHandler?.Tick(deltaTime);
 
-		UpdateLookTarget();
-		UpdateCamera(deltaTime);
+		// UpdateLookTarget();
+		// UpdateCamera(deltaTime);
 	}
 
 	private void UpdateLookTarget()
 	{
-		var forward = -GlobalTransform.Basis.Z;
+		var forward = -Basis.Z;
 		CameraTarget.GlobalPosition = GlobalPosition + forward * LookForwardOffset;
 	}
 

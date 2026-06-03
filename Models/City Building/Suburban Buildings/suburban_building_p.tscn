@@ -30,6 +30,8 @@ size = Vector3(1.571228, 2.0947723, 2.083252)
 size = Vector3(1.8103027, 1.5445786, 2.2356567)
 
 [node name="Suburban Building P" type="StaticBody3D" unique_id=1316081036]
+collision_layer = 8
+collision_mask = 19
 
 [node name="building-type-p" parent="." unique_id=1796707557 instance=ExtResource("1_dioqm")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

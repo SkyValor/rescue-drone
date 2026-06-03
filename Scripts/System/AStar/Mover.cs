@@ -9,7 +9,7 @@ public partial class Mover : CharacterBody3D
     [Export] public float Speed { get; private set; } = 5f;
     [Export] public float Accuracy { get; private set; } = 1f;
     [Export] public float TurnSpeed { get; private set; } = 5f;
-    [Export] public OctreeGenerator OctreeGenerator { get; private set; }
+    [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
     
     private int currentWaypoint;
     private OctreeNode currentNode;
@@ -35,8 +35,8 @@ public partial class Mover : CharacterBody3D
 
     public override void _Process(double delta)
     {
-        // DrawAStarPath();
-        DrawAStarCurvePath();
+        DrawAStarPath();
+        // DrawAStarCurvePath();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -84,8 +84,9 @@ public partial class Mover : CharacterBody3D
             var rand = GD.RandRange(0, graph.Nodes.Count - 1);
             destinationNode = graph.Nodes.ElementAt(rand).Key;
         } while (!graph.AStar(currentNode, destinationNode));
+        
         currentWaypoint = 0;
-        CallDeferred(MethodName.CreateCurvePath);
+        //CallDeferred(MethodName.CreateCurvePath);
     }
 
     private void CreateCurvePath()
@@ -128,8 +129,8 @@ public partial class Mover : CharacterBody3D
     {
         if (graph is null || graph.GetPathLength() == 0) return;
     
-        DebugDraw3D.DrawSphere(graph.GetPathNode(0).Bounds.GetCenter(), 0.7f, Colors.Red);
-        DebugDraw3D.DrawSphere(graph.GetPathNode(graph.GetPathLength() - 1).Bounds.GetCenter(), 0.7f, Colors.Blue);
+        DebugDraw3D.DrawSphere(graph.GetPathNode(0).Bounds.GetCenter(), 0.7f, Colors.Blue);
+        DebugDraw3D.DrawSphere(graph.GetPathNode(graph.GetPathLength() - 1).Bounds.GetCenter(), 0.7f, Colors.Red);
     
         for (int i = 0; i < graph.GetPathLength(); i++)
         {
