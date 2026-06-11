@@ -10,6 +10,8 @@ radius = 1.0893555
 height = 6.5423584
 
 [node name="Suburban Tree Small" type="StaticBody3D" unique_id=1979731224]
+collision_layer = 8
+collision_mask = 19
 
 [node name="tree-small" parent="." unique_id=765932652 instance=ExtResource("1_njo1x")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

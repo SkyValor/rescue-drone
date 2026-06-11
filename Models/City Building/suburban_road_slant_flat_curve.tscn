@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://bk4l5ebqbhn7q" path="res://Models/City Building/Variations/variation_road_slant_curve_barrier_b.tscn" id="3_w5ago"]
 
 [node name="Suburban Road Slant Flat Curve" type="StaticBody3D" unique_id=621351330]
+collision_layer = 8
+collision_mask = 19
 
 [node name="road-slant-flat-curve" parent="." unique_id=793456614 instance=ExtResource("1_k5755")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -0.5, 0, 0)

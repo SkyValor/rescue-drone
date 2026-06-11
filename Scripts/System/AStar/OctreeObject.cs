@@ -4,7 +4,7 @@ using Godot;
 
 public class OctreeObject
 {
-    private Aabb bounds;
+    private readonly Aabb bounds;
 
     public OctreeObject(Node3D obj)
     {

@@ -3,6 +3,8 @@
 [ext_resource type="PackedScene" uid="uid://digd2bmpjgh07" path="res://Assets/Kenney City Kit Suburban/fence-3x2.fbx" id="1_uvoja"]
 
 [node name="Suburban Fence 3x2" type="StaticBody3D" unique_id=1455490122]
+collision_layer = 8
+collision_mask = 19
 
 [node name="fence-3x2" parent="." unique_id=1029159679 instance=ExtResource("1_uvoja")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

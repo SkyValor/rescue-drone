@@ -13,6 +13,8 @@ size = Vector3(14.993164, 1.206543, 0.60302734)
 size = Vector3(14.993164, 1.206543, 0.60302734)
 
 [node name="Straight Road" type="StaticBody3D" unique_id=2060532865]
+collision_layer = 8
+collision_mask = 19
 
 [node name="road-straight2" parent="." unique_id=342503251 instance=ExtResource("2_1bty4")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

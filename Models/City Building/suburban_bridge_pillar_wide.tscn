@@ -12,6 +12,8 @@ size = Vector3(1.4189453, 5.594883, 1.4287109)
 size = Vector3(1.7131348, 0.42558718, 1.7265625)
 
 [node name="Suburban Bridge Pillar Wide" type="StaticBody3D" unique_id=1590241630]
+collision_layer = 8
+collision_mask = 19
 
 [node name="bridge-pillar-wide" parent="." unique_id=107910122 instance=ExtResource("1_2juvp")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
