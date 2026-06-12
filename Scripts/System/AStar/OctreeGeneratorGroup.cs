@@ -17,6 +17,6 @@ public partial class OctreeGeneratorGroup : Node3D
 
     public override void _Process(double delta)
     {
-        Tree.DrawTree();
+        // Tree.DrawTree();
     }
 }
