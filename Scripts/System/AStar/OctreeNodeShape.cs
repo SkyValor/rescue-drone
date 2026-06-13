@@ -52,6 +52,15 @@ public class OctreeNodeShape
         foreach (var child in Children)
             child?.DrawNode();
     }
+
+    public void Cleanup()
+    {
+        boxShape.Free();
+        
+        if (IsLeaf) return;
+        foreach (var child in Children)
+            child.Cleanup();
+    }
     
     public bool ContainsPoint(Vector3 point)
     {

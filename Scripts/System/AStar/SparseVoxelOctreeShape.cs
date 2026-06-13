@@ -24,6 +24,7 @@ public class SparseVoxelOctreeShape
         CreateTree(minNodeSize, world3D);
         AddEmptyLeavesAsPoints();
         LinkVoxelGraph();
+        // CleanupVoxels();
     }
 
     public void DrawTree()
@@ -88,9 +89,7 @@ public class SparseVoxelOctreeShape
                 var neighbor = GetEmptyLeafAtPosition(targetPosition);
                 if (neighbor is null) continue;
                 if (neighbor.IsLeaf)
-                {
                     AStarGraph.ConnectPoints(currentLeaf.Id, neighbor.Id);
-                }
             }
         }
     }
@@ -112,6 +111,11 @@ public class SparseVoxelOctreeShape
         }
 
         return null;
+    }
+
+    private void CleanupVoxels()
+    {
+        Root.Cleanup();
     }
 
 }

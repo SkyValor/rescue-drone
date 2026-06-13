@@ -486,7 +486,7 @@ size = Vector3(300, 200, 302.689)
 
 [node name="AStarEnemy" parent="." unique_id=1980390112 node_paths=PackedStringArray("OctreeGenerator") instance=ExtResource("1_tswcn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.016194, 9.92861, -0.024029732)
-Speed = 500.0
+Speed = 15.0
 Accuracy = 1.5
 DroneRadius = 0.85
 OctreeGenerator = NodePath("../OctreeGenerator")

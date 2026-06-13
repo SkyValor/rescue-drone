@@ -1,21 +1,22 @@
 ﻿namespace RescueDrone;
 
-using System.Collections.Generic;
 using Godot;
 
 public partial class Mover : CharacterBody3D
 {
     [Export] public float Speed { get; private set; } = 5f;
+    [Export] public float Acceleration { get; private set; } = 5f;
     [Export] public float Accuracy { get; private set; } = 1f;
     [Export] public float TurnSpeed { get; private set; } = 5f;
     [Export] public float DroneRadius { get; private set; } = 1f;
+    [Export] public float TargetRadius { get; private set; } = 2f;
     [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
-    
+
+    private IDronePathfinding dronePathfinding;
     private SparseVoxelOctreeShape svo;
-    private Vector3[] aStarPath;
-    private Vector3[] smoothPath;
+    private Vector3[] aStarPath = [];
+    private Vector3[] smoothPath = [];
     private int pathIndex;
-    private World3D world3D;
     
     public override void _EnterTree()
     {
@@ -24,7 +25,6 @@ public partial class Mover : CharacterBody3D
 
     public override void _Ready()
     {
-        world3D = GetWorld3D();
         CallDeferred(MethodName.InitiateBehavior);
     }
 
@@ -37,8 +37,7 @@ public partial class Mover : CharacterBody3D
             return;
         }
         
-        GetAStarPath();
-        SmoothPath();
+        dronePathfinding = new DronePathfinding();
         SetPhysicsProcess(true);
     }
 
@@ -52,90 +51,57 @@ public partial class Mover : CharacterBody3D
     public override void _PhysicsProcess(double delta)
     {
         if (svo is null) return;
-
-        if (smoothPath is null || smoothPath.Length == 0 || pathIndex >= smoothPath.Length)
+        if (smoothPath.Length == 0 || pathIndex >= smoothPath.Length)
         {
-            GD.Print("Recalculating path...");
-            GetAStarPath();
-            SmoothPath();
+            RecalculatePath();
             return;
         }
         
-        var distanceToVoxel = GlobalPosition.DistanceTo(smoothPath[pathIndex]);
-        if (distanceToVoxel < Accuracy)
+        var targetPosition = smoothPath[pathIndex];
+        var toTarget = targetPosition - GlobalPosition;
+        var distance = toTarget.Length();
+        if (distance < TargetRadius)
         {
             pathIndex++;
-            return;
+            if (pathIndex >= smoothPath.Length) return;
+            
+            // Recalculate for the new node
+            targetPosition = smoothPath[pathIndex];
+            toTarget = targetPosition - GlobalPosition;
         }
         
         // Smoothly rotate towards the destination point.
         var deltaTime = (float) delta;
-        var destination = smoothPath[pathIndex];
-        var nextTransform = Transform.LookingAt(destination, Vector3.Up);
-        GlobalTransform = GlobalTransform.InterpolateWith(nextTransform, TurnSpeed * deltaTime);
-        Velocity = -Basis.Z * Speed * deltaTime;
+        var direction = toTarget.Normalized();
+        if (direction != Vector3.Zero)
+        {
+            var targetBasis = Basis.LookingAt(direction, Vector3.Up);
+            GlobalTransform = GlobalTransform.InterpolateWith(new Transform3D(targetBasis, GlobalPosition), TurnSpeed * deltaTime);
+        }
+
+        var targetVelocity = direction * Speed;
+        Velocity = Velocity.Lerp(targetVelocity, Acceleration * deltaTime);
         MoveAndSlide();
     }
 
-    private void GetAStarPath()
+    private void RecalculatePath()
     {
-        var closestVoxel = svo.FindClosestEmptyLeaf(GlobalPosition);
-        int randomLeafID;
-        do
+        GD.Print($"Recalculating path at {Time.GetTicksMsec() * 0.001f}...");
+        if (dronePathfinding is null || svo is null)
         {
-            randomLeafID = GD.RandRange(0, svo.EmptyLeavesCount - 1);
-            aStarPath = svo.CreatePath(closestVoxel.Id, randomLeafID);
-
-        } while (closestVoxel.Id == randomLeafID || aStarPath.Length == 0);
-        pathIndex = 0;
-    }
-
-    private void SmoothPath()
-    {
-        if (aStarPath.Length <= 2) return;
-
-        var path = new List<Vector3> { aStarPath[0] }; // Always keep the starting point.
-        var current = 0;
-        while (current < aStarPath.Length - 1)
-        {
-            // Check from the end of the path backwards.
-            for (int next = aStarPath.Length - 1; next > current; next--)
-            {
-                // If the drone can safely fly in a straight line between these two points
-                if (IsPathClear(aStarPath[current], aStarPath[next]))
-                {
-                    path.Add(aStarPath[next]);
-                    current = next; // Move our starting point forward
-                    break;
-                }
-            }
+            GD.Print($"STOP HERE at {Time.GetTicksMsec() * 0.001f}");
+            GD.Print($"{dronePathfinding is null} {svo is null}");
+            return;
         }
-
-        smoothPath = path.ToArray();
-    }
-
-    private bool IsPathClear(Vector3 start, Vector3 end)
-    {
-        var spaceState = world3D.DirectSpaceState;
-        var query = new PhysicsShapeQueryParameters3D();
         
-        // Use a sphere cast matching the drone's size to ensure it doesn't clip walls
-        var sphere = new SphereShape3D();
-        sphere.Radius = DroneRadius;
-        query.Shape = sphere;
-        
-        // We make a motion query to determine how much of the path is safe for traversing
-        query.Transform = new Transform3D(Basis.Identity, start);
-        query.Motion = end - start;
-        var result = spaceState.CastMotion(query);
-        
-        // CastMotion returns an array where [0] is the safe fraction (1.0 means completely clear)
-        return result[0] >= 1.0f;
+        aStarPath = dronePathfinding.GetAStarPath(svo, GlobalPosition);
+        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius);
+        pathIndex = 0;
     }
 
     private void DrawAStarPath()
     {
-        if (svo is null || aStarPath.Length == 0) return;
+        if (aStarPath.Length == 0) return;
     
         DebugDraw3D.DrawSphere(aStarPath[0], 0.7f, Colors.Blue);
         DebugDraw3D.DrawSphere(aStarPath[^1], 0.7f, Colors.Red);
@@ -154,7 +120,7 @@ public partial class Mover : CharacterBody3D
 
     private void DrawSmoothPath()
     {
-        if (svo is null || smoothPath is null || smoothPath.Length == 0) return;
+        if (smoothPath is null || smoothPath.Length == 0) return;
         
         DebugDraw3D.DrawSphere(smoothPath[0], 0.7f, Colors.Blue);
         DebugDraw3D.DrawSphere(smoothPath[^1], 0.7f, Colors.Red);
@@ -173,11 +139,11 @@ public partial class Mover : CharacterBody3D
 
     private void DrawPathLines()
     {
-        if (svo is null ||
-            aStarPath is null || aStarPath.Length == 0 ||
+        if (aStarPath is null || aStarPath.Length == 0 ||
             smoothPath is null || smoothPath.Length == 0)
         {
             GD.Print("STOP HERE");
+            return;
         }
 
         for (int i = 0; i < aStarPath.Length - 1; i++)
