@@ -1,6 +1,7 @@
 ﻿namespace RescueDrone;
 
 using Godot;
+using Godot.Collections;
 
 public partial class Mover : CharacterBody3D
 {
@@ -12,6 +13,7 @@ public partial class Mover : CharacterBody3D
     [Export] public float TargetRadius { get; private set; } = 2f;
     [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
 
+    private Array<Rid> exclusion;
     private IDronePathfinding dronePathfinding;
     private SparseVoxelOctreeShape svo;
     private Vector3[] aStarPath = [];
@@ -25,6 +27,7 @@ public partial class Mover : CharacterBody3D
 
     public override void _Ready()
     {
+        exclusion = [GetRid()];
         CallDeferred(MethodName.InitiateBehavior);
     }
 
@@ -94,8 +97,8 @@ public partial class Mover : CharacterBody3D
             return;
         }
         
-        aStarPath = dronePathfinding.GetAStarPath(svo, GlobalPosition);
-        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius);
+        aStarPath = dronePathfinding.GetAStarPath(svo, GetWorld3D(), GlobalPosition, DroneRadius);
+        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
         pathIndex = 0;
     }
 

@@ -53,13 +53,10 @@ public class OctreeNodeShape
             child?.DrawNode();
     }
 
-    public void Cleanup()
+    // A sphere with this radius can go through if the radius is less than half the size.
+    public bool CanSphereGoThrough(float sphereRadius)
     {
-        boxShape.Free();
-        
-        if (IsLeaf) return;
-        foreach (var child in Children)
-            child.Cleanup();
+        return sphereRadius < Size.X * 0.5f;
     }
     
     public bool ContainsPoint(Vector3 point)

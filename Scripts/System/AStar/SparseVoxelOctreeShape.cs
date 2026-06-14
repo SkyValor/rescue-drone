@@ -24,7 +24,27 @@ public class SparseVoxelOctreeShape
         CreateTree(minNodeSize, world3D);
         AddEmptyLeavesAsPoints();
         LinkVoxelGraph();
-        // CleanupVoxels();
+
+        // GD.Print("Check A* graph state.");
+        // foreach (var currentLeaf in emptyLeaves)
+        // {
+        //     if (!AStarGraph.HasPoint(currentLeaf.Id))
+        //     {
+        //         GD.Print($"Point with ID {currentLeaf.Id} not found in graph.");
+        //         continue;
+        //     }
+        //
+        //     if (AStarGraph.IsPointDisabled(currentLeaf.Id))
+        //     {
+        //         GD.Print($"Point with ID {currentLeaf.Id} is disabled.");
+        //         continue;
+        //     }
+        //
+        //     if (AStarGraph.GetPointConnections(currentLeaf.Id).Length == 0)
+        //     {
+        //         GD.Print($"Point with ID {currentLeaf.Id} has no connections.");
+        //     }
+        // }
     }
 
     public void DrawTree()
@@ -44,6 +64,12 @@ public class SparseVoxelOctreeShape
             return [];
         
         return AStarGraph.GetPointPath(fromID, toID);
+    }
+
+    public bool IsEnabled(int id)
+    {
+        if (!AStarGraph.HasPoint(id)) return false;
+        return !AStarGraph.IsPointDisabled(id);
     }
 
     private void CreateTree(float minNodeSize, World3D world3D)
@@ -111,11 +137,6 @@ public class SparseVoxelOctreeShape
         }
 
         return null;
-    }
-
-    private void CleanupVoxels()
-    {
-        Root.Cleanup();
     }
 
 }
