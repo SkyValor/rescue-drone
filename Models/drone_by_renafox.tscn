@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://m78y5qc1mpka"]
+
+[ext_resource type="PackedScene" uid="uid://rwt4ue642qc0" path="res://Assets/source/drone.FBX" id="1_hxc0v"]
+
+[node name="drone" unique_id=1419433351 instance=ExtResource("1_hxc0v")]
+
+[node name="Object002" parent="." index="1" unique_id=252723654]
+visible = false

@@ -89,13 +89,7 @@ public partial class Mover : CharacterBody3D
 
     private void RecalculatePath()
     {
-        GD.Print($"Recalculating path at {Time.GetTicksMsec() * 0.001f}...");
-        if (dronePathfinding is null || svo is null)
-        {
-            GD.Print($"STOP HERE at {Time.GetTicksMsec() * 0.001f}");
-            GD.Print($"{dronePathfinding is null} {svo is null}");
-            return;
-        }
+        if (dronePathfinding is null) return;
         
         aStarPath = dronePathfinding.GetAStarPath(svo, GetWorld3D(), GlobalPosition, DroneRadius);
         smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);

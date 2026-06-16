@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://de74rjpv774gk"]
+
+[ext_resource type="PackedScene" uid="uid://cvt3sk2nb8pdp" path="res://Assets/[TRON-ish] Low-Poly Drone/scene.gltf" id="1_2cls3"]
+[ext_resource type="Script" uid="uid://c1dfcqbwq1d4w" path="res://Scripts/PlayerMover.cs" id="1_wraj3"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_wraj3"]
+radius = 0.65959895
+
+[node name="Node3D" type="CharacterBody3D" unique_id=1636160972]
+script = ExtResource("1_wraj3")
+
+[node name="DroneMesh" parent="." unique_id=401999617 instance=ExtResource("1_2cls3")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2126535481]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06751561, 0.139251)
+shape = SubResource("SphereShape3D_wraj3")
