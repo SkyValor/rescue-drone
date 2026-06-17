@@ -8,48 +8,6 @@ public class DronePathfinding : IDronePathfinding
 {
     private const int MIN_PATH_LENGTH = 3;
     
-    // public Vector3[] GetAStarPath(SparseVoxelOctreeShape svo, World3D world3D, Vector3 initialPosition, float droneRadius)
-    // {
-    //     GD.Print("\nGenerateAStarPath()");
-    //     Vector3[] path;
-    //     var disabledPoints = new List<Vector3>();
-    //     var closestVoxel = svo.FindClosestEmptyLeaf(initialPosition);
-    //     bool walkable;
-    //     do
-    //     {
-    //         // Generate a walkable path with at least 3 points.
-    //         int randomLeafID;
-    //         do
-    //         {
-    //             GD.Print("generating new path...");
-    //             randomLeafID = GD.RandRange(0, svo.EmptyLeavesCount - 1);
-    //             path = svo.CreatePath(closestVoxel.Id, randomLeafID);
-    //             GD.Print($"> Path generated with {path.Length} points.");
-    //         } while (closestVoxel.Id == randomLeafID || path.Length < MIN_PATH_LENGTH);
-    //
-    //         // Check if the current path is completely walkable.
-    //         walkable = true;
-    //         GD.Print("checking walkability...");
-    //         for (int i = 0; i < path.Length - 1; i++)
-    //         {
-    //             var current = path[i];
-    //             var next = path[i + 1];
-    //             
-    //             if (IsPathClear(current, next, world3D, droneRadius)) continue;
-    //             
-    //             // If not, set the target node as unwalkable
-    //             svo.DisablePoint(next);
-    //             disabledPoints.Add(next);
-    //             walkable = false;
-    //             break;
-    //         }
-    //     } while (walkable);
-    //     
-    //     GD.Print("Path generated successfully.");
-    //     svo.ReenablePoints(disabledPoints);
-    //     return path;
-    // }
-    
     public Vector3[] GetAStarPath(SparseVoxelOctreeShape svo, World3D world3D, Vector3 initialPosition, float droneRadius)
     {
         Vector3[] path;
