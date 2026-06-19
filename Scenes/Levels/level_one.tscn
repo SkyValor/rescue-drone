@@ -989,6 +989,7 @@ metadata/_custom_type_script = "uid://bd046eokvcnu2"
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 0.87461966, 0.4848097, 0, -0.4848097, 0.87461966, -48.80655, 9.079509, 107.42682)
 script = ExtResource("58_jyqhy")
+priority = 5
 follow_mode = 6
 follow_target = NodePath("../PlayerDrone_TRONish")
 tween_resource = SubResource("Resource_j0j1n")
@@ -1009,6 +1010,8 @@ MaxVerticalSpeed = 5.0
 Acceleration = 8.0
 Deceleration = 5.0
 RotationSpeed = 1.5
+Control = 1
+CamRotationSpeed = 1.0
 
 [node name="FollowCamera" type="Camera3D" parent="PlayerDrone_TRONish" unique_id=28248198]
 transform = Transform3D(1, 0, 0, 0, 0.952449, 0.3046981, 0, -0.3046981, 0.95244896, 0, 0.9722749, 1.4683669)

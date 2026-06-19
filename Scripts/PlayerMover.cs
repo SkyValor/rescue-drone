@@ -1,10 +1,13 @@
-﻿namespace RescueDrone.Scripts;
+﻿namespace RescueDrone;
 
+using System;
 using Godot;
 using PhantomCamera;
 
 public partial class PlayerMover : CharacterBody3D
 {
+    public enum ControlType { Type1, Type2 }
+    
     private const float MOUSE_SENSITIVITY = 0.001f;
     
     [ExportGroup("Speed Settings")]
@@ -24,26 +27,27 @@ public partial class PlayerMover : CharacterBody3D
     [Export] public float HoverBobAmplitude = 0.05f;
     
     [ExportGroup("Camera Settings")]
-    [Export] public bool RotateWithMouse { get; private set; }
+    [Export] public ControlType Control { get; private set; } = ControlType.Type1;
     [Export] public float CamRotationSpeed = 3.0f;
 
     private PhantomCamera3D pCam;
+    private float target_rotation_x;
     private float target_rotation_y;
     
     public override void _Ready()
     {
-        // Floating mode ensures move_and_slide handles 3D space movement without floor snaps
-        MotionMode = MotionModeEnum.Floating;
-        
-        if (DroneMesh == null && HasNode("DroneMesh"))
+        if (DroneMesh is null && HasNode("DroneMesh"))
             DroneMesh = GetNode<Node3D>("DroneMesh");
 
         pCam = GetNode<Node3D>("../PlayerThirdPersonCamera").AsPhantomCamera3D();
-        if (RotateWithMouse && pCam.FollowMode == FollowMode3D.ThirdPerson)
+        if (Control is ControlType.Type1 && pCam.FollowMode == FollowMode3D.ThirdPerson)
+        {
             Input.SetMouseMode(Input.MouseModeEnum.Captured);
+            SetProcessUnhandledInput(true);
+            return;
+        }
         
-        // _UnhandledInput is only called if we need to read mouse motion
-        SetProcessUnhandledInput(RotateWithMouse);
+        SetProcessUnhandledInput(false);
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -60,60 +64,215 @@ public partial class PlayerMover : CharacterBody3D
         pCam.SetThirdPersonRotation(currentRotation);
     }
 
-    // public override void _PhysicsProcess(double delta)
-    // {
-    //     var deltaTime = (float) delta;
-    //     
-    //     if (!RotateWithMouse)
-    //         RotateCameraWithKeys(deltaTime);
-    //     
-    //     // 1. Handle Yaw Rotation (Turning left/right)
-    //     var rotationInput = Input.GetAxis("turn_right", "turn_left");
-    //     RotateY(rotationInput * RotationSpeed * deltaTime);
-    //
-    //     // 2. Gather Translation Input Vectors
-    //     var inputDirection = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
-    //     var verticalInput = Input.GetAxis("throttle_down", "throttle_up");
-    //
-    //     // Calculate horizontal direction based on the drone's current rotation basis
-    //     var direction = (Transform.Basis.X * inputDirection.X) + (Transform.Basis.Z * inputDirection.Y);
-    //     if (direction.LengthSquared() > 1.0f)
-    //         direction = direction.Normalized();
-    //
-    //     // 3. Apply Separate Acceleration and Friction logic
-    //     var currentVelocity = Velocity;
-    //
-    //     // --- Horizontal Velocity Logic ---
-    //     var targetHorizontalVelocity = direction * MaxHorizontalSpeed;
-    //     var currentHorizontalVelocity = new Vector3(currentVelocity.X, 0, currentVelocity.Z);
-    //
-    //     // Use Acceleration if pushing input, Deceleration (friction) if drifting
-    //     var horizontalStep = (direction.LengthSquared() > 0) ? Acceleration : Deceleration;
-    //     currentHorizontalVelocity = currentHorizontalVelocity.MoveToward(targetHorizontalVelocity, horizontalStep * deltaTime);
-    //
-    //     // --- Vertical Velocity Logic ---
-    //     var targetVerticalVelocity = verticalInput * MaxVerticalSpeed;
-    //     var currentVerticalStep = (Mathf.Abs(verticalInput) > 0) ? Acceleration : Deceleration;
-    //     var verticalVelocity = Mathf.MoveToward(currentVelocity.Y, targetVerticalVelocity, currentVerticalStep * deltaTime);
-    //
-    //     Velocity = new Vector3(currentHorizontalVelocity.X, verticalVelocity, currentHorizontalVelocity.Z);
-    //     MoveAndSlide();
-    //     
-    //     // 4. Procedural Drone Polish (Visuals)
-    //     if (DroneMesh == null) return;
-    //     ApplyVisualTilt(currentHorizontalVelocity, deltaTime);
-    //     ApplyHoverBob(inputDirection, verticalInput);
-    // }
-
     public override void _PhysicsProcess(double delta)
     {
         var deltaTime = (float) delta;
-        
-        // 1. Gather Movement Inputs
-        var inputDirection = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
-        var verticalInput = Input.GetAxis("throttle_down", "throttle_up");
+        switch (Control)
+        {
+            case ControlType.Type1:
+                PhysicsProcessWithType1(deltaTime);
+                break;
+            case ControlType.Type2:
+                PhysicsProcessWithType2(deltaTime);
+                break;
+            default:
+                throw new NotImplementedException("Anything besides type 1 or 2 not implemented.");
+        }
+    }
 
-        // 2. Calculate Direction Relative to Camera
+    /// <summary>
+    /// In Type-1, the user rotates the third-person-camera around the drone using the mouse.
+    /// This is handled inside _UnhandledInput().
+    ///
+    /// Furthermore, the drone will always rotate to match the looking direction
+    /// of the camera. Other controls are done with keyboard keys.
+    /// </summary>
+    /// <param name="deltaTime"></param>
+    private void PhysicsProcessWithType1(float deltaTime)
+    {
+        if (pCam is null) return;
+
+        var camDirection = GetCamDirectionalsFlattened();
+        AlignDroneNoseWithCamera(camDirection.Forward, deltaTime);
+        
+        var inputDirection = GetHorizontalInput();
+        var verticalInput = GetVerticalInput();
+
+        // Calculate horizontal direction based on the drone's current rotation basis
+        var horizontalDirection = (camDirection.Right * inputDirection.X) - (camDirection.Forward * inputDirection.Y);
+        if (horizontalDirection.LengthSquared() > 1.0f)
+            horizontalDirection = horizontalDirection.Normalized();
+        
+        var currentVelocity = Velocity;
+        var horizontalVelocity = ProcessHorizontalVelocity(horizontalDirection, currentVelocity, deltaTime);
+        var verticalVelocity = ProcessVerticalVelocity(verticalInput, currentVelocity, deltaTime);
+    
+        Velocity = new Vector3(horizontalVelocity.X, verticalVelocity, horizontalVelocity.Z);
+        MoveAndSlide();
+        
+        if (DroneMesh == null) return;
+        
+        ApplyVisualTilt(horizontalVelocity, deltaTime);
+        ApplyHoverBob(inputDirection, verticalInput);
+    }
+    
+    /// <summary>
+    /// In Type-2, the user rotates the third-person-camera around the drone with arrow keys.
+    /// Other controls are done with keyboard keys.
+    ///
+    /// Furthermore, the drone will always rotate to match the looking direction
+    /// of the camera.
+    /// </summary>
+    /// <param name="deltaTime"></param>
+    private void PhysicsProcessWithType2(float deltaTime)
+    {
+        if (pCam is null) return;
+        
+        RotateCameraWithKeys(deltaTime);
+
+        var camForward = -pCam.Node3D.GlobalTransform.Basis.Z;
+        var camRight = pCam.Node3D.GlobalTransform.Basis.X;
+        
+        FlattenToXZ(ref camForward);
+        FlattenToXZ(ref camRight);
+        
+        AlignDroneNoseWithCamera(camForward, deltaTime);
+        
+        var inputDirection = GetHorizontalInput();
+        var verticalInput = GetVerticalInput();
+        var direction = GetDirectionRelativeToCamera(inputDirection);
+
+        // Rotate the drone's nose to face the direction it is traveling.
+        // if (direction.LengthSquared() > 0.01f)
+        //     RotateRelativeToCamera(direction, deltaTime);
+
+        var currentVelocity = Velocity;
+        var horizontalVelocity = ProcessHorizontalVelocity(direction, currentVelocity, deltaTime);
+        var verticalVelocity = ProcessVerticalVelocity(verticalInput, currentVelocity, deltaTime);
+
+        Velocity = new Vector3(horizontalVelocity.X, verticalVelocity, horizontalVelocity.Z);
+        MoveAndSlide();
+
+        if (DroneMesh is null) return;
+        
+        ApplyVisualTilt(horizontalVelocity, deltaTime);
+        ApplyHoverBob(inputDirection, verticalInput);
+    }
+    
+    // TODO:
+    // In type 3, we are still missing the camera always mimicking the drone's rotation.
+    
+    private void PhysicsProcessWithType3(float deltaTime)
+    {
+        HandleYawRotation(deltaTime);
+        
+        var inputDirection = GetHorizontalInput();
+        var verticalInput = GetVerticalInput();
+        
+        // Calculate horizontal direction based on the drone's current rotation basis
+        var direction = (Transform.Basis.X * inputDirection.X) + (Transform.Basis.Z * inputDirection.Y);
+        if (direction.LengthSquared() > 1.0f)
+            direction = direction.Normalized();
+        
+        var currentVelocity = Velocity;
+        var horizontalVelocity = ProcessHorizontalVelocity(direction, currentVelocity, deltaTime);
+        var verticalVelocity = ProcessVerticalVelocity(verticalInput, currentVelocity, deltaTime);
+    
+        Velocity = new Vector3(horizontalVelocity.X, verticalVelocity, horizontalVelocity.Z);
+        MoveAndSlide();
+        
+        if (DroneMesh == null) return;
+        
+        ApplyVisualTilt(horizontalVelocity, deltaTime);
+        ApplyHoverBob(inputDirection, verticalInput);
+    }
+
+    private static Vector2 GetHorizontalInput() => 
+        Input.GetVector("move_left", "move_right", "move_forward", "move_back");
+    
+    private static float GetRotationInput() => Input.GetAxis("turn_right", "turn_left");
+    
+    private static float GetVerticalInput() => Input.GetAxis("throttle_down", "throttle_up");
+
+    private (Vector3 Forward, Vector3 Right) GetCamDirectionalsFlattened()
+    {
+        var camForward = -pCam.Node3D.GlobalTransform.Basis.Z;
+        var camRight = pCam.Node3D.GlobalTransform.Basis.X;
+
+        // Flatten vectors onto the horizontal plane (X/Z) so camera pitch doesn't tilt physics forces
+        camForward.Y = 0;
+        camRight.Y = 0;
+        camForward = camForward.Normalized();
+        camRight = camRight.Normalized();
+        
+        return (camForward, camRight);
+    }
+    
+    /// <summary>
+    /// Calculate horizontal and vertical velocity in order to have a smooth lerp towards
+    /// those values. Commit that and call <see cref="CharacterBody3D.MoveAndSlide()"/>.
+    /// </summary>
+    /// <param name="horizontalDirection"></param>
+    /// <param name="verticalInput"></param>
+    /// <param name="deltaTime"></param>
+    /// <returns></returns>
+    private Vector3 CommitMovement(Vector3 horizontalDirection, float verticalInput, float deltaTime)
+    {
+        var currentVelocity = Velocity;
+        var horizontalVelocity = ProcessHorizontalVelocity(horizontalDirection, currentVelocity, deltaTime);
+        var verticalVelocity = ProcessVerticalVelocity(verticalInput, currentVelocity, deltaTime);
+
+        Velocity = new Vector3(horizontalVelocity.X, verticalVelocity, horizontalVelocity.Z);
+        MoveAndSlide();
+
+        return horizontalVelocity;
+    }
+    
+    private Vector3 ProcessHorizontalVelocity(Vector3 direction, Vector3 currentVelocity, float deltaTime)
+    {
+        var targetHorizontalVelocity = direction * MaxHorizontalSpeed;
+        var currentHorizontalVelocity = new Vector3(currentVelocity.X, 0, currentVelocity.Z);
+        var horizontalForce = direction.LengthSquared() > 0 ? Acceleration : Deceleration;
+        return currentHorizontalVelocity.MoveToward(targetHorizontalVelocity, horizontalForce * deltaTime);
+    }
+
+    private float ProcessVerticalVelocity(float verticalInput, Vector3 currentVelocity, float deltaTime)
+    {
+        var targetVerticalVelocity = verticalInput * MaxVerticalSpeed;
+        var currentVerticalStep = Mathf.Abs(verticalInput) > 0 ? Acceleration : Deceleration;
+        return Mathf.MoveToward(currentVelocity.Y, targetVerticalVelocity, currentVerticalStep * deltaTime);
+    }
+
+    private void HandleYawRotation(float deltaTime)
+    {
+        var rotationInput = GetRotationInput();
+        RotateY(rotationInput * RotationSpeed * deltaTime);
+    }
+    
+    // Arrow keys to rotate the camera this way
+    private void RotateCameraWithKeys(float deltaTime)
+    {
+        var currentRotation = pCam.GetThirdPersonRotation();
+            
+        // Get button inputs for turning
+        if (Input.IsActionPressed("cam_rotate_up"))
+            target_rotation_x += CamRotationSpeed * deltaTime;
+        if (Input.IsActionPressed("cam_rotate_down"))
+            target_rotation_x -= CamRotationSpeed * deltaTime;
+        
+        if (Input.IsActionPressed("cam_rotate_left"))
+            target_rotation_y += CamRotationSpeed * deltaTime;
+        if (Input.IsActionPressed("cam_rotate_right"))
+            target_rotation_y -= CamRotationSpeed * deltaTime;
+		
+        // Smoothly interpolate the rotation
+        currentRotation.X = Mathf.LerpAngle(currentRotation.X, target_rotation_x, CamRotationSpeed * deltaTime);
+        currentRotation.Y = Mathf.LerpAngle(currentRotation.Y, target_rotation_y, CamRotationSpeed * deltaTime);
+        pCam.SetThirdPersonRotation(currentRotation);
+    }
+
+    private Vector3 GetDirectionRelativeToCamera(Vector2 inputDirection)
+    {
         Vector3 direction;
         if (pCam != null)
         {
@@ -127,7 +286,7 @@ public partial class PlayerMover : CharacterBody3D
             camForward = camForward.Normalized();
             camRight = camRight.Normalized();
 
-            // Combine camera perspective with player keyboard/joystick inputs
+            // Combine camera perspective with player input
             direction = (camRight * inputDirection.X) + (camForward * inputDirection.Y);
         }
         else
@@ -139,54 +298,32 @@ public partial class PlayerMover : CharacterBody3D
         if (direction.LengthSquared() > 1.0f)
             direction = direction.Normalized();
 
-        // 3. Optional: Automatically rotate the drone's nose to face the direction it is traveling
-        if (direction.LengthSquared() > 0.01f)
-        {
-            // Calculates the angle on the Y axis towards the movement vector
-            var targetTargetAngle = Mathf.Atan2(-direction.X, -direction.Z);
-            
-            // Smoothly rotate the actual drone body to face where it's going
-            var droneRot = Rotation;
-            droneRot.Y = Mathf.LerpAngle(droneRot.Y, targetTargetAngle, RotationSpeed * deltaTime);
-            Rotation = droneRot;
-        }
-
-        // 4. Smooth Velocity Processing
-        var currentVelocity = Velocity;
-        var targetHorizontalVelocity = direction * MaxHorizontalSpeed;
-        var currentHorizontalVelocity = new Vector3(currentVelocity.X, 0, currentVelocity.Z);
-
-        var horizontalStep = (direction.LengthSquared() > 0) ? Acceleration : Deceleration;
-        currentHorizontalVelocity = currentHorizontalVelocity.MoveToward(targetHorizontalVelocity, horizontalStep * deltaTime);
-
-        var targetVerticalVelocity = verticalInput * MaxVerticalSpeed;
-        var currentVerticalStep = (Mathf.Abs(verticalInput) > 0) ? Acceleration : Deceleration;
-        var verticalVelocity = Mathf.MoveToward(currentVelocity.Y, targetVerticalVelocity, currentVerticalStep * deltaTime);
-
-        Velocity = new Vector3(currentHorizontalVelocity.X, verticalVelocity, currentHorizontalVelocity.Z);
-        MoveAndSlide();
-
-        // 5. Procedural Drone Polish (Visuals)
-        if (DroneMesh != null)
-        {
-            ApplyVisualTilt(currentHorizontalVelocity, deltaTime);
-            ApplyHoverBob(inputDirection, verticalInput);
-        }
+        return direction;
     }
 
-    private void RotateCameraWithKeys(float deltaTime)
+    private static void FlattenToXZ(ref Vector3 vector)
     {
-        var currentRotation = pCam.GetThirdPersonRotation();
+        vector.Y = 0;
+        vector = vector.Normalized();
+    }
+
+    private void AlignDroneNoseWithCamera(Vector3 camForward, float deltaTime)
+    {
+        // Atan2 calculates the angle targeting the exact horizon direction the camera points
+        var targetLookAngle = Mathf.Atan2(-camForward.X, -camForward.Z);
+        var rotation = Rotation;
+        rotation.Y = Mathf.LerpAngle(rotation.Y, targetLookAngle, RotationSpeed * deltaTime);
+        Rotation = rotation;
+    }
+
+    private void RotateRelativeToCamera(Vector3 direction, float deltaTime)
+    {
+        // Calculates the angle on the Y-axis towards the movement direction
+        var targetAngle = Mathf.Atan2(-direction.X, -direction.Z);
             
-        // Get button inputs for turning
-        if (Input.IsActionPressed("cam_rotate_left"))
-            target_rotation_y += CamRotationSpeed * deltaTime;
-        if (Input.IsActionPressed("cam_rotate_right"))
-            target_rotation_y -= CamRotationSpeed * deltaTime;
-		
-        // Smoothly interpolate the rotation so it's not jerky
-        currentRotation.Y = Mathf.LerpAngle(currentRotation.Y, target_rotation_y, CamRotationSpeed * deltaTime);
-        pCam.SetThirdPersonRotation(currentRotation);
+        var rotation = Rotation;
+        rotation.Y = Mathf.LerpAngle(rotation.Y, targetAngle, RotationSpeed * deltaTime);
+        Rotation = rotation;
     }
     
     private void ApplyVisualTilt(Vector3 currentHorizontalVelocity, float deltaTime)
