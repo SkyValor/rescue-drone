@@ -49,6 +49,8 @@ public partial class PlayerMover : CharacterBody3D
         
         SetProcessUnhandledInput(false);
     }
+    
+    #region Physics
 
     public override void _UnhandledInput(InputEvent @event)
     {
@@ -186,6 +188,8 @@ public partial class PlayerMover : CharacterBody3D
         ApplyVisualTilt(horizontalVelocity, deltaTime);
         ApplyHoverBob(inputDirection, verticalInput);
     }
+    
+    #endregion
 
     private static Vector2 GetHorizontalInput() => 
         Input.GetVector("move_left", "move_right", "move_forward", "move_back");

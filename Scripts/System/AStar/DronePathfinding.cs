@@ -44,11 +44,11 @@ public class DronePathfinding : IDronePathfinding
                     break;
                 }
             }
+
+            if (shortcutFound) continue;
             
             // FALLBACK: If no shortcuts were clear, we MUST step forward by 1
             // to prevent an infinite loop. We trust AStar3D's original path step.
-            if (shortcutFound) continue;
-            
             current++;
             smoothPath.Add(rawPath[current]);
         }

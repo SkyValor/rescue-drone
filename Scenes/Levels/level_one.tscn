@@ -61,6 +61,10 @@
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="58_jyqhy"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="59_hu8bd"]
 
+[sub_resource type="SphereMesh" id="SphereMesh_hu8bd"]
+radius = 6.0
+height = 12.0
+
 [sub_resource type="BoxMesh" id="BoxMesh_dxwen"]
 size = Vector3(3, 3, 3)
 
@@ -492,12 +496,81 @@ size = Vector3(300, 200, 302.689)
 
 [node name="LevelOne" type="Node3D" unique_id=781084026]
 
-[node name="AStarEnemy" parent="." unique_id=1980390112 node_paths=PackedStringArray("OctreeGenerator") instance=ExtResource("1_tswcn")]
+[node name="Panel" type="Panel" parent="." unique_id=212089849]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -169.0
+offset_top = 24.0
+offset_right = -25.0
+offset_bottom = 51.0
+grow_horizontal = 0
+metadata/_edit_group_ = true
+
+[node name="SpeedLabel" type="Label" parent="Panel" unique_id=841817715]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_alignment = 1
+
+[node name="Panel2" type="Panel" parent="." unique_id=1033192190]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -169.0
+offset_top = 60.0
+offset_right = -25.0
+offset_bottom = 87.0
+grow_horizontal = 0
+metadata/_edit_group_ = true
+
+[node name="DotCurve" type="Label" parent="Panel2" unique_id=2521176]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_alignment = 1
+
+[node name="Panel3" type="Panel" parent="." unique_id=1910311078]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -169.0
+offset_top = 98.0
+offset_right = -25.0
+offset_bottom = 125.0
+grow_horizontal = 0
+metadata/_edit_group_ = true
+
+[node name="TargetLabel" type="Label" parent="Panel3" unique_id=728097592]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_alignment = 1
+
+[node name="AStarEnemy" parent="." unique_id=1980390112 node_paths=PackedStringArray("OctreeGenerator", "SpeedLabel", "DotLabel", "TargetLabel") instance=ExtResource("1_tswcn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.016194, 9.92861, -0.024029732)
-Speed = 15.0
+Acceleration = 15.0
+Deceleration = 68.0
 Accuracy = 1.5
 DroneRadius = 0.85
+MinTurnSpeedPercentage = 0.1
+BreakingDistance = 15.0
 OctreeGenerator = NodePath("../OctreeGenerator")
+SpeedLabel = NodePath("../Panel/SpeedLabel")
+DotLabel = NodePath("../Panel2/DotCurve")
+TargetLabel = NodePath("../Panel3/TargetLabel")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="AStarEnemy" unique_id=1239156942]
+mesh = SubResource("SphereMesh_hu8bd")
 
 [node name="Node3D" type="Node3D" parent="." unique_id=1039866139]
 visible = false
@@ -566,7 +639,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("6_u3h2l")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall" unique_id=667170839]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall" unique_id=1624770009]
 mesh = SubResource("ArrayMesh_hu8bd")
 surface_material_override/0 = SubResource("StandardMaterial3D_j0j1n")
 
@@ -576,7 +649,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("6_u3h2l")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall2" unique_id=1711352801]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall2" unique_id=65360388]
 mesh = SubResource("ArrayMesh_qsocj")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
@@ -586,7 +659,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab2" unique_id=1285006470]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab2" unique_id=104197455]
 mesh = SubResource("ArrayMesh_1rm4e")
 surface_material_override/0 = SubResource("StandardMaterial3D_clc51")
 
@@ -596,7 +669,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab3" unique_id=37610300]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab3" unique_id=1840275528]
 mesh = SubResource("ArrayMesh_fk2cf")
 surface_material_override/0 = SubResource("StandardMaterial3D_1rf6x")
 
@@ -606,7 +679,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab5" unique_id=1480639807]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab5" unique_id=1409403202]
 mesh = SubResource("ArrayMesh_qqria")
 surface_material_override/0 = SubResource("StandardMaterial3D_u7jtb")
 
@@ -617,7 +690,7 @@ size = Vector3(1, 2, 1)
 albedo_texture = ExtResource("5_rjhlg")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab8" unique_id=594916288]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab8" unique_id=1067567831]
 mesh = SubResource("ArrayMesh_3pijf")
 surface_material_override/0 = SubResource("StandardMaterial3D_en0da")
 
@@ -627,7 +700,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab4" unique_id=284353700]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab4" unique_id=114344291]
 mesh = SubResource("ArrayMesh_fs683")
 surface_material_override/0 = SubResource("StandardMaterial3D_jdqor")
 
@@ -637,7 +710,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab6" unique_id=40147937]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab6" unique_id=1605433062]
 mesh = SubResource("ArrayMesh_rnrej")
 surface_material_override/0 = SubResource("StandardMaterial3D_qhpwp")
 
@@ -647,7 +720,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab7" unique_id=158879883]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab7" unique_id=92972879]
 mesh = SubResource("ArrayMesh_61ux6")
 surface_material_override/0 = SubResource("StandardMaterial3D_k7p47")
 
@@ -657,7 +730,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab" unique_id=505581471]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab" unique_id=1334187513]
 mesh = SubResource("ArrayMesh_jeakb")
 surface_material_override/0 = SubResource("StandardMaterial3D_6c4qq")
 
@@ -667,7 +740,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("4_dxwen")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube19" unique_id=1179787382]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube19" unique_id=1610034926]
 mesh = SubResource("ArrayMesh_dk0ox")
 surface_material_override/0 = SubResource("StandardMaterial3D_sn4bi")
 
@@ -677,7 +750,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube34" unique_id=321326803]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube34" unique_id=889462076]
 mesh = SubResource("ArrayMesh_jsb74")
 surface_material_override/0 = SubResource("StandardMaterial3D_yodw7")
 
@@ -687,7 +760,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube40" unique_id=111543572]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube40" unique_id=350302201]
 mesh = SubResource("ArrayMesh_l8tjj")
 surface_material_override/0 = SubResource("StandardMaterial3D_28wkh")
 
@@ -697,7 +770,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube47" unique_id=916953725]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube47" unique_id=1186649809]
 mesh = SubResource("ArrayMesh_squ0u")
 surface_material_override/0 = SubResource("StandardMaterial3D_7gd17")
 
@@ -707,7 +780,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube49" unique_id=2038885606]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube49" unique_id=598908414]
 mesh = SubResource("ArrayMesh_jb30o")
 surface_material_override/0 = SubResource("StandardMaterial3D_g04pa")
 
@@ -718,7 +791,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube37" unique_id=981528663]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube37" unique_id=1344165463]
 mesh = SubResource("ArrayMesh_e2xpq")
 surface_material_override/0 = SubResource("StandardMaterial3D_rj45t")
 
@@ -729,7 +802,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube48" unique_id=606149264]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube48" unique_id=875228114]
 mesh = SubResource("ArrayMesh_pkwnf")
 surface_material_override/0 = SubResource("StandardMaterial3D_ndsa1")
 
@@ -739,7 +812,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube11" unique_id=1679451981]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube11" unique_id=2080578612]
 mesh = SubResource("ArrayMesh_bxl8n")
 surface_material_override/0 = SubResource("StandardMaterial3D_kp8qa")
 
@@ -749,7 +822,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube43" unique_id=628607689]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube43" unique_id=1678069765]
 mesh = SubResource("ArrayMesh_cpboo")
 surface_material_override/0 = SubResource("StandardMaterial3D_q7bbn")
 
@@ -760,7 +833,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube44" unique_id=1717001495]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube44" unique_id=1857832827]
 mesh = SubResource("ArrayMesh_5lbia")
 surface_material_override/0 = SubResource("StandardMaterial3D_haryl")
 
@@ -770,7 +843,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube14" unique_id=430190353]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube14" unique_id=1161358675]
 mesh = SubResource("ArrayMesh_m7lg0")
 surface_material_override/0 = SubResource("StandardMaterial3D_e1jop")
 
@@ -781,7 +854,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube12" unique_id=1536001544]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube12" unique_id=2078597992]
 mesh = SubResource("ArrayMesh_t0b5f")
 surface_material_override/0 = SubResource("StandardMaterial3D_blrjg")
 
@@ -791,7 +864,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("10_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube39" unique_id=630892774]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube39" unique_id=1588940208]
 mesh = SubResource("ArrayMesh_7hxea")
 surface_material_override/0 = SubResource("StandardMaterial3D_k3wxu")
 
@@ -801,7 +874,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_r3v4y")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab" unique_id=1232915247]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab" unique_id=1146608731]
 mesh = SubResource("ArrayMesh_rj8ve")
 surface_material_override/0 = SubResource("StandardMaterial3D_5jfy0")
 
@@ -811,7 +884,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_r3v4y")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab2" unique_id=724266356]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab2" unique_id=1423801132]
 mesh = SubResource("ArrayMesh_daowb")
 surface_material_override/0 = SubResource("StandardMaterial3D_iy5mj")
 
