@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://b0i7kbev21vdq"]
+
+[ext_resource type="PackedScene" uid="uid://2dtivds5dkua" path="res://Assets/Kenney City Kit Roads/light-curved.fbx" id="1_oedcl"]
+
+[node name="Suburban Light Curved" type="StaticBody3D" unique_id=1911093112]
+collision_layer = 8
+collision_mask = 19
+
+[node name="light-curved" parent="." unique_id=526974655 instance=ExtResource("1_oedcl")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="." unique_id=1150380585]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 4.8278503, 0)
+depth = 0.64
+polygon = PackedVector2Array(-0.48032668, -4.842182, 0.4682531, -4.828024, 0.2700424, -2.5485995, 0.22756857, 4.091464, -0.28211597, 4.9267817, -1.4289075, 5.379835, -2.9862785, 5.3373613, -2.9862785, 4.9267817, -1.457224, 4.940939, -0.57943255, 4.5869913, -0.21132666, 4.0206747, -0.22548491, -2.5627575)

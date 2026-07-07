@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cocidyhtjd4fn"]
+
+[ext_resource type="PackedScene" uid="uid://crc26drcjphng" path="res://Assets/Kenney City Kit Roads/road-end.fbx" id="1_t1u73"]
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="2_atnrw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cgvk0"]
+albedo_texture = ExtResource("2_atnrw")
+
+[node name="road-end" unique_id=567508308 instance=ExtResource("1_t1u73")]
+
+[node name="road-end" parent="." index="0" unique_id=870919754]
+surface_material_override/0 = SubResource("StandardMaterial3D_cgvk0")

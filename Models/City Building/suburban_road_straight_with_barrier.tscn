@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://b688f4xsgp0d"]
+
+[ext_resource type="PackedScene" uid="uid://cq3wiun0sj16k" path="res://Models/City Building/Variations/variation_road_straight_b.tscn" id="2_1bty4"]
+[ext_resource type="PackedScene" uid="uid://bxn6jbn3rc2ll" path="res://Models/City Building/Variations/variation_road_straight_barrier_b.tscn" id="2_aje5o"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f85pv"]
+size = Vector3(15, 1, 15)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_aje5o"]
+size = Vector3(14.993164, 1.206543, 0.60302734)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1bty4"]
+size = Vector3(14.993164, 1.206543, 0.60302734)
+
+[node name="Straight Road" type="StaticBody3D" unique_id=2060532865]
+collision_layer = 8
+collision_mask = 19
+
+[node name="road-straight2" parent="." unique_id=342503251 instance=ExtResource("2_1bty4")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="road-straight-barrier" parent="." unique_id=1800942526 instance=ExtResource("2_aje5o")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0.3, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=358610045]
+shape = SubResource("BoxShape3D_f85pv")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1201136142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8898926, 7.1984863)
+shape = SubResource("BoxShape3D_aje5o")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=440779497]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8898926, -7.1973267)
+shape = SubResource("BoxShape3D_1bty4")

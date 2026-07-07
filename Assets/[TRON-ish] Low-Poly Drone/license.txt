@@ -1,0 +1,11 @@
+Model Information:
+* title:	TRON-ish low-poly drone
+* source:	https://sketchfab.com/3d-models/tron-ish-low-poly-drone-cad1fc9ada864e06ab69a37705656392
+* author:	Bachklamk (https://sketchfab.com/Bachklamk)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "TRON-ish low-poly drone" (https://sketchfab.com/3d-models/tron-ish-low-poly-drone-cad1fc9ada864e06ab69a37705656392) by Bachklamk (https://sketchfab.com/Bachklamk) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

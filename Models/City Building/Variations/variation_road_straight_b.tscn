@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cq3wiun0sj16k"]
+
+[ext_resource type="PackedScene" uid="uid://c3pj2vk3vxcue" path="res://Assets/Kenney City Kit Roads/road-straight.fbx" id="1_cbkb4"]
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="2_n6d70"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_45eba"]
+albedo_texture = ExtResource("2_n6d70")
+
+[node name="road-straight" unique_id=1690720061 instance=ExtResource("1_cbkb4")]
+
+[node name="road-straight" parent="." index="0" unique_id=1743970244]
+surface_material_override/0 = SubResource("StandardMaterial3D_45eba")

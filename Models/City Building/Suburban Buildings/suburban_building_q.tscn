@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://c5q7358smqts2"]
+
+[ext_resource type="PackedScene" uid="uid://dgyktfr82wtrd" path="res://Assets/Kenney City Kit Suburban/building-type-q.fbx" id="1_oq4sx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oq4sx"]
+size = Vector3(12.498108, 6.6289063, 12.4253845)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_auw1g"]
+size = Vector3(6.037369, 0.75979614, 11.904498)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ld4ma"]
+size = Vector3(5.9900055, 0.75940704, 11.394488)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_36jys"]
+size = Vector3(0.43592072, 5.2414875, 0.44333792)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xuib0"]
+size = Vector3(0.43592072, 5.2414875, 0.44333792)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_87ljp"]
+size = Vector3(1.2261066, 1.9595377, 1.2026314)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rgtnn"]
+size = Vector3(0.6685953, 11.754368, 0.66088736)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_b2s68"]
+size = Vector3(2.5240479, 0.72161865, 5.9955444)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7c5y3"]
+size = Vector3(1.9239807, 2.0637665, 1.6292572)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5ckby"]
+size = Vector3(1.9859161, 1.4996567, 1.7721481)
+
+[node name="Suburban Building Q" type="StaticBody3D" unique_id=447098579]
+collision_layer = 8
+collision_mask = 19
+
+[node name="building-type-q" parent="." unique_id=398034728 instance=ExtResource("1_oq4sx")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=976916609]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9892597, 3.341965, 0.0057525635)
+shape = SubResource("BoxShape3D_oq4sx")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=618011185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2152004, 6.374115, 0.011280537)
+shape = SubResource("BoxShape3D_auw1g")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=1490718688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.9996243, 5.6249123, -0.0036616325)
+shape = SubResource("BoxShape3D_ld4ma")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="." unique_id=1273443250]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.776667, 2.6265154, -5.479237)
+shape = SubResource("BoxShape3D_36jys")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="." unique_id=43091293]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.776667, 2.6265154, 5.47633)
+shape = SubResource("BoxShape3D_xuib0")
+
+[node name="CollisionShape3D6" type="CollisionShape3D" parent="." unique_id=48299459]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3944683, 12.75865, 4.472177)
+shape = SubResource("BoxShape3D_87ljp")
+
+[node name="CollisionShape3D7" type="CollisionShape3D" parent="." unique_id=1289272808]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.20077, 6.6280484, 6.5638514)
+shape = SubResource("BoxShape3D_rgtnn")
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="." unique_id=1366854162]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 9.429132, 0)
+depth = 6.595
+polygon = PackedVector2Array(2.7293518, -6.300275, 9.235522, -6.300275, 9.255063, 6.262695, -3.2102177, 6.262695, -3.2297556, -0.24347772, 2.690274, -0.26301616)
+
+[node name="CollisionShape3D8" type="CollisionShape3D" parent="." unique_id=1533984322]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2238197, 0.3707267, -2.9869566)
+shape = SubResource("BoxShape3D_b2s68")
+
+[node name="CollisionShape3D9" type="CollisionShape3D" parent="." unique_id=226161400]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1719856, 1.5303718, -4.064906)
+shape = SubResource("BoxShape3D_7c5y3")
+
+[node name="CollisionShape3D10" type="CollisionShape3D" parent="." unique_id=2105494334]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2029533, 1.2483169, -1.8600044)
+shape = SubResource("BoxShape3D_5ckby")

@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cry8w8q4acn78"]
+
+[ext_resource type="PackedScene" uid="uid://bs5hn6cof66lx" path="res://Assets/Kenney City Kit Roads/road-bend.fbx" id="1_l7ewo"]
+[ext_resource type="Material" uid="uid://ctlpe75au34lh" path="res://Models/City Building/mat_suburban_road_variation_b.tres" id="2_ddj7x"]
+
+[node name="road-bend" unique_id=1365857873 instance=ExtResource("1_l7ewo")]
+
+[node name="road-bend" parent="." index="0" unique_id=1123241035]
+surface_material_override/0 = ExtResource("2_ddj7x")

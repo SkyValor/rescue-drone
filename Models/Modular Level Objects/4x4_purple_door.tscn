@@ -1,0 +1,32 @@
+[gd_scene format=4 uid="uid://bhath08vxc8mh"]
+
+[ext_resource type="Script" uid="uid://dttncgjdm1p16" path="res://addons/uv_tools/scripts/proto_cube.gd" id="1_4ntna"]
+[ext_resource type="Texture2D" uid="uid://csr2yosx6jlfp" path="res://Assets/Kenney Prototype Textures/PNG/Purple/texture_12.png" id="2_4ntna"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4ntna"]
+_surfaces = [{
+"aabb": AABB(-0.5, -0.5, -0.5, 1, 1, 1),
+"attribute_data": PackedByteArray("AAAAAAAAgD8AAIA/AACAPwAAgD8AAIA/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAIA/AACAPwAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAIA/AACAPwAAAAAAAIA/AAAAAAAAgD8AAIA/AACAPwAAgD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAA"),
+"format": 34359742487,
+"index_count": 36,
+"index_data": PackedByteArray("AAACAAQAAgAGAAQAAQADAAUAAwAHAAUACAAKAAwACgAOAAwACQALAA0ACwAPAA0AEAASABQAEgAWABQAEQATABUAEwAXABUA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAC/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAL8AAAC//3//f////7//////AAD/v/9//3////+//////wAA/7//f/9/////v/////8AAP+//3//f////7//////AAD/v///AID/////AAAAgP9//7///wCA/////wAAAID/f/+///8AgP////8AAACA/3//v///AID/////AAAAgP9//78AgP//AAD/vwCAAAD///+/AID//wAA/78AgAAA////vwCA//8AAP+/AIAAAP///78AgP//AAD/vwCAAAD///+/")
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3hle8"]
+albedo_texture = ExtResource("2_4ntna")
+
+[node name="4x4_Purple_Door" type="Node3D" unique_id=415414389]
+
+[node name="ProtoCube" type="MeshInstance3D" parent="." unique_id=189364319]
+transform = Transform3D(4, 0, 0, 0, 1.1920929e-07, -4, 0, 4, 1.1920929e-07, 0, 0, 0)
+script = ExtResource("1_4ntna")
+albedo_texture = ExtResource("2_4ntna")
+metadata/_custom_type_script = "uid://dttncgjdm1p16"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ProtoCube" unique_id=2065129484]
+mesh = SubResource("ArrayMesh_4ntna")
+surface_material_override/0 = SubResource("StandardMaterial3D_3hle8")

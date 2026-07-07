@@ -58,6 +58,7 @@ public class OctreeNode
         for (int i = 0; i < 8; i++)
         {
             Children[i] ??= new OctreeNode(childBounds[i], minNodeSize);
+            Children[i].Parent = this;
             if (obj.Intersects(childBounds[i]))
             {
                 Children[i].Subdivide(obj);
@@ -75,8 +76,12 @@ public class OctreeNode
 
     public void DrawNode()
     {
-        DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Green, true);
+        if (Parent is null) 
+            DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Green, true);
         
+        if (IsLeaf && Objects.Count != 0) 
+            DebugDraw3D.DrawBox(Bounds.GetCenter(), Quaternion.Identity, Bounds.Size, Colors.Red, true);
+
         if (Children is null) return;
         
         foreach (var child in Children)

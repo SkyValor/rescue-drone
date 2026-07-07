@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://b3igmo5gwccsv"]
+
+[ext_resource type="Script" uid="uid://c1dfcqbwq1d4w" path="res://Scripts/PlayerMover.cs" id="1_y1ij6"]
+[ext_resource type="PackedScene" uid="uid://m78y5qc1mpka" path="res://Models/drone_by_renafox.tscn" id="2_y1ij6"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_y1ij6"]
+radius = 0.30371094
+height = 1.1075363
+
+[node name="PlayerDrone" type="CharacterBody3D" unique_id=1584686608]
+collision_mask = 154
+motion_mode = 1
+script = ExtResource("1_y1ij6")
+
+[node name="DroneMesh" parent="." unique_id=1419433351 instance=ExtResource("2_y1ij6")]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=630561595]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.25521815, 0.006041467)
+shape = SubResource("CapsuleShape3D_y1ij6")

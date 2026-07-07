@@ -1,23 +1,51 @@
 ﻿namespace RescueDrone;
 
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
+using Godot.Collections;
 
 public partial class Mover : CharacterBody3D
 {
-    [Export] public float Speed { get; private set; } = 5f;
+    public enum EnemyState { Idle, Patrol, Seek, Stunned }
+    
+    [Export] public float MaxSpeed { get; private set; } = 15f;
+    [Export] public float Acceleration { get; private set; } = 5f;
+    [Export] public float Deceleration { get; private set; } = 8f;
     [Export] public float Accuracy { get; private set; } = 1f;
     [Export] public float TurnSpeed { get; private set; } = 5f;
-    [Export] public OctreeGenerator OctreeGenerator { get; private set; }
+    [Export] public float DroneRadius { get; private set; } = 1f;
+    [Export] public float TargetRadius { get; private set; } = 2f;
+    [Export] public float MinTurnSpeedPercentage { get; private set; } = 0.25f;
+    [Export] public float BreakingDistance { get; private set; } = 6f;
+    [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
+
+    [ExportGroup("Player Seeking Settings")]
+    [Export] public float MinDistance { get; private set; } = 4f;
+    [Export] public float MaxDistance { get; private set; } = 7f;
+    [Export] public float RepathThreshold { get; private set; } = 2f; // Only recalculate SVO path if player moves this much
     
-    private int currentWaypoint;
-    private OctreeNode currentNode;
-    private Vector3 destination;
-    private AStarGraph graph;
+    [Export] public Node3D[] PatrolWaypoints { get; private set; }
+    
+    // DEBUGGING
+    [Export] public Label SpeedLabel { get; private set; }
+    [Export] public Label DotLabel { get; private set; }
+    [Export] public Label TargetLabel { get; private set; }
+    [Export] public PlayerMover Player { get; private set; }
 
-    private MeshInstance3D pathInstance;
+    private Array<Rid> exclusion;
+    private DronePathfinding dronePathfinding;
+    private SparseVoxelOctreeShape svo;
+    private Vector3[] aStarPath = [];
+    private Vector3[] smoothPath = [];
+    private int currentPathIndex;
+    private float currentTargetSpeed;
+    private Vector3 lastTargetPosition;
+    private Node3D currentWaypoint;
+    private readonly List<Node3D> waypointsInvestigated = [];
+    private EnemyState currentState = EnemyState.Idle;
 
+    private bool drawPathLines;
+    
     public override void _EnterTree()
     {
         SetPhysicsProcess(false);
@@ -25,128 +53,270 @@ public partial class Mover : CharacterBody3D
 
     public override void _Ready()
     {
-        graph = OctreeGenerator.Graph;
-        currentNode = GetClosestNode(GlobalPosition);
-        if (currentNode is null) GD.PrintErr("Mover has no starting current node.");
-        GetRandomDestination();
+        exclusion = [GetRid()];
+        CallDeferred(MethodName.InitiateBehavior);
+    }
+
+    private void InitiateBehavior()
+    {
+        svo = OctreeGenerator.Tree;
+        if (svo is null)
+        {
+            GD.PrintErr("SVO cannot be found in call deferred.");
+            return;
+        }
         
-        SetPhysicsProcess(true);
+        dronePathfinding = new DronePathfinding();
+        // SetPhysicsProcess(true);
     }
 
     public override void _Process(double delta)
     {
         // DrawAStarPath();
-        DrawAStarCurvePath();
+        // DrawSmoothPath();
+        
+        if (drawPathLines) DrawPathLines();
     }
 
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is not InputEventKey inputEventKey) return;
+        
+        switch (inputEventKey.Keycode)
+        {
+            case Key.F1:
+                currentState = EnemyState.Idle;
+                SetPhysicsProcess(false);
+                drawPathLines = false;
+                waypointsInvestigated.Clear();
+                break;
+            case Key.F2:
+                currentState = EnemyState.Patrol;
+                Node3D waypoint;
+                do { waypoint = GetRandomWaypoint(); } 
+                while (waypointsInvestigated.Contains(waypoint));
+                waypointsInvestigated.Add(waypoint);
+                if (waypointsInvestigated.Count > 4)
+                    waypointsInvestigated.RemoveAt(0);
+                currentWaypoint = waypoint;
+                var start = svo.FindClosestEmptyLeaf(GlobalPosition);
+                var end = svo.FindClosestEmptyLeaf(currentWaypoint.GlobalPosition);
+                if (RecalculatePath(start.Position, end.Position))
+                {
+                    SetPhysicsProcess(true);
+                    drawPathLines = true;
+                }
+                break;
+        }
+    }
+
+    private Node3D GetRandomWaypoint()
+    {
+        var rand = GD.RandRange(0, PatrolWaypoints.Length - 1);
+        return PatrolWaypoints[rand];
+    }
+    
     public override void _PhysicsProcess(double delta)
     {
-        if (graph is null) return;
+        var deltaTime = (float) delta;
 
-        if (graph.GetPathLength() == 0 || currentWaypoint >= graph.GetPathLength())
+        var toPlayer = GlobalPosition.DirectionTo(Player.GlobalPosition);
+        var distanceToPlayer = toPlayer.Length();
+        if (distanceToPlayer < MinDistance)
         {
-            GetRandomDestination();
+            // The player is too close! Back away slowly instead of following the path.
+            var backAwayDirection = -toPlayer.Normalized();
+            var backingVelocity = backAwayDirection * (MaxSpeed * 0.5f);
+
+            Velocity = Velocity.Lerp(backingVelocity, Deceleration * deltaTime);
+            MoveAndSlide();
             return;
         }
-
-        var distanceToDestination = graph.GetPathNode(currentWaypoint).Bounds.GetCenter().DistanceTo(GlobalPosition);
-        if (distanceToDestination < Accuracy)
+        
+        if (svo is null) return;
+        if (smoothPath.Length == 0 || currentPathIndex >= smoothPath.Length)
         {
-            currentWaypoint++;
-            GD.Print($"Waypoint {currentWaypoint} reached.");
+            RecalculatePath();
+            return;
+        }
+        
+        var targetPosition = smoothPath[currentPathIndex];
+        var toTarget = targetPosition - GlobalPosition;
+        var distance = toTarget.Length();
+        if (distance < TargetRadius)
+        {
+            currentPathIndex++;
+            if (currentPathIndex >= smoothPath.Length) return;
+            
+            // Recalculate for the new node
+            targetPosition = smoothPath[currentPathIndex];
+            toTarget = targetPosition - GlobalPosition;
+        }
+        
+        var desiredSpeed = CalculateAdaptiveSpeed();
+        TargetLabel.Text = $"{desiredSpeed}";
+        var speedBleedingFactor = desiredSpeed < currentTargetSpeed ? Deceleration : Acceleration;
+        currentTargetSpeed = Mathf.Lerp(currentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
+        SpeedLabel.Text = $"{currentTargetSpeed}";
+        
+        var direction = toTarget.Normalized();
+        SmoothlyRotate(direction, deltaTime);
+
+        var targetVelocity = direction * currentTargetSpeed;
+        Velocity = Velocity.Lerp(targetVelocity, Acceleration * deltaTime);
+        MoveAndSlide();
+    }
+
+    private void RecalculatePath()
+    {
+        if (dronePathfinding is null) return;
+        
+        aStarPath = dronePathfinding.GetAStarPath(svo, GetWorld3D(), GlobalPosition, DroneRadius);
+        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
+        currentPathIndex = 0;
+        currentTargetSpeed = MaxSpeed;
+    }
+
+    private bool RecalculatePath(Vector3 startPosition, Vector3 endPosition)
+    {
+        var startLeaf = svo.FindClosestEmptyLeaf(startPosition);
+        var targetLeaf = svo.FindClosestEmptyLeaf(endPosition);
+        if (startLeaf is null || targetLeaf is null || !targetLeaf.IsEmpty) 
+            return false;
+
+        aStarPath = svo.CreatePath(startLeaf.Id, targetLeaf.Id);
+        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
+        currentPathIndex = 0;
+        return true;
+    }
+
+    private void SmoothlyRotate(Vector3 toDirection, float deltaTime)
+    {
+        if (toDirection == Vector3.Zero) return;
+        
+        var targetBasis = Basis.LookingAt(toDirection, Vector3.Up);
+        GlobalTransform = GlobalTransform.InterpolateWith(new Transform3D(targetBasis, GlobalPosition), TurnSpeed * deltaTime);
+    }
+
+    // Dynamic speed scaling based on curvature
+    private float CalculateAdaptiveSpeed()
+    {
+        if (smoothPath == null || currentPathIndex == 0 || currentPathIndex == smoothPath.Length - 1)
+            return MaxSpeed;
+        
+        var pointA = smoothPath[currentPathIndex - 1];
+        var pointB = smoothPath[currentPathIndex];
+        var pointC = smoothPath[currentPathIndex + 1];
+        
+        var incomingDir = (pointB - pointA).Normalized();
+        var outgoingDir = (pointC - pointB).Normalized();
+        
+        // Dot product returns 1.0 if straight, 0.0 if 90 degrees, -1.0 if 180 degrees turn
+        var dot = incomingDir.Dot(outgoingDir);
+        DotLabel.Text = $"{dot}";
+        
+        // Map the dot product (-1.0 to 1.0) into a clean 0.0 to 1.0 curve penalty
+        // 1.0 means perfectly straight line (No penalty)
+        // 0.0 means complete 180 hairpin turn (Maximum penalty)
+        var turnSmoothness = Mathf.Remap(dot, -1f, 1f, 0f, 1f);
+        
+        // Interpolate between our absolute minimum allowed turn speed and our maximum speed
+        var targetSpeedForTurn = Mathf.Lerp(MaxSpeed * MinTurnSpeedPercentage, MaxSpeed, turnSmoothness);
+        
+        // --- LOOK AHEAD BRAKING TRIGGER ---
+        // If the drone is getting close to the turn node, start forcing the slowdown.
+        var distanceToTurn = GlobalPosition.DistanceTo(pointB);
+        if (distanceToTurn < BreakingDistance)
+        {
+            // Smoothly transition from MaxSpeed to the turn speed as we close the distance
+            var t = Mathf.Clamp(distanceToTurn / BreakingDistance, 0f, 1f);
+            return Mathf.Lerp(targetSpeedForTurn, MaxSpeed, t);
         }
 
-        if (currentWaypoint < graph.GetPathLength())
-        {
-            currentNode = graph.GetPathNode(currentWaypoint);
-            destination = currentNode.Bounds.GetCenter();
+        return MaxSpeed;
+    }
 
-            // Smoothly rotate towards the destination point.
-            var deltaTime = (float) delta;
-            var nextTransform = Transform.LookingAt(destination, Vector3.Up);
-            GlobalTransform = GlobalTransform.InterpolateWith(nextTransform, TurnSpeed * deltaTime);
-            Velocity = -Basis.Z * Speed * deltaTime;
-            MoveAndSlide();
-        }
-        else
+    public void UpdateAIChaseBehavior(Vector3 playerPosition, World3D world, float droneRadius)
+    {
+        var idealTarget = CalculatePursuitTarget(playerPosition, GlobalPosition);
+        if (idealTarget.DistanceTo(lastTargetPosition) <= RepathThreshold) return;
+
+        lastTargetPosition = idealTarget;
+        var startLeaf = svo.FindClosestEmptyLeaf(GlobalPosition);
+        var targetLeaf = svo.FindClosestEmptyLeaf(idealTarget);
+
+        if (startLeaf is not null && targetLeaf is not null && targetLeaf.IsEmpty)
         {
-            GetRandomDestination();
+            aStarPath = svo.CreatePath(startLeaf.Id, targetLeaf.Id);
+            smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
+            currentPathIndex = 0;
         }
     }
 
-    private OctreeNode GetClosestNode(Vector3 position) => OctreeGenerator.Tree.FindClosestNode(position);
-
-    private void GetRandomDestination()
+    private Vector3 CalculatePursuitTarget(Vector3 playerPosition, Vector3 enemyPosition)
     {
-        OctreeNode destinationNode;
-        do
-        {
-            var rand = GD.RandRange(0, graph.Nodes.Count - 1);
-            destinationNode = graph.Nodes.ElementAt(rand).Key;
-        } while (!graph.AStar(currentNode, destinationNode));
-        currentWaypoint = 0;
-        CallDeferred(MethodName.CreateCurvePath);
-    }
+        var toEnemy = enemyPosition - playerPosition;
+        var currentDistance = toEnemy.Length();
+        if (currentDistance < 0.1f) 
+            return playerPosition + new Vector3(0, 0, MinDistance);
 
-    private void CreateCurvePath()
-    {
-        var points = new List<Vector3>();
-        for (int i = 0; i < graph.GetPathLength(); i++)
-        {
-            points.Add(graph.GetPathNode(i).Bounds.GetCenter());
-        }
-
-        pathInstance = new MeshInstance3D();
-        var mesh = new ImmediateMesh();
-        pathInstance.Mesh = mesh;
-        
-        if (!pathInstance.IsInsideTree()) 
-            GetTree().Root.AddChild(pathInstance);
-        
-        // Create a simple material
-        var mat = new StandardMaterial3D();
-        mat.AlbedoColor = Colors.Cyan;
-        mat.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded; // Makes it visible without lights
-        
-        mesh.SurfaceBegin(Mesh.PrimitiveType.LineStrip, mat);
-	
-        // Create a Curve3D to handle the smoothing (Bézier math)
-        var curve = new Curve3D();
-        foreach (var point in points)
-            curve.AddPoint(point);
-        
-        // Bake the curve into many small segments for a smooth look
-        var bakedPoints = curve.GetBakedPoints();
-	
-        foreach (var point in bakedPoints)
-            mesh.SurfaceAddVertex(point);
-		
-        mesh.SurfaceEnd();
+        var directionFromPlayer = toEnemy.Normalized();
+        var targetDistance = Mathf.Clamp(currentDistance, MinDistance, MaxDistance);
+        return playerPosition + (directionFromPlayer * targetDistance);
     }
 
     private void DrawAStarPath()
     {
-        if (graph is null || graph.GetPathLength() == 0) return;
+        if (aStarPath.Length == 0) return;
     
-        DebugDraw3D.DrawSphere(graph.GetPathNode(0).Bounds.GetCenter(), 0.7f, Colors.Red);
-        DebugDraw3D.DrawSphere(graph.GetPathNode(graph.GetPathLength() - 1).Bounds.GetCenter(), 0.7f, Colors.Blue);
+        DebugDraw3D.DrawSphere(aStarPath[0], 0.7f, Colors.Blue);
+        DebugDraw3D.DrawSphere(aStarPath[^1], 0.7f, Colors.Red);
     
-        for (int i = 0; i < graph.GetPathLength(); i++)
+        for (int i = 0; i < aStarPath.Length; i++)
         {
-            DebugDraw3D.DrawSphere(graph.GetPathNode(i).Bounds.GetCenter(), 0.5f,
-                i == currentWaypoint ? Colors.Gold : Colors.Green);
+            DebugDraw3D.DrawSphere(aStarPath[i], 0.5f, i == currentPathIndex ? Colors.Gold : Colors.Green);
 
-            if (i == graph.GetPathLength() - 1) continue;
+            if (i == aStarPath.Length - 1) continue;
             
-            var start = graph.GetPathNode(i).Bounds.GetCenter();
-            var end = graph.GetPathNode(i + 1).Bounds.GetCenter();
+            var start = aStarPath[i];
+            var end = aStarPath[i + 1];
             DebugDraw3D.DrawLine(start, end, Colors.Green);
         }
     }
 
-    private void DrawAStarCurvePath()
+    private void DrawSmoothPath()
     {
-        if (graph is null || graph.GetPathLength() == 0) return;
+        if (smoothPath is null || smoothPath.Length == 0) return;
+        
+        DebugDraw3D.DrawSphere(smoothPath[0], 0.7f, Colors.Blue);
+        DebugDraw3D.DrawSphere(smoothPath[^1], 0.7f, Colors.Red);
+
+        for (int i = 0; i < smoothPath.Length; i++)
+        {
+            DebugDraw3D.DrawSphere(smoothPath[i], 0.5f, i == currentPathIndex ? Colors.Gold : Colors.Green);
+            
+            if (i == smoothPath.Length - 1) continue;
+            
+            var start = smoothPath[i];
+            var end = smoothPath[i + 1];
+            DebugDraw3D.DrawLine(start, end, Colors.Green);
+        }
+    }
+
+    private void DrawPathLines()
+    {
+        if (aStarPath is null || aStarPath.Length == 0 ||
+            smoothPath is null || smoothPath.Length == 0)
+        {
+            GD.Print("STOP HERE");
+            return;
+        }
+
+        for (int i = 0; i < aStarPath.Length - 1; i++)
+            DebugDraw3D.DrawLine(aStarPath[i], aStarPath[i + 1], Colors.Green);
+        
+        for (int j = 0; j < smoothPath.Length - 1; j++)
+            DebugDraw3D.DrawLine(smoothPath[j], smoothPath[j + 1], Colors.Goldenrod);
     }
     
 }

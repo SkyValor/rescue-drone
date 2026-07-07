@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://cei4sdk1p32n2"]
+
+[ext_resource type="PackedScene" uid="uid://cry8w8q4acn78" path="res://Models/City Building/Variations/variation_road_bend_b.tscn" id="1_60sep"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wu1vl"]
+size = Vector3(15, 1, 15)
+
+[node name="Suburban Road Bend" type="StaticBody3D" unique_id=1841786620]
+metadata/_edit_group_ = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=399693219]
+shape = SubResource("BoxShape3D_wu1vl")
+
+[node name="road-bend" parent="." unique_id=1365857873 instance=ExtResource("1_60sep")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)

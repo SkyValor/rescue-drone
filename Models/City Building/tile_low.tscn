@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://cs8dltd2jsriy"]
+
+[ext_resource type="PackedScene" uid="uid://com74bh6grpsa" path="res://Assets/Kenney City Kit Roads/tile-low.fbx" id="1_jxdal"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vr14u"]
+size = Vector3(15, 1, 15)
+
+[node name="Tile Low" type="StaticBody3D" unique_id=1658321304]
+metadata/_edit_group_ = true
+
+[node name="tile-low" parent="." unique_id=213431861 instance=ExtResource("1_jxdal")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=94851775]
+shape = SubResource("BoxShape3D_vr14u")

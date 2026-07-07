@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bxn6jbn3rc2ll"]
+
+[ext_resource type="PackedScene" uid="uid://b6u3oo0mfm4a8" path="res://Assets/Kenney City Kit Roads/road-straight-barrier.fbx" id="1_oiq6s"]
+[ext_resource type="Material" uid="uid://ctlpe75au34lh" path="res://Models/City Building/mat_suburban_road_variation_b.tres" id="2_kbcmx"]
+
+[node name="road-straight-barrier" unique_id=1800942526 instance=ExtResource("1_oiq6s")]
+
+[node name="road-straight-barrier" parent="." index="0" unique_id=1995711232]
+surface_material_override/0 = ExtResource("2_kbcmx")

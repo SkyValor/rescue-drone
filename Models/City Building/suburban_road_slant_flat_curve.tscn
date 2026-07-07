@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://dme3nfop8k4hp"]
+
+[ext_resource type="PackedScene" uid="uid://cxr2msdwhd1fx" path="res://Models/City Building/Variations/variation_road_slant_flat_curve_b.tscn" id="1_k5755"]
+[ext_resource type="PackedScene" uid="uid://bk4l5ebqbhn7q" path="res://Models/City Building/Variations/variation_road_slant_curve_barrier_b.tscn" id="3_w5ago"]
+
+[node name="Suburban Road Slant Flat Curve" type="StaticBody3D" unique_id=621351330]
+collision_layer = 8
+collision_mask = 19
+
+[node name="road-slant-flat-curve" parent="." unique_id=793456614 instance=ExtResource("1_k5755")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -0.5, 0, 0)
+
+[node name="road-slant-curve-barrier" parent="." unique_id=1777528903 instance=ExtResource("3_w5ago")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -0.5, 0.3, 0)
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="." unique_id=2019803363]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.119672)
+depth = 0.75
+polygon = PackedVector2Array(-15.49489, -0.018647194, -7.9828253, 0.94443727, -0.008482099, 4.084095, 7.965866, 6.7807336, 14.495583, 7.53194, 14.495583, 9.034353, 8.004387, 8.32167, -0.008482099, 5.644293, -8.002088, 2.504636, -15.49489, 1.5030276)
+
+[node name="CollisionPolygon3D2" type="CollisionPolygon3D" parent="." unique_id=957715624]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -7.1250935)
+depth = 0.75
+polygon = PackedVector2Array(-15.49489, -0.018647194, -7.9828253, 0.94443727, -0.008482099, 4.084095, 7.965866, 6.7807336, 14.495583, 7.53194, 14.495583, 9.034353, 8.004387, 8.32167, -0.008482099, 5.644293, -8.002088, 2.504636, -15.49489, 1.5030276)
+
+[node name="CollisionPolygon3D3" type="CollisionPolygon3D" parent="." unique_id=1610289657]
+depth = 13.53
+polygon = PackedVector2Array(-15.483552, -0.008692265, -8.015589, 0.9057529, 0.0048516393, 4.068207, 7.9490905, 6.7734385, 14.483558, 7.4973736, 14.502608, 7.8212395, 7.98719, 7.1163554, 0.0048516393, 4.4111238, -7.9965367, 1.2867718, -15.483552, 0.31517386)

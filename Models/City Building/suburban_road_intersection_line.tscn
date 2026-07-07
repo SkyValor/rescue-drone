@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://1edku0nl5rle"]
+
+[ext_resource type="PackedScene" uid="uid://8i3j5og3f2ap" path="res://Models/City Building/Variations/variation_road_intersection_line_b.tscn" id="1_ew3tx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wu1vl"]
+size = Vector3(15, 1, 15)
+
+[node name="Road Intersection Line2" type="StaticBody3D" unique_id=1841786620]
+collision_layer = 8
+collision_mask = 19
+metadata/_edit_group_ = true
+
+[node name="road-intersection-line2" parent="." unique_id=1422834920 instance=ExtResource("1_ew3tx")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=399693219]
+shape = SubResource("BoxShape3D_wu1vl")

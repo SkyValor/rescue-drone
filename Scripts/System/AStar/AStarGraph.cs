@@ -117,7 +117,7 @@ public partial class AStarGraph
             DebugDraw3D.DrawLine(edge.A.OctreeNode.Bounds.GetCenter(), edge.B.OctreeNode.Bounds.GetCenter(), Colors.Gray);
         
         foreach (var node in Nodes.Values)
-            DebugDraw3D.DrawSphere(node.OctreeNode.Bounds.GetCenter(), 0.2f, Colors.Green);
+            DebugDraw3D.DrawSphere(node.OctreeNode.Bounds.GetCenter(), 0.2f, Colors.DodgerBlue);
     }
 
     private void ReconstructPath(AStarNode current)

@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://puiels64xqbi"]
+
+[ext_resource type="PackedScene" uid="uid://com74bh6grpsa" path="res://Assets/Kenney City Kit Roads/tile-low.fbx" id="1_4nrnc"]
+[ext_resource type="Material" uid="uid://bke1srfv2sx7e" path="res://Assets/GLB format/colormap.tres" id="2_tthie"]
+
+[node name="tile-low" unique_id=213431861 instance=ExtResource("1_4nrnc")]
+
+[node name="tile-low" parent="." index="0" unique_id=2115895301]
+surface_material_override/0 = ExtResource("2_tthie")

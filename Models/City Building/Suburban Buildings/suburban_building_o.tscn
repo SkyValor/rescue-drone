@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://beenaogmlxw1l"]
+
+[ext_resource type="PackedScene" uid="uid://canarglajx5il" path="res://Assets/Kenney City Kit Suburban/building-type-o.fbx" id="1_bmhih"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_efkxv"]
+size = Vector3(18.588898, 6.696045, 12.593018)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bmhih"]
+size = Vector3(12.576248, 5.7407227, 12.592651)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_p7pgs"]
+size = Vector3(1.2000275, 2.0003662, 1.2001953)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2v112"]
+size = Vector3(3.0480537, 1.6403198, 5.9627686)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kixdj"]
+size = Vector3(1.7886248, 2.0167694, 1.6210632)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_s6rx0"]
+size = Vector3(1.7886248, 1.4525986, 1.8008347)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0mhpw"]
+size = Vector3(2.5345964, 0.7815857, 6.0394897)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oy34m"]
+size = Vector3(1.5122576, 1.9878159, 1.6103821)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q4haj"]
+size = Vector3(1.7019296, 1.4326229, 1.8883133)
+
+[node name="Suburban Building O" type="StaticBody3D" unique_id=477002697]
+collision_layer = 8
+collision_mask = 19
+
+[node name="building-type-o" parent="." unique_id=1782225610 instance=ExtResource("1_bmhih")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=921582519]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2228241, 3.3960826, 0.836792)
+shape = SubResource("BoxShape3D_efkxv")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1492732715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7695389, 9.148067, 0.8397827)
+shape = SubResource("BoxShape3D_bmhih")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=1290988289]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8301926, 13.72792, 5.9223633)
+shape = SubResource("BoxShape3D_p7pgs")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="." unique_id=439914356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2534313, 5.8773537, -0.345685)
+shape = SubResource("BoxShape3D_2v112")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="." unique_id=933464062]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.382068, 7.5540276, -1.4257784)
+shape = SubResource("BoxShape3D_kixdj")
+
+[node name="CollisionShape3D6" type="CollisionShape3D" parent="." unique_id=1042320042]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.382068, 7.271942, 0.74698925)
+shape = SubResource("BoxShape3D_s6rx0")
+
+[node name="CollisionShape3D7" type="CollisionShape3D" parent="." unique_id=827942476]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -0.19621466, 0.34785962, -6.4712105)
+shape = SubResource("BoxShape3D_0mhpw")
+
+[node name="CollisionShape3D8" type="CollisionShape3D" parent="." unique_id=65983892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.83734035, 1.5372994, -6.4472094)
+shape = SubResource("BoxShape3D_oy34m")
+
+[node name="CollisionShape3D9" type="CollisionShape3D" parent="." unique_id=1261792071]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3311946, 1.2597029, -6.3634043)
+shape = SubResource("BoxShape3D_q4haj")
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="." unique_id=1191299230]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.7929566, 11.666541, 0)
+depth = 13.535
+polygon = PackedVector2Array(0.8487685, 5.4313574, -6.0111246, 0.28643703, -5.7171297, -0.12189007, -5.178138, 0.28643703, 6.843007, 0.30276966, 7.430999, -0.1382227, 7.7413263, 0.23743725)

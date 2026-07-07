@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dh4y4u2qvfmq1"]
+
+[ext_resource type="PackedScene" uid="uid://nvpq6j7ail4n" path="res://Assets/Kenney City Kit Roads/light-square.fbx" id="1_r67rl"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wpnfk"]
+size = Vector3(0.8820801, 9.123413, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5qafg"]
+size = Vector3(3.8891602, 0.5609741, 0.76013184)
+
+[node name="Street Light" type="StaticBody3D" unique_id=1388589002]
+metadata/_edit_group_ = true
+
+[node name="light-square" parent="." unique_id=851192803 instance=ExtResource("1_r67rl")]
+transform = Transform3D(-6.5567076e-07, 0, -14.999999, 0, 14.999999, 0, 14.999999, 0, -6.5567076e-07, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1165917834]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0008544922, 4.5045776, 0)
+shape = SubResource("BoxShape3D_wpnfk")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=1335530637]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5554199, 8.832672, -0.0032348633)
+shape = SubResource("BoxShape3D_5qafg")

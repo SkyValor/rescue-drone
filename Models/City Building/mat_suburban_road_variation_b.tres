@@ -1,0 +1,6 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ctlpe75au34lh"]
+
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="1_jjsy0"]
+
+[resource]
+albedo_texture = ExtResource("1_jjsy0")

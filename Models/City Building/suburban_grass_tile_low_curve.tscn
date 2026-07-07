@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://ce60innl7dnwn"]
+
+[ext_resource type="PackedScene" uid="uid://c1ep507i5eidi" path="res://Models/City Building/Variations/variation_tile_low_c.tscn" id="1_fv2sg"]
+[ext_resource type="PackedScene" uid="uid://dieekm4gsbm3n" path="res://Models/City Building/Variations/variation_road_tile_008_suburban_grass_color.tscn" id="2_b4j1h"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bwfjx"]
+size = Vector3(15, 1, 15)
+
+[node name="Suburban Grass Tile Low" type="StaticBody3D" unique_id=363272277]
+
+[node name="tile-low2" parent="." unique_id=213431861 instance=ExtResource("1_fv2sg")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+visible = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=345407842]
+shape = SubResource("BoxShape3D_bwfjx")
+
+[node name="roadTile_008" parent="." unique_id=253076376 instance=ExtResource("2_b4j1h")]
+transform = Transform3D(5, 0, 0, 0, 0.545, 0, 0, 0, 5, -7.5, 0, 7.5)

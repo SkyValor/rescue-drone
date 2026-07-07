@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://c1ep507i5eidi"]
+
+[ext_resource type="PackedScene" uid="uid://com74bh6grpsa" path="res://Assets/Kenney City Kit Roads/tile-low.fbx" id="1_w53hs"]
+[ext_resource type="Texture2D" uid="uid://cj4d7wtgc0nlo" path="res://Assets/Kenney City Kit Roads/Textures/variation-b.png" id="2_w53hs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t0tfp"]
+albedo_texture = ExtResource("2_w53hs")
+uv1_scale = Vector3(0.915, 0.75, 1)
+
+[node name="tile-low" unique_id=213431861 instance=ExtResource("1_w53hs")]
+
+[node name="tile-low" parent="." index="0" unique_id=2115895301]
+surface_material_override/0 = SubResource("StandardMaterial3D_t0tfp")
