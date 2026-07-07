@@ -361,7 +361,7 @@ public partial class PlayerMover : CharacterBody3D
         }
         else
         {
-            // Return to local zero smoothly when actively flying
+            // Return to local origin smoothly when actively flying
             var meshPosition = DroneMesh.Position;
             meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0.0f, 0.1f);
             DroneMesh.Position = meshPosition;
