@@ -61,6 +61,8 @@
 [ext_resource type="Script" uid="uid://b4ertwcx5y63e" path="res://Scripts/System/AStar/OctreeGeneratorGroup.cs" id="56_g171u"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="58_jyqhy"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="59_hu8bd"]
+[ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/System/Waypoint/Waypoint.cs" id="62_qsocj"]
+[ext_resource type="Script" uid="uid://hbyr1m23afr" path="res://Scripts/System/Waypoint/WaypointCircuit.cs" id="62_s3ju3"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hu8bd"]
 sky_top_color = Color(0.68574345, 0.2946731, 0.44894987, 1)
@@ -577,23 +579,44 @@ grow_horizontal = 2
 grow_vertical = 2
 vertical_alignment = 1
 
+[node name="Panel4" type="Panel" parent="." unique_id=1727292753]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -169.0
+offset_top = 98.0
+offset_right = -25.0
+offset_bottom = 125.0
+grow_horizontal = 0
+metadata/_edit_group_ = true
+
+[node name="TargetVelocityLabel" type="Label" parent="Panel4" unique_id=1695482231]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_alignment = 1
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
 
-[node name="AStarEnemy" parent="." unique_id=1980390112 node_paths=PackedStringArray("OctreeGenerator", "PatrolWaypoints", "SpeedLabel", "DotLabel", "TargetLabel", "Player") instance=ExtResource("1_tswcn")]
+[node name="AStarEnemy" parent="." unique_id=1980390112 node_paths=PackedStringArray("OctreeGenerator", "Player", "PatrolWaypoints", "SpeedLabel", "DotLabel", "TargetLabel", "TargetVelocityLabel") instance=ExtResource("1_tswcn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.016194, 9.92861, -0.024029732)
-Acceleration = 15.0
-Deceleration = 68.0
-Accuracy = 1.5
-DroneRadius = 0.85
-MinTurnSpeedPercentage = 0.1
+MaxSpeed = 10.0
+Acceleration = 12.0
+Deceleration = 60.0
 BreakingDistance = 15.0
+MinTurnSpeedPercentage = 0.1
 OctreeGenerator = NodePath("../OctreeGenerator")
-PatrolWaypoints = [NodePath("../EnemyPatrolWaypoints/PatrolPoint1"), NodePath("../EnemyPatrolWaypoints/PatrolPoint2"), NodePath("../EnemyPatrolWaypoints/PatrolPoint3"), NodePath("../EnemyPatrolWaypoints/PatrolPoint4"), NodePath("../EnemyPatrolWaypoints/PatrolPoint5"), NodePath("../EnemyPatrolWaypoints/PatrolPoint6"), NodePath("../EnemyPatrolWaypoints/PatrolPoint7")]
+DroneRadius = 0.85
+Player = NodePath("../PlayerDrone_TRONish")
+PatrolWaypoints = [NodePath("../EnemyPatrolWaypoints/WaypointCircuit1/PatrolPoint1"), NodePath("../EnemyPatrolWaypoints/WaypointCircuit1/PatrolPoint2"), NodePath("../EnemyPatrolWaypoints/WaypointCircuit2/PatrolPoint3"), NodePath("../EnemyPatrolWaypoints/WaypointCircuit2/PatrolPoint4"), NodePath("../EnemyPatrolWaypoints/WaypointCircuit3/PatrolPoint5"), NodePath("../EnemyPatrolWaypoints/WaypointCircuit3/PatrolPoint6"), NodePath("../EnemyPatrolWaypoints/WaypointCircuit1/PatrolPoint7")]
 SpeedLabel = NodePath("../Panel/SpeedLabel")
 DotLabel = NodePath("../Panel2/DotCurve")
 TargetLabel = NodePath("../Panel3/TargetLabel")
-Player = NodePath("../PlayerDrone_TRONish")
+TargetVelocityLabel = NodePath("../Panel4/TargetVelocityLabel")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="AStarEnemy" unique_id=1239156942]
 visible = false
@@ -666,7 +689,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("6_u3h2l")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall" unique_id=1355908331]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall" unique_id=781424311]
 mesh = SubResource("ArrayMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_qsocj")
 
@@ -676,7 +699,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("6_u3h2l")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall2" unique_id=178631532]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/GreenSmall2" unique_id=291076501]
 mesh = SubResource("ArrayMesh_s3ju3")
 surface_material_override/0 = SubResource("StandardMaterial3D_1rm4e")
 
@@ -686,7 +709,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab2" unique_id=1925851390]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab2" unique_id=1611181043]
 mesh = SubResource("ArrayMesh_clc51")
 surface_material_override/0 = SubResource("StandardMaterial3D_fk2cf")
 
@@ -696,7 +719,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab3" unique_id=1637576598]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab3" unique_id=434522473]
 mesh = SubResource("ArrayMesh_1rf6x")
 surface_material_override/0 = SubResource("StandardMaterial3D_qqria")
 
@@ -706,7 +729,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab5" unique_id=330372877]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab5" unique_id=645015164]
 mesh = SubResource("ArrayMesh_u7jtb")
 surface_material_override/0 = SubResource("StandardMaterial3D_3pijf")
 
@@ -717,7 +740,7 @@ size = Vector3(1, 2, 1)
 albedo_texture = ExtResource("5_rjhlg")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab8" unique_id=126458426]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab8" unique_id=1003307885]
 mesh = SubResource("ArrayMesh_en0da")
 surface_material_override/0 = SubResource("StandardMaterial3D_fs683")
 
@@ -727,7 +750,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab4" unique_id=1611122694]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab4" unique_id=416753584]
 mesh = SubResource("ArrayMesh_jdqor")
 surface_material_override/0 = SubResource("StandardMaterial3D_rnrej")
 
@@ -737,7 +760,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab6" unique_id=1536617844]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab6" unique_id=563886065]
 mesh = SubResource("ArrayMesh_qhpwp")
 surface_material_override/0 = SubResource("StandardMaterial3D_61ux6")
 
@@ -747,7 +770,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab7" unique_id=1209246143]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab7" unique_id=1042728625]
 mesh = SubResource("ArrayMesh_k7p47")
 surface_material_override/0 = SubResource("StandardMaterial3D_jeakb")
 
@@ -757,7 +780,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab" unique_id=1744233658]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Dark Slab" unique_id=1767507958]
 mesh = SubResource("ArrayMesh_6c4qq")
 surface_material_override/0 = SubResource("StandardMaterial3D_dk0ox")
 
@@ -767,7 +790,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("4_dxwen")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube19" unique_id=455821866]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube19" unique_id=1373780772]
 mesh = SubResource("ArrayMesh_sn4bi")
 surface_material_override/0 = SubResource("StandardMaterial3D_jsb74")
 
@@ -777,7 +800,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube34" unique_id=510764651]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube34" unique_id=488089811]
 mesh = SubResource("ArrayMesh_yodw7")
 surface_material_override/0 = SubResource("StandardMaterial3D_l8tjj")
 
@@ -787,7 +810,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube40" unique_id=559120172]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube40" unique_id=1912976696]
 mesh = SubResource("ArrayMesh_28wkh")
 surface_material_override/0 = SubResource("StandardMaterial3D_squ0u")
 
@@ -797,7 +820,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube47" unique_id=1153852706]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube47" unique_id=1199917935]
 mesh = SubResource("ArrayMesh_7gd17")
 surface_material_override/0 = SubResource("StandardMaterial3D_jb30o")
 
@@ -807,7 +830,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube49" unique_id=303660234]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube49" unique_id=743753441]
 mesh = SubResource("ArrayMesh_g04pa")
 surface_material_override/0 = SubResource("StandardMaterial3D_e2xpq")
 
@@ -818,7 +841,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube37" unique_id=893676998]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube37" unique_id=22694996]
 mesh = SubResource("ArrayMesh_rj45t")
 surface_material_override/0 = SubResource("StandardMaterial3D_pkwnf")
 
@@ -829,7 +852,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("7_po0bw")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube48" unique_id=1594956517]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube48" unique_id=1141037328]
 mesh = SubResource("ArrayMesh_ndsa1")
 surface_material_override/0 = SubResource("StandardMaterial3D_bxl8n")
 
@@ -839,7 +862,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube11" unique_id=1371968139]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube11" unique_id=1256417625]
 mesh = SubResource("ArrayMesh_kp8qa")
 surface_material_override/0 = SubResource("StandardMaterial3D_cpboo")
 
@@ -849,7 +872,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube43" unique_id=6575614]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube43" unique_id=1181037975]
 mesh = SubResource("ArrayMesh_q7bbn")
 surface_material_override/0 = SubResource("StandardMaterial3D_5lbia")
 
@@ -860,7 +883,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube44" unique_id=1225180062]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube44" unique_id=651920691]
 mesh = SubResource("ArrayMesh_haryl")
 surface_material_override/0 = SubResource("StandardMaterial3D_m7lg0")
 
@@ -870,7 +893,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube14" unique_id=613860764]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube14" unique_id=1649800888]
 mesh = SubResource("ArrayMesh_e1jop")
 surface_material_override/0 = SubResource("StandardMaterial3D_t0b5f")
 
@@ -881,7 +904,7 @@ size = Vector3(1, 0.5, 1)
 albedo_texture = ExtResource("11_gpoiv")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube12" unique_id=1628227493]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube12" unique_id=954167165]
 mesh = SubResource("ArrayMesh_blrjg")
 surface_material_override/0 = SubResource("StandardMaterial3D_7hxea")
 
@@ -891,7 +914,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("10_66res")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube39" unique_id=1271785559]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Cube39" unique_id=1638661852]
 mesh = SubResource("ArrayMesh_k3wxu")
 surface_material_override/0 = SubResource("StandardMaterial3D_5jfy0")
 
@@ -901,7 +924,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_r3v4y")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab" unique_id=1180779641]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab" unique_id=1872736988]
 mesh = SubResource("ArrayMesh_daowb")
 surface_material_override/0 = SubResource("StandardMaterial3D_iy5mj")
 
@@ -911,7 +934,7 @@ script = ExtResource("4_u3h2l")
 albedo_texture = ExtResource("8_r3v4y")
 metadata/_custom_type_script = "uid://dttncgjdm1p16"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab2" unique_id=1559130901]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Red Slab2" unique_id=1926357918]
 mesh = SubResource("ArrayMesh_8iku8")
 surface_material_override/0 = SubResource("StandardMaterial3D_qxgy4")
 
@@ -1107,9 +1130,9 @@ metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.80655, 7.9983835, 105.47642)
 MaxHorizontalSpeed = 8.5
 MaxVerticalSpeed = 5.0
+RotationSpeed = 1.5
 Acceleration = 8.0
 Deceleration = 5.0
-RotationSpeed = 1.5
 Control = 1
 CamRotationSpeed = 1.0
 
@@ -1831,65 +1854,87 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -66, 0, -20)
 
 [node name="EnemyPatrolWaypoints" type="Node" parent="." unique_id=392925600]
 
-[node name="PatrolPoint1" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=1498681007]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.22314, 12.089019, 36.65452)
+[node name="WaypointCircuit1" type="Node" parent="EnemyPatrolWaypoints" unique_id=294397633 node_paths=PackedStringArray("Waypoints")]
+script = ExtResource("62_s3ju3")
+Waypoints = [NodePath("PatrolPoint1"), NodePath("PatrolPoint2"), NodePath("PatrolPoint7")]
+
+[node name="PatrolPoint1" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit1" unique_id=1498681007 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.22314, 13.617944, 36.65452)
+script = ExtResource("62_qsocj")
+Connections = [NodePath(".")]
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint1" unique_id=446665495]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit1/PatrolPoint1" unique_id=446665495]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
-[node name="PatrolPoint2" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=1965317438]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -106.80942, 12.089019, 61.96591)
+[node name="PatrolPoint2" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit1" unique_id=1965317438 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -106.80942, 14.311374, 61.96591)
+script = ExtResource("62_qsocj")
+Connections = [NodePath("../../WaypointCircuit2/PatrolPoint3"), NodePath("../../WaypointCircuit2/PatrolPoint3")]
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint2" unique_id=2032982266]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit1/PatrolPoint2" unique_id=2032982266]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
-[node name="PatrolPoint3" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=1115022717]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -106.80942, 15.737727, 134.53888)
+[node name="PatrolPoint7" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit1" unique_id=1925587898 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.220573, 18.939207, 87.55239)
+script = ExtResource("62_qsocj")
+Connections = []
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint3" unique_id=775906617]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit1/PatrolPoint7" unique_id=1242835786]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
-[node name="PatrolPoint4" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=1542640876]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42.695667, 15.737727, 164.20815)
+[node name="WaypointCircuit2" type="Node" parent="EnemyPatrolWaypoints" unique_id=340238008]
+
+[node name="PatrolPoint3" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit2" unique_id=1115022717 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -106.80942, 14.997312, 134.53888)
+script = ExtResource("62_qsocj")
+Connections = []
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint4" unique_id=640201169]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit2/PatrolPoint3" unique_id=775906617]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
-[node name="PatrolPoint5" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=611895020]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.879344, 15.737727, 103.75287)
+[node name="PatrolPoint4" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit2" unique_id=1542640876 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42.695667, 14.171154, 164.20815)
+script = ExtResource("62_qsocj")
+Connections = []
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint5" unique_id=656672134]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit2/PatrolPoint4" unique_id=640201169]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
-[node name="PatrolPoint6" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=812210240]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.035907, 17.576862, 30.934277)
+[node name="WaypointCircuit3" type="Node" parent="EnemyPatrolWaypoints" unique_id=1299225895]
+
+[node name="PatrolPoint5" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit3" unique_id=611895020 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.879344, 14.141485, 103.75287)
+script = ExtResource("62_qsocj")
+Connections = [NodePath("../PatrolPoint6")]
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint6" unique_id=1194620200]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit3/PatrolPoint5" unique_id=656672134]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")
 
-[node name="PatrolPoint7" type="Node3D" parent="EnemyPatrolWaypoints" unique_id=1925587898]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.220573, 17.576866, 87.55239)
+[node name="PatrolPoint6" type="Node3D" parent="EnemyPatrolWaypoints/WaypointCircuit3" unique_id=812210240 node_paths=PackedStringArray("Connections")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.035907, 16.79985, 30.934277)
+script = ExtResource("62_qsocj")
+Connections = []
 metadata/_edit_group_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/PatrolPoint7" unique_id=1242835786]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyPatrolWaypoints/WaypointCircuit3/PatrolPoint6" unique_id=1194620200]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 mesh = SubResource("SphereMesh_j0j1n")
 surface_material_override/0 = SubResource("StandardMaterial3D_s3ju3")

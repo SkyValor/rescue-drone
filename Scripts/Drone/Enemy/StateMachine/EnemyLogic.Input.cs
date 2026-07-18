@@ -10,5 +10,7 @@ public partial class EnemyLogic
         public readonly record struct InitiateRotatingLeft;
         public readonly record struct InitiateRotatingRight;
         public readonly record struct FinishedLookout;
+
+        public readonly record struct Enable;
     }
 }

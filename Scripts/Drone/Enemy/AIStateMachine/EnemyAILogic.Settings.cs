@@ -1,0 +1,17 @@
+﻿namespace RescueDrone;
+
+public partial class EnemyAILogic
+{
+    public record Settings(
+        // Speed settings
+        float MaxSpeed, 
+        float Acceleration, 
+        float Deceleration, 
+        float TurnSpeed, 
+        // Momentum settings
+        float BreakingDistance,
+        float MinTurnSpeedPercentage,
+        // Scan
+        int NumberOfScans,
+        float ScanWaitTime);
+}

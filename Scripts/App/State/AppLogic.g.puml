@@ -1,0 +1,17 @@
+@startuml AppLogic
+state "AppLogic State" as RescueDrone_AppLogic_State {
+  state "InGame" as RescueDrone_AppLogic_State_InGame
+  state "InMainMenu" as RescueDrone_AppLogic_State_InMainMenu
+  state "LeavingMainMenu" as RescueDrone_AppLogic_State_LeavingMainMenu
+}
+
+RescueDrone_AppLogic_State_InMainMenu --> RescueDrone_AppLogic_State_LeavingMainMenu : NewGame
+RescueDrone_AppLogic_State_LeavingMainMenu --> RescueDrone_AppLogic_State_InGame : FadeOutFinished
+
+RescueDrone_AppLogic_State_InGame : OnEnter → ShowGame
+RescueDrone_AppLogic_State_InGame : OnExit → HideGame
+RescueDrone_AppLogic_State_InMainMenu : OnEnter → ShowMainMenu
+RescueDrone_AppLogic_State_LeavingMainMenu : OnEnter → FadeToBlack
+
+[*] --> RescueDrone_AppLogic_State_InMainMenu
+@enduml

@@ -1,7 +1,5 @@
 ﻿namespace RescueDrone;
 
-using Godot;
-
 public partial class EnemyLogic
 {
     public partial record State
