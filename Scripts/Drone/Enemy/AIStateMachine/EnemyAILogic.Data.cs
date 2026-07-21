@@ -2,6 +2,7 @@
 
 using Chickensoft.Introspection;
 using Godot;
+using Godot.Collections;
 
 public partial class EnemyAILogic
 {
@@ -9,7 +10,7 @@ public partial class EnemyAILogic
     public partial record Data
     {
         public float CurrentTargetSpeed { get; set; }
-        public Vector3[] SVOPath { get; set; }
+        public Array<Vector3> SVOPath { get; set; }
         public int CurrentPathIndex { get; set; }
         
         public WaypointCircuit CurrentCircuit { get; set; }

@@ -11,11 +11,11 @@ public partial class EnemyAILogic
         {
             public Transition On(in Input.PhysicsTick input)
             {
-                var sight = Get<SightSensor>();
                 var player = Get<IGameRepo>().Player.Value;
                 if (player is null) return ToSelf();
                 
-                return sight.TargetInSight(player) ? To<Patrol>() : To<Chase>();
+                var sight = Get<SightSensor>();
+                return sight.TargetInSight(player) ? To<MovingToCircuit>() : To<Chase>();
             }
         }
     }

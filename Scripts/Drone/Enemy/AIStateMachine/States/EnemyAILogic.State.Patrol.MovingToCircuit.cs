@@ -4,17 +4,13 @@ using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 using Godot;
 
-// TODO: Use SVO and AStar3D to generate a path to the initial waypoint.
-
 public partial class EnemyAILogic
 {
     public partial record State
     {
         [Meta]
-        public partial record MovingToCircuit : Patrol, IGet<Input.StartScanning>
+        public partial record MovingToCircuit : Patrol, IGet<Input.StartScanning>, IGet<Input.PhysicsTick>
         {
-            private Waypoint targetWaypoint;
-
             public MovingToCircuit()
             {
                 this.OnEnter(() =>
@@ -23,12 +19,13 @@ public partial class EnemyAILogic
                     var data = Get<Data>();
                     if (data.CurrentCircuit is null)
                     {
+                        // Get the nearest free circuit to be patrolled
                         var gameRepo = Get<IGameRepo>();
                         var circuits = gameRepo.WaypointCircuits.Value;
                         var circuit = GetClosestFreeCircuit(enemy.GlobalPosition, circuits);
                         if (circuit is null)
                         {
-                            GD.Print("There are no free circuits for enemy drone to patrol.");
+                            GD.Print("There are no free circuits for the enemy drone to patrol.");
                             Input(new Input.ReturnToIdle());
                             return;
                         }
@@ -37,31 +34,38 @@ public partial class EnemyAILogic
                         data.CurrentCircuit = circuit;
                     }
 
-                    targetWaypoint = data.CurrentCircuit.GetClosestWaypoint(enemy.GlobalPosition);
+                    // Set the closest waypoint of this circuit to be the starting point in patrol state
+                    var targetWaypoint = data.CurrentCircuit.GetClosestWaypoint(enemy.GlobalPosition);
+                    data.CurrentWaypoint = targetWaypoint;
+                    FindPathToClosestWaypoint(enemy, data);
                 });
             }
 
-            public override Transition On(in Input.PhysicsTick input)
+            public Transition On(in Input.PhysicsTick input)
             {
-                var enemy = Get<Mover>();
-                if (enemy.GlobalPosition.DistanceTo(targetWaypoint.GlobalPosition) < 0.1f)
-                {
-                    Input(new Input.StartScanning());
-                    return ToSelf();
-                }
-                
-                var settings = Get<Settings>();
-                ComputeMovement(enemy, targetWaypoint.GlobalPosition, settings.MaxSpeed * 0.25f, (float) input.Delta);
+                ComputeMovementToWaypoint(input.Delta);
                 return ToSelf();
             }
 
             public Transition On(in Input.StartScanning input) => To<Scanning>();
-
-            // public Transition On(in Input.MoveToWaypoint input)
-            // {
-            //     var nextWaypoint = TargetCircuit.NextWaypoint();
-            //     return To<ToNextWaypoint>().With(state => ((ToNextWaypoint) state).NextWaypoint = nextWaypoint);
-            // }
+            
+            private void FindPathToClosestWaypoint(Mover enemy, Data data)
+            {
+                var origin = enemy.GlobalPosition;
+                var target = data.CurrentWaypoint.GlobalPosition;
+                var pathfinder = Get<IDronePathfindingSVO>();
+                var path = pathfinder.FindPath(origin, target);
+                if (path.Count > 0)
+                {
+                    data.SVOPath = path;
+                    data.CurrentPathIndex = 1; // Skip current position, which might not be the center of this node
+                }
+                else
+                {
+                    GD.Print("Something went wrong with the pathfinding algorithm. Fallback to Idle state.");
+                    Input(new Input.ReturnToIdle());
+                }
+            }
             
             private static WaypointCircuit GetClosestFreeCircuit(Vector3 selfPosition, WaypointCircuit[] circuits)
             {

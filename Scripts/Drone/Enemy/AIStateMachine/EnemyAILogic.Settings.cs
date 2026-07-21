@@ -3,6 +3,8 @@
 public partial class EnemyAILogic
 {
     public record Settings(
+        // Drone information
+        float DroneRadius,
         // Speed settings
         float MaxSpeed, 
         float Acceleration, 

@@ -10,7 +10,7 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record Scanning : Patrol, IGet<Input.Moved>
+        public partial record Scanning : Patrol, IGet<Input.Moved>, IGet<Input.PhysicsTick>
         {
             private int currentScanCount;
             private float currentScanTime;
@@ -29,7 +29,7 @@ public partial class EnemyAILogic
                 });
             }
 
-            public override Transition On(in Input.PhysicsTick input)
+            public Transition On(in Input.PhysicsTick input)
             {
                 var settings = Get<Settings>();
                 if (isScanning)

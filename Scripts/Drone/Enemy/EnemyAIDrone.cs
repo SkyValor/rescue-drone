@@ -12,6 +12,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 {
     public override void _Notification(int what) => this.Notify(what);
     
+    #region Exports
     [ExportGroup("Speed Settings")]
     [Export] public float MaxSpeed { get; private set; } = 15f;
     [Export] public float Acceleration { get; private set; } = 5f;
@@ -36,12 +37,17 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
     [Export] public Node3D[] PatrolWaypoints { get; private set; }
     [Export] public int NumberOfScans { get; private set; } = 5;
     [Export] public float ScanWaitTime { get; private set; } = 3f;
+    #endregion
     
+    #region Dependecies
     [Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>();
     [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
+    #endregion
 
+    #region Nodes
     [Node] private SightSensor Sight { get; set; }
-    [Node] private IDronePathfindingSVO svo { get; set; }
+    // [Node] private IDronePathfindingSVO svo { get; set; }
+    #endregion
     
     #region AI State Machine
     public EnemyAILogic AIStateMachine { get; private set; }
@@ -49,15 +55,25 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
     private EnemyAILogic.IBinding AIStateBinding { get; set; }
     #endregion
 
+    private IDronePathfindingSVO dronePathfinder;
+
+    public void OnReady()
+    {
+        dronePathfinder = new DronePathfindingSVO(GameRepo.OctreeGenerator.Value, DroneRadius, GetWorld3D());
+    }
+
     public void OnResolved()
     {
         Settings = new EnemyAILogic.Settings(
+            DroneRadius,
             MaxSpeed, Acceleration, Deceleration, TurnSpeed, 
             BreakingDistance, MinTurnSpeedPercentage,
             NumberOfScans, ScanWaitTime);
         
         AIStateMachine = new EnemyAILogic();
         AIStateMachine.Set(this as IEnemyAIDrone);
+        AIStateMachine.Set(GetWorld3D());
+        AIStateMachine.Set(dronePathfinder);
         AIStateMachine.Set(Settings);
         AIStateMachine.Set(Sight);
         
