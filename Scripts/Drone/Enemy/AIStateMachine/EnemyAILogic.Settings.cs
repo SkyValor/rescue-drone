@@ -15,5 +15,9 @@ public partial class EnemyAILogic
         float MinTurnSpeedPercentage,
         // Scan
         int NumberOfScans,
-        float ScanWaitTime);
+        float ScanWaitTime,
+        // Player seeking settings
+        float MinDistance,
+        float MaxDistance,
+        float RepathThreshold);
 }

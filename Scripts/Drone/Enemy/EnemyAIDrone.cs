@@ -1,14 +1,14 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.AutoInject;
-using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
 using Godot;
 
-public interface IEnemyAIDrone : ICharacterBody3D;
+public interface IEnemyAIDrone : IFlyingDrone;
 
 [Meta(typeof(IAutoNode))]
-public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
+public partial class EnemyAIDrone : FlyingDrone
 {
     public override void _Notification(int what) => this.Notify(what);
     
@@ -52,7 +52,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
     #region AI State Machine
     public EnemyAILogic AIStateMachine { get; private set; }
     public EnemyAILogic.Settings Settings { get; private set; }
-    private EnemyAILogic.IBinding AIStateBinding { get; set; }
+    private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
     #endregion
 
     private IDronePathfindingSVO dronePathfinder;
@@ -68,10 +68,11 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
             DroneRadius,
             MaxSpeed, Acceleration, Deceleration, TurnSpeed, 
             BreakingDistance, MinTurnSpeedPercentage,
-            NumberOfScans, ScanWaitTime);
+            NumberOfScans, ScanWaitTime,
+            MinDistance, MaxDistance, RepathThreshold);
         
         AIStateMachine = new EnemyAILogic();
-        AIStateMachine.Set(this as IEnemyAIDrone);
+        AIStateMachine.Set(this);
         AIStateMachine.Set(GetWorld3D());
         AIStateMachine.Set(dronePathfinder);
         AIStateMachine.Set(Settings);

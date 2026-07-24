@@ -15,5 +15,9 @@ public partial class EnemyAILogic
         
         public WaypointCircuit CurrentCircuit { get; set; }
         public Waypoint CurrentWaypoint { get; set; }
+        
+        public bool PlayerSeenLastFrame { get; set; }
+        public Vector3 LastPlayerPosition { get; set; }
+        public Vector3 LastRepathPosition { get; set; }
     }
 }

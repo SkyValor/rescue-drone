@@ -10,7 +10,7 @@ public partial class EnemyAILogic
     [Meta]
     public partial record State : StateLogic<State>
     {
-        private void ComputeMovement(Mover enemy, Vector3 targetPosition, float maxSpeed, float deltaTime)
+        private void ComputeMovementAlongPath(EnemyAIDrone enemy, Vector3 targetPosition, float maxSpeed, float deltaTime)
         {
             var data = Get<Data>();
             var settings = Get<Settings>();
@@ -27,11 +27,24 @@ public partial class EnemyAILogic
             var velocity = enemy.Velocity;
             var targetVelocity = direction * data.CurrentTargetSpeed;
             velocity = velocity.Lerp(targetVelocity, settings.Acceleration * deltaTime);
-
             Output(new Output.VelocityComputed(velocity));
         }
 
-        private void SmoothlyRotate(Mover enemy, Vector3 toDirection, float turnSpeed, float deltaTime)
+        private void ComputeMovementWithoutRotation(EnemyAIDrone enemy, Vector3 toDirection, float desiredSpeed, float deltaTime)
+        {
+            var data = Get<Data>();
+            var settings = Get<Settings>();
+            
+            var speedBleedingFactor = desiredSpeed < data.CurrentTargetSpeed ? settings.Acceleration : settings.Deceleration;
+            data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
+            
+            var velocity = enemy.Velocity;
+            var targetVelocity = toDirection.Normalized() * data.CurrentTargetSpeed;
+            velocity = velocity.Lerp(targetVelocity, settings.Deceleration * deltaTime);
+            Output(new Output.VelocityComputed(velocity));
+        }
+
+        private void SmoothlyRotate(EnemyAIDrone enemy, Vector3 toDirection, float turnSpeed, float deltaTime)
         {
             if (toDirection == Vector3.Zero) return;
 

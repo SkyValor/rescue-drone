@@ -2,18 +2,28 @@
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Godot;
 
 public partial class EnemyAILogic
 {
     public partial record State
     {
         [Meta]
-        public abstract partial record Patrol : State
+        public abstract partial record Patrol : State, IGet<Input.PlayerInSight>
         {
             protected Patrol()
             {
+                this.OnEnter(() =>
+                {
+                    var sight = Get<SightSensor>();
+                    sight.PlayerInSight += OnPlayerOnSight;
+                });
+                
                 this.OnExit(() =>
                 {
+                    var sight = Get<SightSensor>();
+                    sight.PlayerInSight -= OnPlayerOnSight;
+                    
                     var data = Get<Data>();
                     if (data.CurrentCircuit is null) return;
                     
@@ -22,11 +32,19 @@ public partial class EnemyAILogic
                     data.CurrentWaypoint = null;
                 });
             }
+            
+            private void OnPlayerOnSight(Vector3 playerPosition)
+            {
+                Get<Data>().LastPlayerPosition = playerPosition;
+                Input(new Input.PlayerInSight());
+            }
+
+            public Transition On(in Input.PlayerInSight input) => To<Pursuit>();
 
             protected void ComputeMovementToWaypoint(double delta)
             {
                 var data = Get<Data>();
-                var enemy = Get<Mover>();
+                var enemy = Get<EnemyAIDrone>();
                 var targetPosition = data.SVOPath[data.CurrentPathIndex];
                 if (enemy.GlobalPosition.DistanceTo(targetPosition) < 0.35f)
                 {
@@ -38,37 +56,8 @@ public partial class EnemyAILogic
                 }
 
                 var settings = Get<Settings>();
-                ComputeMovement(enemy, targetPosition, settings.MaxSpeed * 0.25f, (float) delta);
+                ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed * 0.25f, (float) delta);
             }
-            
-            // public virtual Transition On(in Input.PhysicsTick input)
-            // {
-            //     var enemy = Get<Mover>();
-            //     var gameRepo = Get<IGameRepo>();
-            //     var circuits = gameRepo.WaypointCircuits.Value;
-            //     
-            //     float shortestDistance = float.MaxValue;
-            //     WaypointCircuit closestCircuit = null;
-            //     foreach (var circuit in circuits)
-            //     {
-            //         if (!circuit.IsFreeToPatrol()) continue;
-            //         
-            //         var closestWaypoint = circuit.GetClosestWaypoint(enemy.GlobalPosition);
-            //         var currentDistance = closestWaypoint.GlobalPosition.DistanceSquaredTo(enemy.GlobalPosition);
-            //         if (currentDistance > shortestDistance) continue;
-            //         
-            //         shortestDistance = currentDistance;
-            //         closestCircuit = circuit;
-            //     }
-            //
-            //     if (closestCircuit is null) return ToSelf();
-            //     
-            //     // Make a reservation on this circuit
-            //     Get<Data>().CurrentCircuit = closestCircuit;
-            //     closestCircuit.SetPatrolling(enemy);
-            //     Input(new Input.MoveToCircuit());
-            //     return ToSelf();
-            // }
         }
     }
 }

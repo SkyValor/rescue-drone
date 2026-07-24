@@ -85,28 +85,28 @@ public class SparseVoxelOctreeShape
             foreach (var offset in directions)
             {
                 var targetPosition = center + offset;
-                var neighbor = GetEmptyLeafAtPosition(targetPosition);
-                if (neighbor is null) continue;
+                var neighbor = GetLeafAtPosition(targetPosition);
+                if (neighbor is null || !neighbor.IsEmpty) continue;
                 if (neighbor.IsLeaf)
                     AStarGraph.ConnectPoints(currentLeaf.Id, neighbor.Id);
             }
         }
     }
 
-    private OctreeNodeShape GetEmptyLeafAtPosition(Vector3 position)
+    public OctreeNodeShape GetLeafAtPosition(Vector3 position)
     {
-        return Root.ContainsPoint(position) ? FindEmptyLeafRecursive(Root, position) : null;
+        return Root.ContainsPoint(position) ? FindLeafRecursive(Root, position) : null;
     }
 
-    private static OctreeNodeShape FindEmptyLeafRecursive(OctreeNodeShape currentNode, Vector3 position)
+    private static OctreeNodeShape FindLeafRecursive(OctreeNodeShape currentNode, Vector3 position)
     {
         if (currentNode.IsLeaf)
-            return currentNode.IsEmpty ? currentNode : null;
+            return currentNode;
 
         foreach (var child in currentNode.Children)
         {
             if (child is not null && child.ContainsPoint(position))
-                return FindEmptyLeafRecursive(child, position);
+                return FindLeafRecursive(child, position);
         }
 
         return null;

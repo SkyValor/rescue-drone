@@ -33,7 +33,7 @@ public partial class EnemyAILogic
                     data.CurrentWaypoint = data.CurrentWaypoint.Connections.PickRandom();
                     
                     // Use the Drone Pathfinder to find the best path to that waypoint
-                    var enemy = Get<Mover>();
+                    var enemy = Get<EnemyAIDrone>();
                     var pathfinder = Get<IDronePathfindingSVO>();
                     var origin = enemy.GlobalPosition;
                     var target = data.CurrentWaypoint.GlobalPosition;

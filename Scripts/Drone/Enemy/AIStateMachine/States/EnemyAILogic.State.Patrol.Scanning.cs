@@ -49,7 +49,7 @@ public partial class EnemyAILogic
                     }
                 }
                 
-                var enemy = Get<Mover>();
+                var enemy = Get<EnemyAIDrone>();
                 SmoothlyRotate(enemy, currentLookDirection, settings.TurnSpeed, (float) input.Delta);
                 return ToSelf();
             }
@@ -59,7 +59,7 @@ public partial class EnemyAILogic
                 if (isScanning) return ToSelf();
 
                 // Check if enemy drone's nose is aligned with target direction
-                var enemy = Get<Mover>();
+                var enemy = Get<EnemyAIDrone>();
                 var frontDirection = -enemy.Basis.Z;
                 isScanning = frontDirection.IsEqualApprox(currentLookDirection);
                 return ToSelf();

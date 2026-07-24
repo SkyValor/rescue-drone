@@ -410,16 +410,6 @@ public partial class Mover : CharacterBody3D
         var distance = toPlayer.Length();
         var targetDistance = Mathf.Clamp(distance, MinDistance, MaxDistance);
         return playerPosition - toPlayer.Normalized() * targetDistance;
-        
-        
-        // var playerPosition = Player.GlobalPosition;
-        // var toEnemy = GlobalPosition - playerPosition;
-        // var distance = toEnemy.Length();
-        // if (distance < 0.1f) 
-        //     return playerPosition + new Vector3(0, 0, MinDistance);
-        //
-        // var targetDistance = Mathf.Clamp(distance, MinDistance, MaxDistance);
-        // return playerPosition + (toEnemy * targetDistance);
     }
     
     #region Draw Functions

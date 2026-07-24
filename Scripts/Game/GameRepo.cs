@@ -9,6 +9,7 @@ public interface IGameRepo : IDisposable
     IAutoValue<WaypointCircuit[]> WaypointCircuits { get; }
     IAutoValue<OctreeGeneratorGroup> OctreeGenerator { get; }
     
+    
     void SetPlayer(PlayerMover player);
     void SetWaypointCircuits(WaypointCircuit[] circuits);
     void SetOctreeGenerator(OctreeGeneratorGroup generator);

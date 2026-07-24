@@ -15,7 +15,7 @@ public partial class EnemyAILogic
                 if (player is null) return ToSelf();
                 
                 var sight = Get<SightSensor>();
-                return sight.TargetInSight(player) ? To<MovingToCircuit>() : To<Chase>();
+                return sight.TargetInSight(player) ? To<Pursuit>() : To<MovingToCircuit>();
             }
         }
     }

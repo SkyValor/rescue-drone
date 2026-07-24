@@ -5,62 +5,29 @@ using Godot.Collections;
 
 public interface IDronePathfindingSVO
 {
-    /// <summary>
-    /// Use the internal Sparse Voxel Octree to generate a path from origin to end with the IDs specified.
-    /// Said path will be generated with Godot's AStar3D system, and will return the most optimal one.
-    /// This method will be using Voxel String Pulling to make the final path more realistic.
-    /// </summary>
-    /// <param name="fromID">ID of SVO node to start the path</param>
-    /// <param name="toID">ID of SVO node to end the path</param>
-    /// <param name="world3D"></param>
-    /// <param name="droneRadius"></param>
-    /// <param name="exclusion"></param>
-    /// <returns></returns>
-    bool FindPath(int fromID, int toID, World3D world3D, float droneRadius, Array<Rid> exclusion = null);
-    
     Array<Vector3> FindPath(Vector3 originPosition, Vector3 targetPosition, Array<Rid> exclusion = null);
-    
-    /// <summary>
-    /// Returns the next position in this path, if applicable, and without advancing the current index.
-    /// </summary>
-    Vector3? NextPoint { get; }
-    
-    /// <summary>
-    /// Returns the current position in this path, if applicable.
-    /// </summary>
-    Vector3 CurrentPoint { get; }
-    
-    /// <summary>
-    /// Returns the previous position in this path, if applicable.
-    /// </summary>
-    Vector3? PreviousPoint { get; }
-
-    /// <summary>
-    /// Returns 
-    /// </summary>
-    bool HasNextPoint();
-    bool HasPreviousPoint();
-    Vector3? ToNextPoint { get; }
+    bool IsPathClear(Vector3 start, Vector3 end, Array<Rid> exclude = null);
 }
 
 public class DronePathfindingSVO : IDronePathfindingSVO
 {
-    public float DroneRadius { get; set; }
-    public World3D World3D { get; set; }
-    private Array<Rid> Exclusion { get; set; }
+    private Array<Rid> Exclusion { get; }
+
+    private readonly float droneRadius;
+    private readonly World3D world;
+    private readonly SparseVoxelOctreeShape svo;
+    private readonly OctreeGeneratorGroup octreeGenerator;
     
     private Array<Vector3> rawPath;
     private Array<Vector3> path;
-    private ushort index;
-    private readonly SparseVoxelOctreeShape svo;
-    private readonly OctreeGeneratorGroup octreeGenerator;
 
-    public DronePathfindingSVO(OctreeGeneratorGroup octreeGenerator, float droneRadius, World3D world3D)
+    public DronePathfindingSVO(OctreeGeneratorGroup octreeGenerator, float droneRadius, World3D world, Array<Rid> exclusion = null)
     {
         this.octreeGenerator = octreeGenerator;
+        this.droneRadius = droneRadius;
+        this.world = world;
+        Exclusion = exclusion;
         svo = octreeGenerator.Tree;
-        DroneRadius = droneRadius;
-        World3D = world3D;
 
         if (svo is null) GD.PrintErr("SVO cannot be found for drone pathfinding.");
     }
@@ -71,7 +38,6 @@ public class DronePathfindingSVO : IDronePathfindingSVO
         if (rawPath is null || rawPath.Count == 0) return false;
         
         path = SmoothPath(exclusion);
-        index = 0;
         return true;
     }
 
@@ -86,17 +52,8 @@ public class DronePathfindingSVO : IDronePathfindingSVO
         
         rawPath = ConvertArray(svoPath);
         path = SmoothPath(exclusion);
-        index = 0;
         return path;
     }
-
-    public bool HasNextPoint() => path is not null && index < path.Count - 1;
-    public bool HasPreviousPoint() => path is not null && index > 0;
-
-    public Vector3? ToNextPoint => HasNextPoint() ? path[++index] : null;
-    public Vector3? NextPoint => HasNextPoint() ? path[index + 1] : null;
-    public Vector3 CurrentPoint => path[index];
-    public Vector3? PreviousPoint => HasPreviousPoint() ? path[index - 1] : null;
 
     private Array<Vector3> SmoothPath(Array<Rid> exclusion = null)
     {
@@ -132,15 +89,16 @@ public class DronePathfindingSVO : IDronePathfindingSVO
         return smoothPath;
     }
     
-    private bool IsPathClear(Vector3 start, Vector3 end, Array<Rid> exclude = null)
+    public bool IsPathClear(Vector3 start, Vector3 end, Array<Rid> exclude = null)
     {
-        var spaceState = World3D.DirectSpaceState;
+        var spaceState = world.DirectSpaceState;
         var query = new PhysicsShapeQueryParameters3D();
         
         // Use a sphere cast matching the drone's size to ensure it doesn't clip walls
         var sphere = new SphereShape3D();
-        sphere.Radius = DroneRadius;
+        sphere.Radius = droneRadius;
         query.Shape = sphere;
+        query.Exclude = exclude ?? Exclusion;
         
         // We make a motion query to determine how much of the path is safe for traversing
         query.Transform = new Transform3D(Basis.Identity, start);
@@ -162,6 +120,7 @@ public class DronePathfindingSVO : IDronePathfindingSVO
         return array;
     }
     
+    #region Debug Draw
     private void DrawPathLines()
     {
         if (rawPath is null || rawPath.Count == 0 ||
@@ -176,5 +135,6 @@ public class DronePathfindingSVO : IDronePathfindingSVO
         for (int j = 0; j < path.Count - 1; j++)
             DebugDraw3D.DrawLine(path[j], path[j + 1], Colors.Goldenrod);
     }
+    #endregion
     
 }

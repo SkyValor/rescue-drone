@@ -7,9 +7,9 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record Disabled : State, IGet<Input.Enable>
+        public partial record Search : State
         {
-            public Transition On(in Input.Enable input) => To<Idle>();
+            
         }
     }
 }
