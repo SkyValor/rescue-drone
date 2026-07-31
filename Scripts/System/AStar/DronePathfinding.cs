@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Godot;
 using Godot.Collections;
 
-public class DronePathfinding : IDronePathfinding
+public class DronePathfinding : IDronePathfinding 
 {
     private const int MIN_PATH_LENGTH = 3;
     

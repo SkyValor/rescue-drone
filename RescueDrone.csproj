@@ -4,10 +4,8 @@
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="Scripts\Drone\Player\" />
-  </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="Chickensoft.Sync" Version="3.0.0" />
         <PackageReference Include="Chickensoft.Collections" Version="3.1.4" />
         <PackageReference Include="Chickensoft.Introspection" Version="3.0.2" />
         <PackageReference Include="Chickensoft.Introspection.Generator" Version="3.0.2" />
@@ -16,5 +14,8 @@
         <PackageReference Include="Chickensoft.LogicBlocks.DiagramGenerator" Version="5.20.0" />
         <PackageReference Include="Chickensoft.AutoInject" Version="2.11.2" />
         <PackageReference Include="Chickensoft.GodotNodeInterfaces" Version="3.0.3" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Scripts\Drone\Enemy\State\States\" />
     </ItemGroup>
 </Project>

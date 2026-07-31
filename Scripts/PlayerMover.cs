@@ -13,11 +13,11 @@ public partial class PlayerMover : CharacterBody3D
     [ExportGroup("Speed Settings")]
     [Export] public float MaxHorizontalSpeed = 15.0f;
     [Export] public float MaxVerticalSpeed = 10.0f;
+    [Export] public float RotationSpeed = 3.0f;
 
     [ExportGroup("Momentum Settings")]
     [Export] public float Acceleration = 20.0f;
     [Export] public float Deceleration = 12.0f;
-    [Export] public float RotationSpeed = 3.0f;
     
     [ExportGroup("Juice & Visuals")]
     [Export] public Node3D DroneMesh; 

@@ -1,38 +1,52 @@
 ﻿namespace RescueDrone;
 
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
 public partial class Mover : CharacterBody3D
 {
-    public enum EnemyState { Idle, Patrol, Seek, Stunned }
+    public enum EnemyState { Idle, Patrol, Seek, Stunned, Random }
     
+    public enum EnemyPatrolState { IntoCircuit, ToNextWaypoint, Lookout }
+    
+    public enum EnemySeekState { Stay, Chase, BackAway }
+    
+    [ExportGroup("Speed Settings")]
     [Export] public float MaxSpeed { get; private set; } = 15f;
+    [Export] public float TurnSpeed { get; private set; } = 5f;
     [Export] public float Acceleration { get; private set; } = 5f;
     [Export] public float Deceleration { get; private set; } = 8f;
-    [Export] public float Accuracy { get; private set; } = 1f;
-    [Export] public float TurnSpeed { get; private set; } = 5f;
+    
+    [ExportGroup("Momentum Settings")]
+    [Export] public float BreakingDistance { get; private set; } = 6f;
+    [Export] public float MinTurnSpeedPercentage { get; private set; } = 0.25f;
+    
+    [ExportGroup("SVO")]
+    [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
     [Export] public float DroneRadius { get; private set; } = 1f;
     [Export] public float TargetRadius { get; private set; } = 2f;
-    [Export] public float MinTurnSpeedPercentage { get; private set; } = 0.25f;
-    [Export] public float BreakingDistance { get; private set; } = 6f;
-    [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
 
     [ExportGroup("Player Seeking Settings")]
     [Export] public float MinDistance { get; private set; } = 4f;
     [Export] public float MaxDistance { get; private set; } = 7f;
     [Export] public float RepathThreshold { get; private set; } = 2f; // Only recalculate SVO path if player moves this much
+    [Export] public PlayerMover Player { get; private set; }
     
-    [Export] public Node3D[] PatrolWaypoints { get; private set; }
+    [ExportGroup("Patrol")]
+    [Export] public Node3D[] PatrolWaypoints { get; private set; }  
+    // TODO: Turn this into circuits with connections
+    // Make this available in the GameRepo and remove from here.
     
     // DEBUGGING
+    [ExportGroup("Debugging")]
     [Export] public Label SpeedLabel { get; private set; }
     [Export] public Label DotLabel { get; private set; }
     [Export] public Label TargetLabel { get; private set; }
-    [Export] public PlayerMover Player { get; private set; }
+    [Export] public Label TargetVelocityLabel { get; private set; }
 
-    private Array<Rid> exclusion;
+    private Array<Rid> selfRID;
     private DronePathfinding dronePathfinding;
     private SparseVoxelOctreeShape svo;
     private Vector3[] aStarPath = [];
@@ -42,9 +56,10 @@ public partial class Mover : CharacterBody3D
     private Vector3 lastTargetPosition;
     private Node3D currentWaypoint;
     private readonly List<Node3D> waypointsInvestigated = [];
+    
     private EnemyState currentState = EnemyState.Idle;
-
-    private bool drawPathLines;
+    private EnemySeekState currentSeekState = EnemySeekState.Stay;
+    private EnemyPatrolState currentPatrolState = EnemyPatrolState.IntoCircuit;
     
     public override void _EnterTree()
     {
@@ -53,7 +68,7 @@ public partial class Mover : CharacterBody3D
 
     public override void _Ready()
     {
-        exclusion = [GetRid()];
+        selfRID = [GetRid()];
         CallDeferred(MethodName.InitiateBehavior);
     }
 
@@ -75,7 +90,7 @@ public partial class Mover : CharacterBody3D
         // DrawAStarPath();
         // DrawSmoothPath();
         
-        if (drawPathLines) DrawPathLines();
+        if (PathLinesToDraw()) DrawPathLines();
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -86,41 +101,113 @@ public partial class Mover : CharacterBody3D
         {
             case Key.F1:
                 currentState = EnemyState.Idle;
-                SetPhysicsProcess(false);
-                drawPathLines = false;
-                waypointsInvestigated.Clear();
+                CleanState();
                 break;
             case Key.F2:
                 currentState = EnemyState.Patrol;
-                Node3D waypoint;
-                do { waypoint = GetRandomWaypoint(); } 
-                while (waypointsInvestigated.Contains(waypoint));
-                waypointsInvestigated.Add(waypoint);
-                if (waypointsInvestigated.Count > 4)
-                    waypointsInvestigated.RemoveAt(0);
-                currentWaypoint = waypoint;
-                var start = svo.FindClosestEmptyLeaf(GlobalPosition);
-                var end = svo.FindClosestEmptyLeaf(currentWaypoint.GlobalPosition);
-                if (RecalculatePath(start.Position, end.Position))
-                {
-                    SetPhysicsProcess(true);
-                    drawPathLines = true;
-                }
+                CleanState();
+                break;
+            case Key.F3:
+                currentState = EnemyState.Seek;
+                CleanState();
+                break;
+            case Key.F5:
+                currentState = EnemyState.Random;
+                CleanState();
                 break;
         }
     }
-
-    private Node3D GetRandomWaypoint()
+    
+    private void CleanState()
     {
-        var rand = GD.RandRange(0, PatrolWaypoints.Length - 1);
-        return PatrolWaypoints[rand];
+        aStarPath = null;
+        smoothPath = null;
+        waypointsInvestigated.Clear();
     }
+    
+    #region Physics
     
     public override void _PhysicsProcess(double delta)
     {
         var deltaTime = (float) delta;
+        switch (currentState)
+        {
+            case EnemyState.Idle:
+                break;
+            
+            case EnemyState.Patrol:
+                PhysicsTickPatrol(deltaTime);
+                break;
+            case EnemyState.Seek:
+                PhysicsTickSeek(deltaTime);
+                break;
+            case EnemyState.Random:
+                PhysicsTickRandomMovement(deltaTime);
+                break;
+        }
+    }
+    
+    private void PhysicsTickPatrol(float deltaTime) 
+    {
+        if (currentWaypoint is null)
+        {
+            // Current waypoint is null at the start of Patrol state.
+            currentWaypoint = GetClosestWaypoint();
+            RecalculatePathToWaypoint();
+            return;
+        }
+        
+        if (!PathLinesToDraw())
+        {
+            // There are no lines to draw if pathfinding was not able to complete.
+            RecalculatePathToWaypoint();
+            return;
+        }
 
-        var toPlayer = GlobalPosition.DirectionTo(Player.GlobalPosition);
+        var toWaypoint = currentWaypoint.GlobalPosition - GlobalPosition;
+        var distanceToWaypoint = toWaypoint.Length();
+        if (distanceToWaypoint < 1.5f)
+        {
+            waypointsInvestigated.Add(currentWaypoint);
+            if (waypointsInvestigated.Count > 4)
+                waypointsInvestigated.RemoveAt(0);
+
+            currentWaypoint = PatrolWaypoints
+                .Where(wp => !waypointsInvestigated.Contains(wp))
+                .OrderBy(wp => wp.GlobalPosition.DistanceTo(GlobalPosition))
+                .FirstOrDefault();
+
+            if (currentWaypoint is null)
+            {
+                GD.PrintErr("Was not able to get the closest not investigated waypoint.");
+                return;
+            }
+            
+            RecalculatePathToWaypoint();
+            return;
+        }
+
+        var targetPosition = smoothPath[currentPathIndex];
+        var toTarget = targetPosition - GlobalPosition;
+        
+        // TODO: When reaching the desired waypoint, commence Coroutine to lookout for player drone.
+        // When completed, increment currentPathIndex and allow the flow to recalculate the new path.
+
+        var desiredSpeed = MaxSpeed * 0.25f;
+        var speedBleedingFactor = desiredSpeed < currentTargetSpeed ? Deceleration : Acceleration;
+        currentTargetSpeed = Mathf.Lerp(currentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
+
+        var direction = toWaypoint.Normalized();
+        SmoothlyRotate(direction, deltaTime);
+
+        var targetVelocity = direction * currentTargetSpeed;
+        Velocity = Velocity.Lerp(targetVelocity, Acceleration * deltaTime);
+        MoveAndSlide();
+    }
+
+    private void PhysicsTickSeek(float deltaTime)
+    {
+        var toPlayer = Player.GlobalPosition - GlobalPosition;
         var distanceToPlayer = toPlayer.Length();
         if (distanceToPlayer < MinDistance)
         {
@@ -133,8 +220,27 @@ public partial class Mover : CharacterBody3D
             return;
         }
         
+        // TODO: CAREFUL!! We might be recalculating a path every frame.
+        
+        var idealTarget = CalculatePursuitTarget();
+        if (idealTarget.DistanceTo(lastTargetPosition) <= RepathThreshold) return;
+
+        lastTargetPosition = idealTarget;
+        var startLeaf = svo.FindClosestEmptyLeaf(GlobalPosition);
+        var targetLeaf = svo.FindClosestEmptyLeaf(idealTarget);
+
+        if (startLeaf is not null && targetLeaf is not null && targetLeaf.IsEmpty)
+        {
+            aStarPath = svo.CreatePath(startLeaf.Id, targetLeaf.Id);
+            smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, selfRID);
+            currentPathIndex = 0;
+        }
+    }
+
+    private void PhysicsTickRandomMovement(float deltaTime)
+    {
         if (svo is null) return;
-        if (smoothPath.Length == 0 || currentPathIndex >= smoothPath.Length)
+        if (smoothPath is null || smoothPath.Length == 0 || currentPathIndex >= smoothPath.Length)
         {
             RecalculatePath();
             return;
@@ -163,8 +269,35 @@ public partial class Mover : CharacterBody3D
         SmoothlyRotate(direction, deltaTime);
 
         var targetVelocity = direction * currentTargetSpeed;
+        TargetVelocityLabel.Text = $"{targetVelocity.Length()}";
         Velocity = Velocity.Lerp(targetVelocity, Acceleration * deltaTime);
         MoveAndSlide();
+    }
+    
+    #endregion
+    
+    private bool PathLinesToDraw() => aStarPath is not null && smoothPath is not null;
+    
+    private Node3D GetRandomWaypoint()
+    {
+        var rand = GD.RandRange(0, PatrolWaypoints.Length - 1);
+        return PatrolWaypoints[rand];
+    }
+
+    private Node3D GetClosestWaypoint()
+    {
+        Node3D waypoint = null;
+        var distance = double.MaxValue;
+        foreach (var wp in PatrolWaypoints)
+        {
+            var dist = GlobalPosition.DistanceTo(wp.GlobalPosition);
+            if (dist > distance) continue;
+            
+            distance = dist;
+            waypoint = wp;
+        }
+
+        return waypoint;
     }
 
     private void RecalculatePath()
@@ -172,20 +305,37 @@ public partial class Mover : CharacterBody3D
         if (dronePathfinding is null) return;
         
         aStarPath = dronePathfinding.GetAStarPath(svo, GetWorld3D(), GlobalPosition, DroneRadius);
-        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
+        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, selfRID);
         currentPathIndex = 0;
         currentTargetSpeed = MaxSpeed;
     }
 
+    private bool RecalculatePathToWaypoint()
+    {
+        return currentWaypoint is not null && RecalculatePath(startPosition: GlobalPosition, endPosition: currentWaypoint.GlobalPosition);
+    }
+
     private bool RecalculatePath(Vector3 startPosition, Vector3 endPosition)
     {
+        if (svo is null)
+        {
+            GD.PrintErr("SVO system not set. Cannot complete drone pathfinding.");
+            return false;
+        }
+
+        if (dronePathfinding is null)
+        {
+            GD.PrintErr("Drone pathfinding strategy not set.");
+            return false;
+        }
+        
         var startLeaf = svo.FindClosestEmptyLeaf(startPosition);
         var targetLeaf = svo.FindClosestEmptyLeaf(endPosition);
         if (startLeaf is null || targetLeaf is null || !targetLeaf.IsEmpty) 
             return false;
 
         aStarPath = svo.CreatePath(startLeaf.Id, targetLeaf.Id);
-        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
+        smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, selfRID);
         currentPathIndex = 0;
         return true;
     }
@@ -236,9 +386,9 @@ public partial class Mover : CharacterBody3D
         return MaxSpeed;
     }
 
-    public void UpdateAIChaseBehavior(Vector3 playerPosition, World3D world, float droneRadius)
+    private void UpdateAIChaseBehavior()
     {
-        var idealTarget = CalculatePursuitTarget(playerPosition, GlobalPosition);
+        var idealTarget = CalculatePursuitTarget();
         if (idealTarget.DistanceTo(lastTargetPosition) <= RepathThreshold) return;
 
         lastTargetPosition = idealTarget;
@@ -248,22 +398,21 @@ public partial class Mover : CharacterBody3D
         if (startLeaf is not null && targetLeaf is not null && targetLeaf.IsEmpty)
         {
             aStarPath = svo.CreatePath(startLeaf.Id, targetLeaf.Id);
-            smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, exclusion);
+            smoothPath = dronePathfinding.SmoothPath(aStarPath, GetWorld3D(), DroneRadius, selfRID);
             currentPathIndex = 0;
         }
     }
 
-    private Vector3 CalculatePursuitTarget(Vector3 playerPosition, Vector3 enemyPosition)
+    private Vector3 CalculatePursuitTarget()
     {
-        var toEnemy = enemyPosition - playerPosition;
-        var currentDistance = toEnemy.Length();
-        if (currentDistance < 0.1f) 
-            return playerPosition + new Vector3(0, 0, MinDistance);
-
-        var directionFromPlayer = toEnemy.Normalized();
-        var targetDistance = Mathf.Clamp(currentDistance, MinDistance, MaxDistance);
-        return playerPosition + (directionFromPlayer * targetDistance);
+        var playerPosition = Player.GlobalPosition;
+        var toPlayer = playerPosition - GlobalPosition;
+        var distance = toPlayer.Length();
+        var targetDistance = Mathf.Clamp(distance, MinDistance, MaxDistance);
+        return playerPosition - toPlayer.Normalized() * targetDistance;
     }
+    
+    #region Draw Functions
 
     private void DrawAStarPath()
     {
@@ -308,7 +457,6 @@ public partial class Mover : CharacterBody3D
         if (aStarPath is null || aStarPath.Length == 0 ||
             smoothPath is null || smoothPath.Length == 0)
         {
-            GD.Print("STOP HERE");
             return;
         }
 
@@ -318,5 +466,7 @@ public partial class Mover : CharacterBody3D
         for (int j = 0; j < smoothPath.Length - 1; j++)
             DebugDraw3D.DrawLine(smoothPath[j], smoothPath[j + 1], Colors.Goldenrod);
     }
+    
+    #endregion
     
 }
