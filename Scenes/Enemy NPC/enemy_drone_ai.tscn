@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://d0u2bhddxk4v3"]
+
+[ext_resource type="PackedScene" uid="uid://cmqkaellyg72y" path="res://Assets/[GAMICO] drone-game-ready-3d-model-free-dowwload/source/Parrot.fbx" id="1_nrycx"]
+[ext_resource type="Script" uid="uid://cayrfyts15qy4" path="res://Scripts/Drone/Enemy/EnemyAIDrone.cs" id="1_qfwpt"]
+[ext_resource type="Script" uid="uid://ong37f20bev3" path="res://Scripts/Drone/SightSensor.cs" id="3_a665x"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_qfwpt"]
+radius = 1.0232079
+
+[node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022 node_paths=PackedStringArray("PatrolWaypoints")]
+script = ExtResource("1_qfwpt")
+MaxSpeed = 10.0
+Deceleration = 12.0
+TurnSpeed = 60.0
+BreakingDistance = 15.0
+MinTurnSpeedPercentage = 0.1
+DroneRadius = 0.85
+PatrolWaypoints = []
+
+[node name="DroneMesh" parent="." unique_id=247981542 instance=ExtResource("1_nrycx")]
+unique_name_in_owner = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1512536513]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19891256, 0)
+shape = SubResource("SphereShape3D_qfwpt")
+
+[node name="Sight" type="Node3D" parent="." unique_id=662366123]
+unique_name_in_owner = true
+script = ExtResource("3_a665x")
+DepthRange = 20.0
+VisionRange = 90.0
+
+[node name="VisionCast" type="RayCast3D" parent="Sight" unique_id=1230829580]
+unique_name_in_owner = true
+target_position = Vector3(0, 0, -20)

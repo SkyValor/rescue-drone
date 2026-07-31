@@ -1,8 +1,14 @@
 ﻿namespace RescueDrone;
 
+using Chickensoft.GodotNodeInterfaces;
 using Godot;
 
-public partial class OctreeGeneratorGroup : Node3D
+public interface IOctreeGenerator : INode3D
+{
+    
+}
+
+public partial class OctreeGeneratorGroup : Node3D, IOctreeGenerator
 {
     [Export] public Node3D GroupObjects { get; private set; }
     [Export] public float MinNodeSize { get; private set; }

@@ -6,7 +6,7 @@ using Chickensoft.GodotNodeInterfaces;
 using Chickensoft.Introspection;
 using Godot;
 
-public interface IWaypointCircuit : INode3D
+public interface IWaypointCircuit : INode
 {
     Waypoint[] Waypoints { get; }
     
@@ -18,7 +18,7 @@ public interface IWaypointCircuit : INode3D
 }
 
 [Meta(typeof(IAutoNode))]
-public partial class WaypointCircuit : Node3D, IWaypointCircuit
+public partial class WaypointCircuit : Node, IWaypointCircuit
 {
     public override void _Notification(int what) => this.Notify(what);
 

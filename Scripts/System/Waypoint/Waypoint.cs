@@ -19,8 +19,6 @@ public partial class Waypoint : Node3D
 
     public override void _Process(double delta)
     {
-        if (!Engine.IsEditorHint()) return;
-        
         DebugDraw3D.DrawSphere(GlobalPosition, 0.5f, sphereColor);
     
         foreach (var connection in Connections)

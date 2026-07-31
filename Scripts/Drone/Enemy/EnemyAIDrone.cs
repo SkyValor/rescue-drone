@@ -28,8 +28,7 @@ public partial class EnemyAIDrone : FlyingDrone
     [Export] public float MaxDistance { get; private set; } = 7f;
     [Export] public float RepathThreshold { get; private set; } = 2f; // Only recalculate SVO path if player moves this much
     
-    [ExportGroup("SVO")]
-    [Export] public OctreeGeneratorGroup OctreeGenerator { get; private set; }
+    [ExportGroup("SVO Calculations")]
     [Export] public float DroneRadius { get; private set; } = 1f;
     [Export] public float PointTargetRadius { get; private set; } = 2f;
     
@@ -46,7 +45,6 @@ public partial class EnemyAIDrone : FlyingDrone
 
     #region Nodes
     [Node] private SightSensor Sight { get; set; }
-    // [Node] private IDronePathfindingSVO svo { get; set; }
     #endregion
     
     #region AI State Machine
@@ -59,11 +57,13 @@ public partial class EnemyAIDrone : FlyingDrone
 
     public void OnReady()
     {
-        dronePathfinder = new DronePathfindingSVO(GameRepo.OctreeGenerator.Value, DroneRadius, GetWorld3D());
+        
     }
 
     public void OnResolved()
     {
+        dronePathfinder = new DronePathfindingSVO(GameRepo.SVOctree.Value, DroneRadius, GetWorld3D());
+        
         Settings = new EnemyAILogic.Settings(
             DroneRadius,
             MaxSpeed, Acceleration, Deceleration, TurnSpeed, 

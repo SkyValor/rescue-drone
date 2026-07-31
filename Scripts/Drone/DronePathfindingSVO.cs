@@ -16,18 +16,16 @@ public class DronePathfindingSVO : IDronePathfindingSVO
     private readonly float droneRadius;
     private readonly World3D world;
     private readonly SparseVoxelOctreeShape svo;
-    private readonly OctreeGeneratorGroup octreeGenerator;
     
     private Array<Vector3> rawPath;
     private Array<Vector3> path;
 
-    public DronePathfindingSVO(OctreeGeneratorGroup octreeGenerator, float droneRadius, World3D world, Array<Rid> exclusion = null)
+    public DronePathfindingSVO(SparseVoxelOctreeShape octree, float droneRadius, World3D world, Array<Rid> exclusion = null)
     {
-        this.octreeGenerator = octreeGenerator;
         this.droneRadius = droneRadius;
         this.world = world;
         Exclusion = exclusion;
-        svo = octreeGenerator.Tree;
+        svo = octree;
 
         if (svo is null) GD.PrintErr("SVO cannot be found for drone pathfinding.");
     }

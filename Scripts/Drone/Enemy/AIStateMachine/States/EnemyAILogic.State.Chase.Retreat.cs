@@ -37,7 +37,7 @@ public partial class EnemyAILogic
             private Vector3 FindSafeRetreatDirection(EnemyAIDrone enemy, Vector3 playerPosition, float retreatDistance = 3f)
             {
                 var pathfinder = Get<IDronePathfindingSVO>();
-                var svo = Get<IGameRepo>().OctreeGenerator.Value.Tree;
+                var svo = Get<IGameRepo>().SVOctree.Value;
                 
                 var idealAwayDirection = (enemy.GlobalPosition - playerPosition).Normalized();
 

@@ -69,7 +69,7 @@ public partial class SightSensor : Node3D
     {
         var forward = -Basis.Z;
         var directionToPlayer = GlobalPosition.DirectionTo(target.GlobalPosition);
-        return Mathf.RadToDeg(directionToPlayer.AngleTo(forward)) <= 90f / 2;
+        return Mathf.RadToDeg(directionToPlayer.AngleTo(forward)) <= VisionRange / 2;
     }
 
     public bool NoBuildingInBetween(Node3D target)
