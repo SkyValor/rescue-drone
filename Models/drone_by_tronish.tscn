@@ -6,9 +6,10 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_wraj3"]
 radius = 0.65959895
 
-[node name="Node3D" type="CharacterBody3D" unique_id=1636160972]
+[node name="PlayerDrone" type="CharacterBody3D" unique_id=1636160972 node_paths=PackedStringArray("DroneMesh")]
 collision_mask = 154
 script = ExtResource("1_wraj3")
+DroneMesh = NodePath("DroneMesh")
 
 [node name="DroneMesh" parent="." unique_id=401999617 instance=ExtResource("1_2cls3")]
 

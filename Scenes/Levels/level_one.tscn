@@ -1,17 +1,14 @@
 [gd_scene format=3 uid="uid://bwawuqwsdq822"]
 
-[ext_resource type="PackedScene" uid="uid://d0u2bhddxk4v3" path="res://Scenes/Enemy NPC/enemy_drone_ai.tscn" id="1_1rm4e"]
 [ext_resource type="Script" uid="uid://cdbvft3xqgbgq" path="res://Scripts/Game/DroneGame.cs" id="1_tg57j"]
-[ext_resource type="PackedScene" uid="uid://c5j6f8jjfu3w6" path="res://Models/Modular Level Objects/4x4_red_section_tag.tscn" id="14_2w0vd"]
+[ext_resource type="PackedScene" uid="uid://d0u2bhddxk4v3" path="res://Scenes/Enemy NPC/enemy_drone_ai.tscn" id="2_3ende"]
+[ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
+[ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/drone_by_tronish.tscn" id="2_xyv5c"]
 [ext_resource type="PackedScene" uid="uid://d4bqu2guhe4ck" path="res://Scenes/Levels/level_one_map.tscn" id="14_m21gd"]
-[ext_resource type="PackedScene" uid="uid://d342rt2vjfxec" path="res://Models/Modular Level Objects/4x4_black_section_cross.tscn" id="15_1gv2x"]
-[ext_resource type="PackedScene" uid="uid://nax368iii17j" path="res://Models/Modular Level Objects/4x4_purple_eight_lines.tscn" id="16_m21gd"]
-[ext_resource type="PackedScene" uid="uid://bhath08vxc8mh" path="res://Models/Modular Level Objects/4x4_purple_door.tscn" id="17_jaj5y"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="18_hu8bd"]
 [ext_resource type="Image" uid="uid://c8ybnqc1bcq48" path="res://Scenes/Levels/LevelOne/Color_0_0.res" id="18_mlx1v"]
+[ext_resource type="Shader" uid="uid://duffsl8tm6jlx" path="res://Shaders/universal_transition_shader.gdshader" id="18_qu7dt"]
 [ext_resource type="Image" uid="uid://jpj60dxc6qtv" path="res://Scenes/Levels/LevelOne/Heightmap_0_0.res" id="18_x8jfq"]
-[ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/drone_by_tronish.tscn" id="18_yn77q"]
-[ext_resource type="Script" uid="uid://b4ertwcx5y63e" path="res://Scripts/System/AStar/OctreeGeneratorGroup.cs" id="56_g171u"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="58_jyqhy"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="59_hu8bd"]
 [ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/System/Waypoint/Waypoint.cs" id="62_qsocj"]
@@ -43,187 +40,76 @@ colorImage = ExtResource("18_mlx1v")
 [sub_resource type="ZonesResource" id="ZonesResource_qu7dt"]
 zones = Array[ZoneResource]([SubResource("ZoneResource_mlx1v")])
 
-[sub_resource type="BoxMesh" id="BoxMesh_k3wxu"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rj8ve"]
-albedo_color = Color(1, 1, 1, 0.0627451)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_daowb"]
 size = Vector3(300, 150, 302.689)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tswcn"]
 size = Vector3(300, 200, 302.689)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_diuf7"]
+shader = ExtResource("18_qu7dt")
+shader_parameter/use_sprite_alpha = true
+shader_parameter/use_transition_texture = false
+shader_parameter/transition_type = 0
+shader_parameter/position = Vector2(0.5, 0.5)
+shader_parameter/invert = false
+shader_parameter/grid_size = Vector2(10, 10)
+shader_parameter/rotation_angle = 0.0
+shader_parameter/global_x_mirror = false
+shader_parameter/global_y_mirror = false
+shader_parameter/local_x_mirror = false
+shader_parameter/local_y_mirror = false
+shader_parameter/stagger = Vector2(0, 0)
+shader_parameter/cumulative_stagger_flip = false
+shader_parameter/cumulative_stagger = Vector2(0, 0)
+shader_parameter/stagger_frequency = Vector2i(2, 2)
+shader_parameter/flip_frequency = Vector2i(1, 1)
+shader_parameter/basic_feather = 0.0
+shader_parameter/use_mask_size = false
+shader_parameter/mask_size = Vector2(100, 100)
+shader_parameter/edges = 6
+shader_parameter/shape_feather = 0.1
+shader_parameter/sectors = 1
+shader_parameter/clock_feather = 0.0
+shader_parameter/progress = 0.0
+shader_parameter/progress_bias = Vector2(10, 10)
+
+[sub_resource type="LabelSettings" id="LabelSettings_3ende"]
+font_size = 19
+
 [node name="LevelOne" type="Node3D" unique_id=781084026]
 script = ExtResource("1_tg57j")
+WorldCenter = Vector3(-95, 0, 80)
+LoadingScreenFadeOutValue = 19.0
+EnemyDroneScene = ExtResource("2_3ende")
+PlayerDroneScene = ExtResource("2_xyv5c")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
 
-[node name="EnemyDrone" parent="." unique_id=2045335776 instance=ExtResource("1_1rm4e")]
+[node name="SVOBuilder" type="Node" parent="." unique_id=1255058524]
+unique_name_in_owner = true
+script = ExtResource("2_jaj5y")
+
+[node name="EnemySpawnPoint" type="Node3D" parent="." unique_id=826680866]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.819727, 24.18441, 20.571096)
 
-[node name="NewGeometry" type="Node3D" parent="." unique_id=824486921]
-visible = false
+[node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1709615815]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.74476, 7.810072, 105.36105)
 
-[node name="4x4_Red_SectionTag" parent="NewGeometry" unique_id=1015245645 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, -3, -16.017)
+[node name="EnemyDrone" parent="." unique_id=1527454022 instance=ExtResource("2_3ende")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.819727, 24.18441, 20.571096)
 
-[node name="4x4_Red_SectionTag2" parent="NewGeometry" unique_id=951908434 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, -3, -8.017)
+[node name="PlayerDrone" parent="." unique_id=1636160972 instance=ExtResource("2_xyv5c")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.74476, 7.810072, 105.36105)
 
-[node name="4x4_Red_SectionTag3" parent="NewGeometry" unique_id=2114818493 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -3, -8.017)
-
-[node name="4x4_Red_SectionTag4" parent="NewGeometry" unique_id=1843120069 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, -3, -4.017)
-
-[node name="4x4_Red_SectionTag19" parent="NewGeometry" unique_id=1311583643 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1, -4.017)
-
-[node name="4x4_Red_SectionTag5" parent="NewGeometry" unique_id=153054242 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -3, -4.017)
-
-[node name="4x4_Red_SectionTag6" parent="NewGeometry" unique_id=165196877 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -3, -4.017)
-
-[node name="4x4_Red_SectionTag7" parent="NewGeometry" unique_id=556868809 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -3, -0.017000198)
-
-[node name="4x4_Red_SectionTag8" parent="NewGeometry" unique_id=2027053554 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 7.983)
-
-[node name="4x4_Red_SectionTag9" parent="NewGeometry" unique_id=933080065 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 7.983)
-
-[node name="4x4_Red_SectionTag10" parent="NewGeometry" unique_id=1926481595 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 5, 7.983)
-
-[node name="4x4_Red_SectionTag11" parent="NewGeometry" unique_id=755524764 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 11.983)
-
-[node name="4x4_Red_SectionTag12" parent="NewGeometry" unique_id=2126600212 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 15.983)
-
-[node name="4x4_Red_SectionTag13" parent="NewGeometry" unique_id=837617117 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 19.983)
-
-[node name="4x4_Red_SectionTag14" parent="NewGeometry" unique_id=1073784534 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 23.983)
-
-[node name="4x4_Red_SectionTag15" parent="NewGeometry" unique_id=219879955 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 27.983)
-
-[node name="4x4_Red_SectionTag20" parent="NewGeometry" unique_id=1073028939 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 31.983)
-
-[node name="4x4_Red_SectionTag21" parent="NewGeometry" unique_id=1931128840 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 35.983)
-
-[node name="4x4_Red_SectionTag22" parent="NewGeometry" unique_id=1267932157 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 39.983)
-
-[node name="4x4_Red_SectionTag23" parent="NewGeometry" unique_id=1039933244 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 43.983)
-
-[node name="4x4_Red_SectionTag24" parent="NewGeometry" unique_id=1023763889 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 47.983)
-
-[node name="4x4_Red_SectionTag25" parent="NewGeometry" unique_id=1556744276 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 51.983)
-
-[node name="4x4_Red_SectionTag26" parent="NewGeometry" unique_id=1329112932 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 55.983)
-
-[node name="4x4_Red_SectionTag27" parent="NewGeometry" unique_id=550763716 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 59.983)
-
-[node name="4x4_Red_SectionTag28" parent="NewGeometry" unique_id=540017287 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 63.983)
-
-[node name="4x4_Red_SectionTag29" parent="NewGeometry" unique_id=1963403949 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 67.983)
-
-[node name="4x4_Red_SectionTag30" parent="NewGeometry" unique_id=59822826 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -3, 71.983)
-
-[node name="4x4_Red_SectionTag16" parent="NewGeometry" unique_id=1329332916 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -3, 27.983)
-
-[node name="4x4_Red_SectionTag17" parent="NewGeometry" unique_id=1672602940 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, -3, 27.983)
-
-[node name="4x4_Red_SectionTag18" parent="NewGeometry" unique_id=1553657383 instance=ExtResource("14_2w0vd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, -3, 27.983)
-
-[node name="4x4_Black_SectionCross" parent="NewGeometry" unique_id=211241160 instance=ExtResource("15_1gv2x")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, -16)
-
-[node name="4x4_Black_SectionCross2" parent="NewGeometry" unique_id=976329662 instance=ExtResource("15_1gv2x")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5, -4)
-
-[node name="4x4_Black_SectionCross3" parent="NewGeometry" unique_id=256186206 instance=ExtResource("15_1gv2x")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 5, -8)
-
-[node name="4x4_Black_SectionCross4" parent="NewGeometry" unique_id=1674686415 instance=ExtResource("15_1gv2x")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 9, 8)
-
-[node name="4x4_Purple_EightLines" parent="NewGeometry" unique_id=422560823 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, -8)
-
-[node name="4x4_Purple_EightLines2" parent="NewGeometry" unique_id=1564796287 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1, -8)
-
-[node name="4x4_Purple_EightLines3" parent="NewGeometry" unique_id=1053780220 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1, -12)
-
-[node name="4x4_Purple_EightLines4" parent="NewGeometry" unique_id=199974413 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, -4)
-
-[node name="4x4_Purple_EightLines5" parent="NewGeometry" unique_id=1690894960 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, -4)
-
-[node name="4x4_Purple_EightLines6" parent="NewGeometry" unique_id=459114560 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 0)
-
-[node name="4x4_Purple_EightLines7" parent="NewGeometry" unique_id=501151154 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 4)
-
-[node name="4x4_Purple_EightLines8" parent="NewGeometry" unique_id=737958512 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, 8)
-
-[node name="4x4_Purple_EightLines9" parent="NewGeometry" unique_id=1566227653 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 12)
-
-[node name="4x4_Purple_EightLines10" parent="NewGeometry" unique_id=504739497 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 24)
-
-[node name="4x4_Purple_EightLines11" parent="NewGeometry" unique_id=989692727 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 28)
-
-[node name="4x4_Purple_EightLines12" parent="NewGeometry" unique_id=507466055 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, 28)
-
-[node name="4x4_Purple_EightLines16" parent="NewGeometry" unique_id=1094504731 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 5, 36)
-
-[node name="4x4_Purple_EightLines17" parent="NewGeometry" unique_id=2073559564 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21, 1, 60)
-
-[node name="4x4_Purple_EightLines13" parent="NewGeometry" unique_id=434359801 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 28)
-
-[node name="4x4_Purple_EightLines14" parent="NewGeometry" unique_id=423221318 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, 28)
-
-[node name="4x4_Purple_EightLines15" parent="NewGeometry" unique_id=1004926389 instance=ExtResource("16_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1, 32)
-
-[node name="4x4_Purple_Door" parent="NewGeometry" unique_id=415414389 instance=ExtResource("17_jaj5y")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5, 8)
+[node name="FollowCamera" type="Camera3D" parent="PlayerDrone" unique_id=256165145]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.95266145, 0.30403307, 0, -0.30403307, 0.95266145, -0.063381195, 1.0992527, 2.0503922)
 
 [node name="HostCamera" type="Camera3D" parent="." unique_id=1247793216]
-physics_interpolation_mode = 1
 transform = Transform3D(1, 0, 0, 0, 0.87461966, 0.4848097, 0, -0.4848097, 0.87461966, -48.80655, 9.079509, 107.42682)
 top_level = true
 
@@ -233,37 +119,19 @@ process_physics_priority = 300
 script = ExtResource("18_hu8bd")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
-[node name="PlayerThirdPersonCamera" type="Node3D" parent="." unique_id=1585636589 node_paths=PackedStringArray("follow_target")]
+[node name="PlayerThirdPersonCamera" type="Node3D" parent="." unique_id=1585636589]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 0.87461966, 0.4848097, 0, -0.4848097, 0.87461966, -48.80655, 9.079509, 107.42682)
 script = ExtResource("58_jyqhy")
 priority = 5
 follow_mode = 6
-follow_target = NodePath("../PlayerDrone_TRONish")
 tween_resource = SubResource("Resource_j0j1n")
 follow_damping = true
 follow_distance = 2.23
 vertical_rotation_offset = 0.5061454830783556
 spring_length = 2.23
 collision_mask = 9
-align_transform_with_view = Callable()
-align_position_with_view = Callable()
-align_rotation_with_view = Callable()
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
-
-[node name="PlayerDrone_TRONish" parent="." unique_id=1636160972 instance=ExtResource("18_yn77q")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.80655, 7.9983835, 105.47642)
-MaxHorizontalSpeed = 8.5
-MaxVerticalSpeed = 5.0
-RotationSpeed = 1.5
-Acceleration = 8.0
-Deceleration = 5.0
-Control = 1
-CamRotationSpeed = 1.0
-
-[node name="FollowCamera" type="Camera3D" parent="PlayerDrone_TRONish" unique_id=28248198]
-transform = Transform3D(1, 0, 0, 0, 0.952449, 0.3046981, 0, -0.3046981, 0.95244896, 0, 0.9722749, 1.4683669)
-visible = false
 
 [node name="TerraBrush" type="TerraBrush" parent="." unique_id=2147200142]
 dataPath = "res://Scenes/Levels/LevelOne"
@@ -271,16 +139,6 @@ terrainZones = SubResource("ZonesResource_qu7dt")
 physics_interpolation_mode = 2
 visible = false
 metadata/_edit_lock_ = false
-
-[node name="OctreeGenerator" type="MeshInstance3D" parent="." unique_id=1359330522 node_paths=PackedStringArray("GroupObjects")]
-unique_name_in_owner = true
-transform = Transform3D(265, 0, 0, 0, 265, 0, 0, 0, 265, -95, 0, 80)
-visible = false
-mesh = SubResource("BoxMesh_k3wxu")
-surface_material_override/0 = SubResource("StandardMaterial3D_rj8ve")
-script = ExtResource("56_g171u")
-GroupObjects = NodePath("")
-MinNodeSize = 2.0
 
 [node name="UpperBounds" type="StaticBody3D" parent="." unique_id=883336313]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -99.04303, 138.7955, 84.01219)
@@ -358,5 +216,56 @@ metadata/_edit_group_ = true
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1700749922]
 transform = Transform3D(-0.3912568, -0.8218132, 0.41417554, 0.10964121, 0.40522134, 0.9076203, -0.91372705, 0.4005233, -0.068440996, 6.4149704, 37.131123, 54.487137)
 
-[node name="Node3D2" type="Node3D" parent="." unique_id=2051095553]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 57.405197, 0)
+[node name="UI" type="Control" parent="." unique_id=1629036901]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LoadingScreen" type="ColorRect" parent="UI" unique_id=1557388143]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_diuf7")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="LoadingBar" type="ProgressBar" parent="UI" unique_id=1921408001]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -567.0
+offset_top = -141.0
+offset_right = 567.0
+offset_bottom = -114.00049
+grow_horizontal = 2
+grow_vertical = 0
+show_percentage = false
+
+[node name="LoadingLabel" type="Label" parent="UI" unique_id=1613785604]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -379.0
+offset_top = -87.0
+offset_right = 379.0
+offset_bottom = -21.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Testing 1 2 3"
+label_settings = SubResource("LabelSettings_3ende")
+horizontal_alignment = 1
+vertical_alignment = 1
