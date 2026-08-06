@@ -6,14 +6,14 @@ using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 using Godot;
 
-public interface IApp : ICanvasLayer, IProvide<IAppRepo>;
-
 [Meta(typeof(IAutoNode))]
-public partial class App : CanvasLayer, IApp
+public partial class App : CanvasLayer, IProvide<IAppRepo>
 {
     public override void _Notification(int what) => this.Notify(what);
     
     [Export] private PackedScene GameScene { get; set; }
+    
+    private DroneGame Game { get; set; }
     
     #region State
     private IAppRepo AppRepo { get; set; }
@@ -24,6 +24,7 @@ public partial class App : CanvasLayer, IApp
     #region Nodes
     [Node] private IMainMenu MainMenu { get; set; }
     [Node] private IColorRect BlankScreen { get; set; }
+    [Node] private IColorRect TransitionScreen { get; set; }
     [Node] private IAnimationPlayer AnimationPlayer { get; set; }
     #endregion
     
@@ -46,11 +47,21 @@ public partial class App : CanvasLayer, IApp
     public void OnReady()
     {
         AppBinding = AppLogic.Bind();
-        AppBinding.Handle((in AppLogic.Output.ShowMainMenu _) =>
-        {
-            MainMenu.Show();
-            FadeInFromBlack();
-        });
+        AppBinding
+            .Handle((in AppLogic.Output.ShowMainMenu _) => 
+            { 
+                MainMenu.Show(); 
+                FadeInFromBlack(); 
+            })
+            .Handle((in AppLogic.Output.TransitionToBlack _) =>
+            {
+                
+            })
+            .Handle((in AppLogic.Output.SetupDroneGame _) =>
+            {
+                Game = GameScene.Instantiate<DroneGame>();
+                AddChild(Game);
+            });
         
         AppLogic.Start();
     }
@@ -96,6 +107,12 @@ public partial class App : CanvasLayer, IApp
     {
         BlankScreen.Show();
         AnimationPlayer.Play("fade_out");
+    }
+
+    private void TransitionToBlack()
+    {
+        // TODO: Might have to set shader parameters here...
+        AnimationPlayer.Play("transition_black");
     }
     
 }

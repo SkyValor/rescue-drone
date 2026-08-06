@@ -1,0 +1,3 @@
+@startuml GameLogic
+state "GameLogic State" as RescueDrone_GameLogic_State
+@enduml
