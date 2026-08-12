@@ -18,9 +18,10 @@ public partial class EnemyAILogic
                 var player = Get<IGameRepo>().Player.Value;
                 var settings = Get<Settings>();
                 var deltaTime = (float) input.Delta;
+                var world = Get<World3D>();
 
                 var toPlayer = player.GlobalPosition - enemy.GlobalPosition;
-                var retreatDirection = FindSafeRetreatDirection(enemy, player.GlobalPosition, deltaTime);
+                var retreatDirection = FindSafeRetreatDirection(enemy, player.GlobalPosition, world, deltaTime);
                 if (retreatDirection == Vector3.Zero) return ToSelf();
                 
                 // Smoothly rotate to face the player while strafing/retreating away.
@@ -34,11 +35,19 @@ public partial class EnemyAILogic
 
             public Transition On(in Input.PlayerDroneCloseEnough input) => To<Stay>();
 
-            private Vector3 FindSafeRetreatDirection(EnemyAIDrone enemy, Vector3 playerPosition, float retreatDistance = 3f)
+            /// <summary>
+            /// Attempt to find a retreat direction for the drone to avoid the player. Start by investigating
+            /// backwards directions and moving towards a 90º angle. If moving horizontally is impossible without
+            /// collision, fallback to ascending (Vector3.Up). If that is impossible as well, halt movement (Vector3.Zero).
+            /// </summary>
+            /// <param name="enemy"></param>
+            /// <param name="playerPosition"></param>
+            /// <param name="world"></param>
+            /// <param name="retreatDistance"></param>
+            /// <returns></returns>
+            private Vector3 FindSafeRetreatDirection(EnemyAIDrone enemy, Vector3 playerPosition, World3D world, float retreatDistance = 3f)
             {
-                var pathfinder = Get<IDronePathfindingSVO>();
-                var svo = Get<IGameRepo>().SVOctree.Value;
-                
+                var voxelOctree = Get<IGameRepo>().SVO.Value;
                 var idealAwayDirection = (enemy.GlobalPosition - playerPosition).Normalized();
 
                 // Testing straight back, then 30º left/right, 60º left/right, 90º left/right, and upwards
@@ -60,7 +69,7 @@ public partial class EnemyAILogic
                         
                         // Check if this candidate path is free of physics colliders and inside empty SVO leaves
                         var targetCheckPoint = enemy.GlobalPosition + (candidateDirection * retreatDistance);
-                        if (IsRetreatPathClear(svo, pathfinder, enemy.GlobalPosition, targetCheckPoint))
+                        if (IsRetreatPathClear(enemy.GlobalPosition, targetCheckPoint, world, voxelOctree))
                         {
                             var score = candidateDirection.Dot(idealAwayDirection);
                             if (score > bestScore)
@@ -76,22 +85,46 @@ public partial class EnemyAILogic
                 if (bestDirection == Vector3.Zero)
                 {
                     var upTarget = enemy.GlobalPosition + (Vector3.Up * retreatDistance);
-                    if (IsRetreatPathClear(svo, pathfinder, enemy.GlobalPosition, upTarget))
+                    if (IsRetreatPathClear(enemy.GlobalPosition, upTarget, world, voxelOctree))
                         return Vector3.Up;
                 }
                 
-                // FALLBACK 2: If trapped in a corner completely, stand ground or return zero to halt
+                // FALLBACK 2: If trapped in a corner completely, return zero to halt
                 return bestDirection;
             }
 
-            private static bool IsRetreatPathClear(SparseVoxelOctreeShape svo, IDronePathfindingSVO pathfinder, Vector3 start, Vector3 end)
+            /// <summary>
+            /// Check whether the end position is an empty voxel leaf in the Sparse Voxel Octree, and if the movement
+            /// towards it results in no collisions. This is achieved by means of a CastMotion.
+            /// </summary>
+            /// <param name="start"></param>
+            /// <param name="end"></param>
+            /// <param name="world"></param>
+            /// <param name="svo"></param>
+            /// <returns></returns>
+            private bool IsRetreatPathClear(Vector3 start, Vector3 end, World3D world, SparseVoxelOctree svo)
             {
+                // Check if the end result is a valid empty leaf
                 var targetLeaf = svo.GetLeafAtPosition(end);
                 if (targetLeaf is null || !targetLeaf.IsEmpty)
                     return false;
 
                 // Double check with a quick physics sphere cast to avoid static geometry
-                return pathfinder.IsPathClear(start, end);
+                var settings = Get<Settings>();
+                var sphere = new SphereShape3D();
+                sphere.Radius = settings.DroneRadius;
+
+                var query = new PhysicsShapeQueryParameters3D
+                {
+                    Transform = new Transform3D(Basis.Identity, start),
+                    Motion = end - start,
+                    Exclude = [settings.DroneRID]
+                };
+
+                // CastMotion returns an array where [0] is the safe fraction (1.0 means completely clear)
+                var spaceState = world.DirectSpaceState;
+                var result = spaceState.CastMotion(query);
+                return result[0] >= 1.0f;
             }
         }
     }

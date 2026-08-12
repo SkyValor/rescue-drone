@@ -3,13 +3,21 @@
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 using Godot;
-using Godot.Collections;
 
 public partial class EnemyAILogic
 {
     [Meta]
     public partial record State : StateLogic<State>
     {
+        private Vector3[] GeneratePathway(Vector3 originPosition, Vector3 targetPosition)
+        {
+            var world = Get<World3D>();
+            var settings = Get<Settings>();
+            var pathfinder = Get<IPathfindSVO>();
+            return pathfinder.CreatePath(originPosition, targetPosition, world, settings.DroneRadius,
+                [settings.DroneRID]);
+        }
+
         private void ComputeMovementAlongPath(EnemyAIDrone enemy, Vector3 targetPosition, float maxSpeed, float deltaTime)
         {
             var data = Get<Data>();
@@ -55,10 +63,10 @@ public partial class EnemyAILogic
             Output(new Output.RotationComputed(globalTrans));
         }
 
-        private static float CalculateCurveSpeed(Array<Vector3> path, int pathIndex, Vector3 currentPosition,
+        private static float CalculateCurveSpeed(Vector3[] path, int pathIndex, Vector3 currentPosition,
             float maxSpeed, float breakingDistance, float minTurnSpeedPercentage)
         {
-            if (path is null || pathIndex == 0 || pathIndex == path.Count - 1)
+            if (path is null || pathIndex == 0 || pathIndex == path.Length - 1)
                 return maxSpeed;
             
             var pointA = path[pathIndex - 1];

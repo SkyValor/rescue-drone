@@ -53,37 +53,38 @@ public partial class EnemyAIDrone : FlyingDrone
     private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
     #endregion
 
-    private IDronePathfindingSVO dronePathfinder;
+    private IPathfindSVO pathfinder;
 
     public void OnReady()
     {
         SetPhysicsProcess(false);
     }
 
-    // public void OnResolved()
-    // {
-    //     dronePathfinder = new DronePathfindingSVO(GameRepo.SVOctree.Value, DroneRadius, GetWorld3D());
-    //     
-    //     Settings = new EnemyAILogic.Settings(
-    //         DroneRadius,
-    //         MaxSpeed, Acceleration, Deceleration, TurnSpeed, 
-    //         BreakingDistance, MinTurnSpeedPercentage,
-    //         NumberOfScans, ScanWaitTime,
-    //         MinDistance, MaxDistance, RepathThreshold);
-    //     
-    //     AIStateMachine = new EnemyAILogic();
-    //     AIStateMachine.Set(this);
-    //     AIStateMachine.Set(GetWorld3D());
-    //     AIStateMachine.Set(dronePathfinder);
-    //     AIStateMachine.Set(Settings);
-    //     AIStateMachine.Set(Sight);
-    //     
-    //     AIStateBinding
-    //         .Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
-    //         .Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
-    //
-    //     AIStateBinding = AIStateMachine.Bind();
-    // }
+    public void OnResolved()
+    {
+        pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
+        
+        Settings = new EnemyAILogic.Settings(
+            DroneRadius, GetRid(),
+            MaxSpeed, Acceleration, Deceleration, TurnSpeed, 
+            BreakingDistance, MinTurnSpeedPercentage,
+            NumberOfScans, ScanWaitTime,
+            MinDistance, MaxDistance, RepathThreshold);
+        
+        AIStateMachine = new EnemyAILogic();
+        AIStateMachine.Set(this);
+        AIStateMachine.Set(GetWorld3D());
+        AIStateMachine.Set(pathfinder);
+        AIStateMachine.Set(Settings);
+        AIStateMachine.Set(Sight);
+        
+        AIStateBinding = AIStateMachine.Bind();
+        AIStateBinding
+            .Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
+            .Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
+        
+        AIStateMachine.Start();
+    }
 
     public void OnPhysicsProcess(double delta)
     {

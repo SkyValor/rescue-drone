@@ -1,6 +1,7 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.Introspection;
+using Godot;
 
 public partial class EnemyAILogic
 {
@@ -24,14 +25,21 @@ public partial class EnemyAILogic
                 
                 data.LastPlayerPosition = idealTarget;
 
-                var pathfinder = Get<IDronePathfindingSVO>();
-                var path = pathfinder.FindPath(enemy.GlobalPosition, idealTarget);
-                
-                if (path.Count <= 0) return ToSelf();
+                var path = GeneratePathway(enemy.GlobalPosition, idealTarget);
+                if (path.Length <= 0) return ToSelf();
                 
                 data.SVOPath = path;
                 data.CurrentPathIndex = 1;
                 return ToSelf();
+            }
+            
+            private static Vector3 CalculatePursuitTarget(EnemyAIDrone enemy, PlayerMover player, Settings settings)
+            {
+                var playerPosition = player.GlobalPosition;
+                var toPlayer = playerPosition - enemy.GlobalPosition;
+                var distance = toPlayer.Length();
+                var targetDistance = Mathf.Clamp(distance, settings.MinDistance, settings.MaxDistance);
+                return playerPosition - toPlayer.Normalized() * targetDistance;
             }
 
             public Transition On(in Input.PlayerDroneTooClose input) => To<Retreat>();

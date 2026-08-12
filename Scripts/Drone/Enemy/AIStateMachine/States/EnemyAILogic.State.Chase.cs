@@ -86,15 +86,7 @@ public partial class EnemyAILogic
                 data.PlayerSeenLastFrame = false;
                 return ToSelf();
             }
-
-            protected static Vector3 CalculatePursuitTarget(EnemyAIDrone enemy, PlayerMover player, Settings settings)
-            {
-                var playerPosition = player.GlobalPosition;
-                var toPlayer = playerPosition - enemy.GlobalPosition;
-                var distance = toPlayer.Length();
-                var targetDistance = Mathf.Clamp(distance, settings.MinDistance, settings.MaxDistance);
-                return playerPosition - toPlayer.Normalized() * targetDistance;
-            }
+            
         }
     }
 }

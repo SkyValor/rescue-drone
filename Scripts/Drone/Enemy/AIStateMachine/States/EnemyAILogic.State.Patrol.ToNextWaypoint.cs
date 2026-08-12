@@ -34,12 +34,11 @@ public partial class EnemyAILogic
                     
                     // Use the Drone Pathfinder to find the best path to that waypoint
                     var enemy = Get<EnemyAIDrone>();
-                    var pathfinder = Get<IDronePathfindingSVO>();
                     var origin = enemy.GlobalPosition;
                     var target = data.CurrentWaypoint.GlobalPosition;
 
-                    var path = pathfinder.FindPath(origin, target);
-                    if (path.Count == 0)
+                    var path = GeneratePathway(origin, target);
+                    if (path.Length == 0)
                     {
                         GD.PrintErr("Pathfinder did not find a path to the next waypoint. Fallback to Idle state.");
                         Input(new Input.ReturnToIdle());

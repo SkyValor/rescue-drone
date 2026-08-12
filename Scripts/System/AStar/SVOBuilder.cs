@@ -1,101 +1,111 @@
 ﻿namespace RescueDrone;
 
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using Godot;
+using MEC;
 
-public partial class SVOBuilder : Node
+public partial class SVOBuilder : Node3D
 {
-    private float progress;
-    private readonly object progressLock = new();
-
-    public float Progress
-    {
-        get { lock (progressLock) { return progress; } }
-        private set { lock (progressLock) { progress = value; } }
-    }
-    
+    public float Progress { get; private set; }
     public bool IsDone { get; private set; }
+    public SparseVoxelOctree Tree { get; private set; }
 
-    public VoxelNode SVOTreeRoot { get; private set; }
+    private uint counter;
 
-    public void StartAsyncGeneration(Vector3 worldBoundsCenter, float worldBoundsSize, float minNodeSize, World3D world)
+    public void StartAsyncGeneration(Vector3 worldBoundsCenter, float worldBoundsSize, float minNodeSize)
     {
         Progress = 0f;
         IsDone = false;
-        
-        Task.Run(() => GenerateSVOThreaded(worldBoundsCenter, worldBoundsSize, minNodeSize, world));
+
+        Timing.RunCoroutine(GenerateSVO(worldBoundsCenter, worldBoundsSize, minNodeSize), Segment.PhysicsProcess);
     }
 
-    private void GenerateSVOThreaded(Vector3 center, float size, float minNodeSize, World3D world)
+    private IEnumerator<double> GenerateSVO(Vector3 center, float size, float minNodeSize)
     {
-        // 1. Prepare Thread-Safe Physics State
-        // Instead of using spaceState (which causes thread errors), 
-        // we obtain a direct space state reference for shape queries.
-        var spaceRid = world.Space;
-        SVOTreeRoot = new VoxelNode(center, size);
+        counter = 0;
         
-        // 2. Divide root into the 8 top-level octants manually to track progress cleanly
-        var mainOctants = SubdivideNode(SVOTreeRoot);
-        for (int i = 0; i < mainOctants.Length; i++)
+        var root = new VoxelNode(center, size, parent: null);
+        root.Children = SubdivideNode(root);
+        for (int i = 0; i < root.Children.Length; i++)
         {
-            BuildOctreeRecursive(mainOctants[i], minNodeSize, spaceRid);
+            yield return Timing.WaitForOneFrame;
+            BuildOctreeRecursive(root.Children[i], minNodeSize);
             Progress = (i + 1) / 8f;
         }
-        
-        // 3. Build AStar3D graph points here on thread.
-        // ... (Build AStar connections) ...
 
-        Progress = 1f;
+        Tree = new SparseVoxelOctree(root);
         IsDone = true;
+        Progress = 1f;
     }
 
-    private static void BuildOctreeRecursive(VoxelNode node, float minNodeSize, Rid spaceRid)
+    private void BuildOctreeRecursive(VoxelNode currentNode, float minNodeSize)
     {
-        var intersectsObstacle = CheckShapeCollisionThreadSafe(spaceRid, node.Position, node.Size);
+        var intersectsObstacle = CheckShapeCollision(currentNode.Position, currentNode.Size);
+            // CheckShapeCollisionThreadSafe(spaceRid, currentNode.Position, currentNode.Size);
         if (!intersectsObstacle)
         {
             // Empty leaf; stop subdividing
-            node.IsLeaf = true;
-            node.IsEmpty = true;
+            currentNode.IsLeaf = true;
+            currentNode.IsEmpty = true;
             return;
         }
 
-        if (node.Size <= minNodeSize)
+        if (currentNode.Size <= minNodeSize)
         {
             // Reached minNodeSize; stop subdividing
-            node.IsLeaf = true;
-            node.IsEmpty = false;
+            currentNode.IsLeaf = true;
+            currentNode.IsEmpty = false;
             return;
         }
 
-        node.IsLeaf = false;
-        node.Children = SubdivideNode(node);
-        foreach (var child in node.Children)
-            BuildOctreeRecursive(child, minNodeSize, spaceRid);
+        currentNode.IsLeaf = false;
+        currentNode.Children = SubdivideNode(currentNode);
+        foreach (var child in currentNode.Children)
+            BuildOctreeRecursive(child, minNodeSize);
     }
 
     private static bool CheckShapeCollisionThreadSafe(Rid spaceRid, Vector3 position, float size)
     {
         var spaceState = PhysicsServer3D.SpaceGetDirectState(spaceRid);
         if (spaceState == null) return false;
-
+    
         var query = new PhysicsShapeQueryParameters3D();
-
+    
         using var box = new BoxShape3D();
         box.Size = Vector3.One * size;
         query.Shape = box;
         query.Transform = new Transform3D(Basis.Identity, position);
         query.CollisionMask = (1 << 4 - 1) | (1 << 8 - 1); // Buildings(4) and InvisibleBoundaries(8)
-
+    
         var results = spaceState.IntersectShape(query, 1);
         return results.Count > 0;
     }
 
-    private static VoxelNode[] SubdivideNode(VoxelNode node)
+    private bool CheckShapeCollision(Vector3 position, float size)
+    {
+        using var box = new BoxShape3D();
+        box.Size = Vector3.One * size;
+        
+        var query = new PhysicsShapeQueryParameters3D();
+        query.Transform = new Transform3D(Basis.Identity, position);
+        query.CollisionMask = (1 << 4 - 1) | (1 << 8 - 1);
+        query.Shape = box;
+        
+        var spaceState = GetWorld3D().DirectSpaceState;
+        var results = spaceState.IntersectShape(query, 1);
+        return results.Count > 0;
+    }
+
+    /// <summary>
+    /// Given <c>thisNode</c>, create eight voxel nodes of half size and place each one inside it, filling it up.
+    /// </summary>
+    /// <param name="thisNode"></param>
+    /// <returns></returns>
+    private static VoxelNode[] SubdivideNode(VoxelNode thisNode)
     {
         var children = new VoxelNode[8];
-        var halfSize = node.Size * 0.5f;
-        var quarterSize = node.Size * 0.25f;
+        var halfSize = thisNode.Size * 0.5f;
+        var quarterSize = thisNode.Size * 0.25f;
 
         int index = 0;
         for (int x = -1; x <= 1; x += 2)
@@ -104,8 +114,8 @@ public partial class SVOBuilder : Node
             {
                 for (int z = -1; z <= 1; z += 2)
                 {
-                    var childCenter = node.Position + new Vector3(x * quarterSize, y: y * quarterSize, z: z * quarterSize);
-                    children[index] = new VoxelNode(childCenter, halfSize);
+                    var childCenter = thisNode.Position + new Vector3(x * quarterSize, y * quarterSize, z * quarterSize);
+                    children[index] = new VoxelNode(childCenter, halfSize, parent: thisNode);
                     index++;
                 }
             }

@@ -48,7 +48,7 @@ public partial class EnemyAILogic
                 var targetPosition = data.SVOPath[data.CurrentPathIndex];
                 if (enemy.GlobalPosition.DistanceTo(targetPosition) < 0.35f)
                 {
-                    if (data.CurrentPathIndex == data.SVOPath.Count - 1)
+                    if (data.CurrentPathIndex == data.SVOPath.Length - 1)
                         Input(new Input.StartScanning());
                     else
                         data.CurrentPathIndex++;

@@ -53,9 +53,9 @@ public partial class EnemyAILogic
             {
                 var origin = enemy.GlobalPosition;
                 var target = data.CurrentWaypoint.GlobalPosition;
-                var pathfinder = Get<IDronePathfindingSVO>();
-                var path = pathfinder.FindPath(origin, target);
-                if (path.Count > 0)
+
+                var path = GeneratePathway(origin, target);
+                if (path.Length > 0)
                 {
                     data.SVOPath = path;
                     data.CurrentPathIndex = 1; // Skip current position, which might not be the center of this node

@@ -5,12 +5,9 @@
 [ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
 [ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/drone_by_tronish.tscn" id="2_xyv5c"]
 [ext_resource type="PackedScene" uid="uid://d4bqu2guhe4ck" path="res://Scenes/Levels/level_one_map.tscn" id="14_m21gd"]
-[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="18_hu8bd"]
 [ext_resource type="Image" uid="uid://c8ybnqc1bcq48" path="res://Scenes/Levels/LevelOne/Color_0_0.res" id="18_mlx1v"]
 [ext_resource type="Shader" uid="uid://duffsl8tm6jlx" path="res://Shaders/universal_transition_shader.gdshader" id="18_qu7dt"]
 [ext_resource type="Image" uid="uid://jpj60dxc6qtv" path="res://Scenes/Levels/LevelOne/Heightmap_0_0.res" id="18_x8jfq"]
-[ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="58_jyqhy"]
-[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="59_hu8bd"]
 [ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/System/Waypoint/Waypoint.cs" id="62_qsocj"]
 [ext_resource type="Script" uid="uid://hbyr1m23afr" path="res://Scripts/System/Waypoint/WaypointCircuit.cs" id="62_s3ju3"]
 
@@ -27,11 +24,6 @@ sky_material = SubResource("ProceduralSkyMaterial_hu8bd")
 [sub_resource type="Environment" id="Environment_1rm4e"]
 background_mode = 2
 sky = SubResource("Sky_s3ju3")
-
-[sub_resource type="Resource" id="Resource_j0j1n"]
-script = ExtResource("59_hu8bd")
-duration = 2.0
-transition = 3
 
 [sub_resource type="ZoneResource" id="ZoneResource_mlx1v"]
 heightMapImage = ExtResource("18_x8jfq")
@@ -71,15 +63,22 @@ shader_parameter/edges = 6
 shader_parameter/shape_feather = 0.1
 shader_parameter/sectors = 1
 shader_parameter/clock_feather = 0.0
-shader_parameter/progress = 0.0
+shader_parameter/progress = 9.43
 shader_parameter/progress_bias = Vector2(10, 10)
 
 [sub_resource type="LabelSettings" id="LabelSettings_3ende"]
 font_size = 19
 
+[sub_resource type="BoxMesh" id="BoxMesh_66res"]
+size = Vector3(10, 10, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_66res"]
+size = Vector3(10, 10, 10)
+
 [node name="LevelOne" type="Node3D" unique_id=781084026]
 script = ExtResource("1_tg57j")
-WorldCenter = Vector3(-95, 0, 80)
+WorldCenter = Vector3(-76, 0, 60)
+WorldSize = 300.0
 LoadingScreenFadeOutValue = 19.0
 EnemyDroneScene = ExtResource("2_3ende")
 PlayerDroneScene = ExtResource("2_xyv5c")
@@ -87,9 +86,12 @@ PlayerDroneScene = ExtResource("2_xyv5c")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
 
-[node name="SVOBuilder" type="Node" parent="." unique_id=1255058524]
+[node name="SVOBuilder" type="Node3D" parent="." unique_id=818987673]
 unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
+
+[node name="MainCamera" type="Camera3D" parent="." unique_id=662858759]
+transform = Transform3D(0.7524149, 0.30549425, -0.5835625, 0, 0.8859447, 0.46379095, 0.65868956, -0.34896323, 0.6665979, -80.20873, 19.045113, 108.33008)
 
 [node name="EnemySpawnPoint" type="Node3D" parent="." unique_id=826680866]
 unique_name_in_owner = true
@@ -98,40 +100,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.819727, 24.18441, 20.5710
 [node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1709615815]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.74476, 7.810072, 105.36105)
-
-[node name="EnemyDrone" parent="." unique_id=1527454022 instance=ExtResource("2_3ende")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.819727, 24.18441, 20.571096)
-
-[node name="PlayerDrone" parent="." unique_id=1636160972 instance=ExtResource("2_xyv5c")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.74476, 7.810072, 105.36105)
-
-[node name="FollowCamera" type="Camera3D" parent="PlayerDrone" unique_id=256165145]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0.95266145, 0.30403307, 0, -0.30403307, 0.95266145, -0.063381195, 1.0992527, 2.0503922)
-
-[node name="HostCamera" type="Camera3D" parent="." unique_id=1247793216]
-transform = Transform3D(1, 0, 0, 0, 0.87461966, 0.4848097, 0, -0.4848097, 0.87461966, -48.80655, 9.079509, 107.42682)
-top_level = true
-
-[node name="PhantomCameraHost" type="Node" parent="HostCamera" unique_id=655775223]
-process_priority = 300
-process_physics_priority = 300
-script = ExtResource("18_hu8bd")
-metadata/_custom_type_script = "uid://bd046eokvcnu2"
-
-[node name="PlayerThirdPersonCamera" type="Node3D" parent="." unique_id=1585636589]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0.87461966, 0.4848097, 0, -0.4848097, 0.87461966, -48.80655, 9.079509, 107.42682)
-script = ExtResource("58_jyqhy")
-priority = 5
-follow_mode = 6
-tween_resource = SubResource("Resource_j0j1n")
-follow_damping = true
-follow_distance = 2.23
-vertical_rotation_offset = 0.5061454830783556
-spring_length = 2.23
-collision_mask = 9
-metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="TerraBrush" type="TerraBrush" parent="." unique_id=2147200142]
 dataPath = "res://Scenes/Levels/LevelOne"
@@ -249,6 +217,7 @@ offset_right = 567.0
 offset_bottom = -114.00049
 grow_horizontal = 2
 grow_vertical = 0
+value = 15.17
 show_percentage = false
 
 [node name="LoadingLabel" type="Label" parent="UI" unique_id=1613785604]
@@ -269,3 +238,14 @@ text = "Testing 1 2 3"
 label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Area3D" type="Area3D" parent="." unique_id=1878816395]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -104.69532, 27.69101, 44.452248)
+collision_layer = 8
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Area3D" unique_id=1179616771]
+mesh = SubResource("BoxMesh_66res")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=894482288]
+shape = SubResource("BoxShape3D_66res")
