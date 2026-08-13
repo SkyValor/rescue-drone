@@ -9,7 +9,7 @@ public partial class LevelManager : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
     
-    [Export] public EnemyDrone Enemy { get; set; }
+    // [Export] public EnemyDrone Enemy { get; set; }
 
     public void OnReady()
     {

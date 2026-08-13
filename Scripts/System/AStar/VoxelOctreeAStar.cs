@@ -53,7 +53,7 @@ public class VoxelOctreeAStar : IPathfindSVO
     
     /// <summary>
     /// String Pulling algorithm to smoothen out the raw path. It works by checking line-of-sight between
-    /// non-consecutive waypoints and eliminating unnecessary corners
+    /// non-consecutive waypoints and eliminating unnecessary corners.
     /// </summary>
     /// <param name="rawPath"></param>
     /// <param name="world"></param>

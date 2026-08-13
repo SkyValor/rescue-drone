@@ -16,7 +16,7 @@ public partial class EnemyAILogic
                 // Maintain position while looking at player drone.
                 var enemy = Get<EnemyAIDrone>();
                 var player = Get<IGameRepo>().Player.Value;
-                var settings = Get<Settings>();
+                var settings = Get<EnemyDroneSettings>();
                 SmoothlyRotate(enemy, player.GlobalPosition, settings.TurnSpeed, (float) input.Delta);
 
                 var distanceToPlayer = enemy.GlobalPosition.DistanceTo(player.GlobalPosition);

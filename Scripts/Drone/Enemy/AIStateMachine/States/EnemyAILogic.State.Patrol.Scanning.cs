@@ -31,7 +31,7 @@ public partial class EnemyAILogic
 
             public Transition On(in Input.PhysicsTick input)
             {
-                var settings = Get<Settings>();
+                var settings = Get<EnemyDroneSettings>();
                 if (isScanning)
                 {
                     currentScanTime += (float) input.Delta;

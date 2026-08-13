@@ -55,7 +55,7 @@ public partial class EnemyAILogic
                     return;
                 }
 
-                var settings = Get<Settings>();
+                var settings = Get<EnemyDroneSettings>();
                 ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed * 0.25f, (float) delta);
             }
         }

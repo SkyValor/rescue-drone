@@ -12,16 +12,16 @@ public partial class EnemyAILogic
         private Vector3[] GeneratePathway(Vector3 originPosition, Vector3 targetPosition)
         {
             var world = Get<World3D>();
-            var settings = Get<Settings>();
+            var enemy = Get<EnemyAIDrone>();
             var pathfinder = Get<IPathfindSVO>();
-            return pathfinder.CreatePath(originPosition, targetPosition, world, settings.DroneRadius,
-                [settings.DroneRID]);
+            return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius,
+                [enemy.GetRid()]);
         }
 
         private void ComputeMovementAlongPath(EnemyAIDrone enemy, Vector3 targetPosition, float maxSpeed, float deltaTime)
         {
             var data = Get<Data>();
-            var settings = Get<Settings>();
+            var settings = Get<EnemyDroneSettings>();
             
             var desiredSpeed = CalculateCurveSpeed(data.SVOPath, data.CurrentPathIndex, enemy.GlobalPosition, 
                 maxSpeed, settings.BreakingDistance, settings.MinTurnSpeedPercentage);
@@ -41,7 +41,7 @@ public partial class EnemyAILogic
         private void ComputeMovementWithoutRotation(EnemyAIDrone enemy, Vector3 toDirection, float desiredSpeed, float deltaTime)
         {
             var data = Get<Data>();
-            var settings = Get<Settings>();
+            var settings = Get<EnemyDroneSettings>();
             
             var speedBleedingFactor = desiredSpeed < data.CurrentTargetSpeed ? settings.Acceleration : settings.Deceleration;
             data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);

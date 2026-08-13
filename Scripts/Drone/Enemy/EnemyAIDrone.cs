@@ -5,55 +5,33 @@ using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 using Godot;
 
-public interface IEnemyAIDrone : IFlyingDrone;
+public interface IEnemyAIDrone : IFlyingDrone
+{
+    float DroneRadius { get; }
+}
 
 [Meta(typeof(IAutoNode))]
-public partial class EnemyAIDrone : FlyingDrone
+public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 {
     public override void _Notification(int what) => this.Notify(what);
     
-    #region Exports
-    [ExportGroup("Speed Settings")]
-    [Export] public float MaxSpeed { get; private set; } = 15f;
-    [Export] public float Acceleration { get; private set; } = 5f;
-    [Export] public float Deceleration { get; private set; } = 8f;
-    [Export] public float TurnSpeed { get; private set; } = 5f;
+    [Export(PropertyHint.ResourceType, "EnemyDroneSettings")]
+    public EnemyDroneSettings Settings { get; private set; } = new();
     
-    [ExportGroup("Momentum Settings")]
-    [Export] public float BreakingDistance { get; private set; } = 6f;
-    [Export] public float MinTurnSpeedPercentage { get; private set; } = 0.25f;
-    
-    [ExportGroup("Player Seeking Settings")]
-    [Export] public float MinDistance { get; private set; } = 4f;
-    [Export] public float MaxDistance { get; private set; } = 7f;
-    [Export] public float RepathThreshold { get; private set; } = 2f; // Only recalculate SVO path if player moves this much
-    
-    [ExportGroup("SVO Calculations")]
-    [Export] public float DroneRadius { get; private set; } = 1f;
-    [Export] public float PointTargetRadius { get; private set; } = 2f;
-    
-    [ExportGroup("Patrol")]
-    [Export] public Node3D[] PatrolWaypoints { get; private set; }
-    [Export] public int NumberOfScans { get; private set; } = 5;
-    [Export] public float ScanWaitTime { get; private set; } = 3f;
-    #endregion
-    
-    #region Dependecies
     [Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>();
     [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
-    #endregion
 
-    #region Nodes
+    [Node] private CollisionShape3D Collider { get; set; }
     [Node] private SightSensor Sight { get; set; }
-    #endregion
     
     #region AI State Machine
     public EnemyAILogic AIStateMachine { get; private set; }
-    public EnemyAILogic.Settings Settings { get; private set; }
     private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
     #endregion
 
     private IPathfindSVO pathfinder;
+    
+    public float DroneRadius => Collider.Shape is not SphereShape3D sphereShape ? 0f : sphereShape.Radius;
 
     public void OnReady()
     {
@@ -63,13 +41,6 @@ public partial class EnemyAIDrone : FlyingDrone
     public void OnResolved()
     {
         pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
-        
-        Settings = new EnemyAILogic.Settings(
-            DroneRadius, GetRid(),
-            MaxSpeed, Acceleration, Deceleration, TurnSpeed, 
-            BreakingDistance, MinTurnSpeedPercentage,
-            NumberOfScans, ScanWaitTime,
-            MinDistance, MaxDistance, RepathThreshold);
         
         AIStateMachine = new EnemyAILogic();
         AIStateMachine.Set(this);

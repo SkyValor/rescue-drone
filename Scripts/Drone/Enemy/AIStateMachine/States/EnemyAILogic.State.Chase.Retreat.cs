@@ -16,7 +16,7 @@ public partial class EnemyAILogic
                 
                 var enemy = Get<EnemyAIDrone>();
                 var player = Get<IGameRepo>().Player.Value;
-                var settings = Get<Settings>();
+                var settings = Get<EnemyDroneSettings>();
                 var deltaTime = (float) input.Delta;
                 var world = Get<World3D>();
 
@@ -110,15 +110,15 @@ public partial class EnemyAILogic
                     return false;
 
                 // Double check with a quick physics sphere cast to avoid static geometry
-                var settings = Get<Settings>();
+                var enemy = Get<EnemyAIDrone>();
                 var sphere = new SphereShape3D();
-                sphere.Radius = settings.DroneRadius;
+                sphere.Radius = enemy.DroneRadius;
 
                 var query = new PhysicsShapeQueryParameters3D
                 {
                     Transform = new Transform3D(Basis.Identity, start),
                     Motion = end - start,
-                    Exclude = [settings.DroneRID]
+                    Exclude = [enemy.GetRid()]
                 };
 
                 // CastMotion returns an array where [0] is the safe fraction (1.0 means completely clear)

@@ -17,7 +17,7 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
                 var player = Get<IGameRepo>().Player.Value;
-                var settings = Get<Settings>();
+                var settings = Get<EnemyDroneSettings>();
                 
                 var idealTarget = CalculatePursuitTarget(enemy, player, settings);
                 if (idealTarget.DistanceTo(data.LastPlayerPosition) <= settings.RepathThreshold) 
@@ -33,7 +33,7 @@ public partial class EnemyAILogic
                 return ToSelf();
             }
             
-            private static Vector3 CalculatePursuitTarget(EnemyAIDrone enemy, PlayerMover player, Settings settings)
+            private static Vector3 CalculatePursuitTarget(EnemyAIDrone enemy, PlayerMover player, EnemyDroneSettings settings)
             {
                 var playerPosition = player.GlobalPosition;
                 var toPlayer = playerPosition - enemy.GlobalPosition;

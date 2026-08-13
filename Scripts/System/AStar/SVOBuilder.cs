@@ -10,8 +10,6 @@ public partial class SVOBuilder : Node3D
     public bool IsDone { get; private set; }
     public SparseVoxelOctree Tree { get; private set; }
 
-    private uint counter;
-
     public void StartAsyncGeneration(Vector3 worldBoundsCenter, float worldBoundsSize, float minNodeSize)
     {
         Progress = 0f;
@@ -22,8 +20,6 @@ public partial class SVOBuilder : Node3D
 
     private IEnumerator<double> GenerateSVO(Vector3 center, float size, float minNodeSize)
     {
-        counter = 0;
-        
         var root = new VoxelNode(center, size, parent: null);
         root.Children = SubdivideNode(root);
         for (int i = 0; i < root.Children.Length; i++)
@@ -64,23 +60,13 @@ public partial class SVOBuilder : Node3D
             BuildOctreeRecursive(child, minNodeSize);
     }
 
-    private static bool CheckShapeCollisionThreadSafe(Rid spaceRid, Vector3 position, float size)
-    {
-        var spaceState = PhysicsServer3D.SpaceGetDirectState(spaceRid);
-        if (spaceState == null) return false;
-    
-        var query = new PhysicsShapeQueryParameters3D();
-    
-        using var box = new BoxShape3D();
-        box.Size = Vector3.One * size;
-        query.Shape = box;
-        query.Transform = new Transform3D(Basis.Identity, position);
-        query.CollisionMask = (1 << 4 - 1) | (1 << 8 - 1); // Buildings(4) and InvisibleBoundaries(8)
-    
-        var results = spaceState.IntersectShape(query, 1);
-        return results.Count > 0;
-    }
-
+    /// <summary>
+    /// Creates a box shape to intersect it with the world, using the voxel node's position and size. Returns
+    /// whether this shape collides with the environment (buildings and invisible boundaries).
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="size"></param>
+    /// <returns></returns>
     private bool CheckShapeCollision(Vector3 position, float size)
     {
         using var box = new BoxShape3D();
@@ -123,4 +109,5 @@ public partial class SVOBuilder : Node3D
 
         return children;
     }
+    
 }

@@ -1,7 +1,6 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.Introspection;
-using Chickensoft.LogicBlocks;
 using Godot;
 
 public partial class EnemyAILogic
@@ -13,14 +12,14 @@ public partial class EnemyAILogic
         {
             public Chase()
             {
-                this.OnEnter(() =>
+                OnAttach(() =>
                 {
                     var sight = Get<SightSensor>();
                     sight.PlayerInSight += OnPlayerInSight;
                     sight.LostSightOfPlayer += OnLostSightOfPlayer;
                 });
                 
-                this.OnExit(() =>
+                OnDetach(() =>
                 {
                     var sight = Get<SightSensor>();
                     sight.PlayerInSight -= OnPlayerInSight;
@@ -48,13 +47,14 @@ public partial class EnemyAILogic
 
             private void CheckDistanceToPlayer()
             {
+                var settings = Get<EnemyDroneSettings>();
                 var enemy = Get<EnemyAIDrone>();
                 var data = Get<Data>();
                 
                 var distanceToPlayer = enemy.GlobalPosition.DistanceTo(data.LastPlayerPosition);
-                if (distanceToPlayer < enemy.MinDistance)
+                if (distanceToPlayer < settings.MinDistance)
                     Input(new Input.PlayerDroneTooClose());
-                else if (distanceToPlayer > enemy.MaxDistance)
+                else if (distanceToPlayer > settings.MaxDistance)
                     Input(new Input.PlayerDroneTooFar());
                 else
                     Input(new Input.PlayerDroneCloseEnough());

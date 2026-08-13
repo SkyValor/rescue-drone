@@ -150,7 +150,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
         var to = LoadingScreenFadeOutValue;
         var duration = LoadingScreenFadeOutDuration;
         var tween = CreateTween();
-        tween.TweenMethod(Callable.From<float>(t => loadingScreenShader.SetShaderParameter("progress", t)), from: 0f, to, duration);
+        tween.TweenProperty(loadingScreenShader, "shader_parameter/progress", to, duration);
         tween.TweenCallback(Callable.From(OnLoadingScreenFadeOutCompleted));
         tween.Play();
     }

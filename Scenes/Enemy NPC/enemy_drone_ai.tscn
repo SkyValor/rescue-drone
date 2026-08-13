@@ -7,20 +7,15 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_qfwpt"]
 radius = 1.0232079
 
-[node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022 node_paths=PackedStringArray("PatrolWaypoints")]
+[node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022]
 script = ExtResource("1_qfwpt")
-MaxSpeed = 10.0
-Deceleration = 12.0
-TurnSpeed = 60.0
-BreakingDistance = 15.0
-MinTurnSpeedPercentage = 0.1
 DroneRadius = 0.85
-PatrolWaypoints = []
 
 [node name="DroneMesh" parent="." unique_id=247981542 instance=ExtResource("1_nrycx")]
 unique_name_in_owner = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1512536513]
+[node name="Collider" type="CollisionShape3D" parent="." unique_id=1512536513]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19891256, 0)
 shape = SubResource("SphereShape3D_qfwpt")
 

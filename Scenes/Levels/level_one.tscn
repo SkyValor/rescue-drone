@@ -91,7 +91,7 @@ unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
 
 [node name="MainCamera" type="Camera3D" parent="." unique_id=662858759]
-transform = Transform3D(0.7524149, 0.30549425, -0.5835625, 0, 0.8859447, 0.46379095, 0.65868956, -0.34896323, 0.6665979, -80.20873, 19.045113, 108.33008)
+transform = Transform3D(0.13424546, 0.45959282, -0.87792516, -2.7932305e-09, 0.8859447, 0.463791, 0.99094814, -0.06226185, 0.118934125, -80.20873, 19.045113, 108.33008)
 
 [node name="EnemySpawnPoint" type="Node3D" parent="." unique_id=826680866]
 unique_name_in_owner = true
