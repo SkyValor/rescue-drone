@@ -3,7 +3,8 @@
 [ext_resource type="Script" uid="uid://cdbvft3xqgbgq" path="res://Scripts/Game/DroneGame.cs" id="1_tg57j"]
 [ext_resource type="PackedScene" uid="uid://d0u2bhddxk4v3" path="res://Scenes/Enemy NPC/enemy_drone_ai.tscn" id="2_3ende"]
 [ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
-[ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/drone_by_tronish.tscn" id="2_xyv5c"]
+[ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/player_drone.tscn" id="2_xyv5c"]
+[ext_resource type="PackedScene" uid="uid://b2i80m12vv71l" path="res://Scenes/Player/player_test.tscn" id="5_gpoiv"]
 [ext_resource type="PackedScene" uid="uid://d4bqu2guhe4ck" path="res://Scenes/Levels/level_one_map.tscn" id="14_m21gd"]
 [ext_resource type="Image" uid="uid://c8ybnqc1bcq48" path="res://Scenes/Levels/LevelOne/Color_0_0.res" id="18_mlx1v"]
 [ext_resource type="Shader" uid="uid://duffsl8tm6jlx" path="res://Shaders/universal_transition_shader.gdshader" id="18_qu7dt"]
@@ -90,8 +91,8 @@ environment = SubResource("Environment_1rm4e")
 unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
 
-[node name="MainCamera" type="Camera3D" parent="." unique_id=662858759]
-transform = Transform3D(0.13424546, 0.45959282, -0.87792516, -2.7932305e-09, 0.8859447, 0.463791, 0.99094814, -0.06226185, 0.118934125, -80.20873, 19.045113, 108.33008)
+[node name="PlayerTest" parent="." unique_id=29709242 instance=ExtResource("5_gpoiv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 103.18449)
 
 [node name="EnemySpawnPoint" type="Node3D" parent="." unique_id=826680866]
 unique_name_in_owner = true

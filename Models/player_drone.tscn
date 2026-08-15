@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cvt3sk2nb8pdp" path="res://Assets/[TRON-ish] Low-Poly Drone/scene.gltf" id="1_2cls3"]
 [ext_resource type="Script" uid="uid://c1dfcqbwq1d4w" path="res://Scripts/PlayerMover.cs" id="1_wraj3"]
+[ext_resource type="Script" uid="uid://d071kmx6t06g3" path="res://Scripts/Drone/CameraSpringArm.cs" id="3_sc2uv"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_wraj3"]
 radius = 0.65959895
@@ -16,3 +17,10 @@ DroneMesh = NodePath("DroneMesh")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2126535481]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06751561, 0.139251)
 shape = SubResource("SphereShape3D_wraj3")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="." unique_id=1897803500]
+spring_length = 6.0
+script = ExtResource("3_sc2uv")
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D" unique_id=832256078]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.6725037)
