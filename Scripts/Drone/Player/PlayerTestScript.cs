@@ -13,13 +13,13 @@ public partial class PlayerTestScript : CharacterBody3D
     [Export] public float Acceleration { get; private set; } = 25f;
     
     [Export] public Node3D DroneModel { get; private set; }
-    [Export] public Camera3D Camera { get; private set; }
+    // [Export] public Camera3D Camera { get; private set; }
 
     public override void _PhysicsProcess(double delta)
     {
         var inputDir = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
         var direction = new Vector3(inputDir.X, 0f, inputDir.Y);
-        direction = direction.Rotated(Vector3.Up, Camera.GlobalRotation.Y);
+        // direction = direction.Rotated(Vector3.Up, Camera.GlobalRotation.Y);
 
         if (direction != Vector3.Zero)
         {
@@ -29,15 +29,15 @@ public partial class PlayerTestScript : CharacterBody3D
             velocity.Z = (float) Mathf.MoveToward(velocity.Z, direction.Z, delta * Acceleration);
             Velocity = velocity;
 
-            if (Velocity.LengthSquared() >= 0.1f)
-            {
-                var cameraDir = -Camera.GlobalTransform.Basis.Z;
-                cameraDir.Y = 0f;
-                cameraDir = cameraDir.Normalized();
-                
-                if (cameraDir.Length() > 0) 
-                    DroneModel.LookAt(GlobalPosition + cameraDir * 5f, Vector3.Up);
-            }
+            // if (Velocity.LengthSquared() >= 0.1f)
+            // {
+            //     var cameraDir = -Camera.GlobalTransform.Basis.Z;
+            //     cameraDir.Y = 0f;
+            //     cameraDir = cameraDir.Normalized();
+            //     
+            //     if (cameraDir.Length() > 0) 
+            //         DroneModel.LookAt(GlobalPosition + cameraDir * 5f, Vector3.Up);
+            // }
         }
         else
         {

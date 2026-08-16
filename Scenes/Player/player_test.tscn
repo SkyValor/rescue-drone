@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" uid="uid://mm3q61myuxq8" path="res://Scripts/Drone/Player/PlayerTestScript.cs" id="1_623wg"]
 [ext_resource type="PackedScene" uid="uid://cvt3sk2nb8pdp" path="res://Assets/[TRON-ish] Low-Poly Drone/scene.gltf" id="1_l4njd"]
-[ext_resource type="Script" uid="uid://d071kmx6t06g3" path="res://Scripts/Drone/CameraSpringArm.cs" id="3_pkpl1"]
-[ext_resource type="Script" uid="uid://bohpfkd6kc8to" path="res://Scripts/Drone/CameraFollow.cs" id="4_ggvqp"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_623wg"]
 radius = 0.8806135
@@ -11,11 +9,10 @@ radius = 0.8806135
 [sub_resource type="SphereShape3D" id="SphereShape3D_ggvqp"]
 radius = 0.3
 
-[node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel", "Camera")]
+[node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel")]
 collision_mask = 24
 script = ExtResource("1_623wg")
 DroneModel = NodePath("DroneModel")
-Camera = NodePath("SpringArmPivot/Camera3D")
 
 [node name="DroneModel" parent="." unique_id=401999617 instance=ExtResource("1_l4njd")]
 
@@ -23,9 +20,6 @@ Camera = NodePath("SpringArmPivot/Camera3D")
 shape = SubResource("SphereShape3D_623wg")
 
 [node name="SpringArmPivot" type="Node3D" parent="." unique_id=1499814881]
-script = ExtResource("3_pkpl1")
-MinVerticalAngle = -45.0
-MaxZoom = 10.0
 
 [node name="SpringArm" type="SpringArm3D" parent="SpringArmPivot" unique_id=1950443161]
 unique_name_in_owner = true
@@ -34,9 +28,3 @@ shape = SubResource("SphereShape3D_ggvqp")
 spring_length = 6.0
 
 [node name="SpringPosition" type="Node3D" parent="SpringArmPivot/SpringArm" unique_id=1875747718]
-
-[node name="Camera3D" type="Camera3D" parent="SpringArmPivot" unique_id=650577155 node_paths=PackedStringArray("SpringArm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.3553796)
-script = ExtResource("4_ggvqp")
-SpringArm = NodePath("../SpringArm/SpringPosition")
-LerpPower = 6.0

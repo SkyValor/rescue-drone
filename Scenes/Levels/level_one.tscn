@@ -5,6 +5,9 @@
 [ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
 [ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/player_drone.tscn" id="2_xyv5c"]
 [ext_resource type="PackedScene" uid="uid://b2i80m12vv71l" path="res://Scenes/Player/player_test.tscn" id="5_gpoiv"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_xyv5c"]
+[ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_1gv2x"]
 [ext_resource type="PackedScene" uid="uid://d4bqu2guhe4ck" path="res://Scenes/Levels/level_one_map.tscn" id="14_m21gd"]
 [ext_resource type="Image" uid="uid://c8ybnqc1bcq48" path="res://Scenes/Levels/LevelOne/Color_0_0.res" id="18_mlx1v"]
 [ext_resource type="Shader" uid="uid://duffsl8tm6jlx" path="res://Shaders/universal_transition_shader.gdshader" id="18_qu7dt"]
@@ -25,6 +28,14 @@ sky_material = SubResource("ProceduralSkyMaterial_hu8bd")
 [sub_resource type="Environment" id="Environment_1rm4e"]
 background_mode = 2
 sky = SubResource("Sky_s3ju3")
+
+[sub_resource type="Resource" id="Resource_m21gd"]
+script = ExtResource("7_1gv2x")
+duration = 1.5
+transition = 2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_2w0vd"]
+radius = 0.3
 
 [sub_resource type="ZoneResource" id="ZoneResource_mlx1v"]
 heightMapImage = ExtResource("18_x8jfq")
@@ -70,11 +81,8 @@ shader_parameter/progress_bias = Vector2(10, 10)
 [sub_resource type="LabelSettings" id="LabelSettings_3ende"]
 font_size = 19
 
-[sub_resource type="BoxMesh" id="BoxMesh_66res"]
-size = Vector3(10, 10, 10)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_66res"]
-size = Vector3(10, 10, 10)
+[sub_resource type="Resource" id="Resource_2w0vd"]
+script = ExtResource("7_1gv2x")
 
 [node name="LevelOne" type="Node3D" unique_id=781084026]
 script = ExtResource("1_tg57j")
@@ -90,6 +98,36 @@ environment = SubResource("Environment_1rm4e")
 [node name="SVOBuilder" type="Node3D" parent="." unique_id=818987673]
 unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
+
+[node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
+physics_interpolation_mode = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
+top_level = true
+fov = 37.849285
+
+[node name="PhantomCameraHost" type="Node" parent="MainCamera" unique_id=1070118859]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("5_xyv5c")
+metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=2094052667 node_paths=PackedStringArray("follow_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
+script = ExtResource("6_2w0vd")
+priority = 10
+follow_mode = 6
+follow_target = NodePath("../PlayerTest")
+tween_resource = SubResource("Resource_m21gd")
+inactive_update_mode = 1
+follow_distance = 4.0
+spring_length = 4.0
+collision_mask = 8
+shape = SubResource("SphereShape3D_2w0vd")
+_preview_noise = false
+align_transform_with_view = Callable()
+align_position_with_view = Callable()
+align_rotation_with_view = Callable()
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="PlayerTest" parent="." unique_id=29709242 instance=ExtResource("5_gpoiv")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 103.18449)
@@ -240,13 +278,10 @@ label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Area3D" type="Area3D" parent="." unique_id=1878816395]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -104.69532, 27.69101, 44.452248)
-collision_layer = 8
-collision_mask = 0
+[node name="PhantomCamera3D2" type="Node3D" parent="." unique_id=1920218133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.71985, 14.01713, 105.191765)
+script = ExtResource("6_2w0vd")
+tween_resource = SubResource("Resource_2w0vd")
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Area3D" unique_id=1179616771]
-mesh = SubResource("BoxMesh_66res")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=894482288]
-shape = SubResource("BoxShape3D_66res")
+[node name="CameraTarget" type="Node3D" parent="." unique_id=1582613596]
