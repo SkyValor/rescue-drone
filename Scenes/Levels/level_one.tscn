@@ -15,6 +15,15 @@
 [ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/System/Waypoint/Waypoint.cs" id="62_qsocj"]
 [ext_resource type="Script" uid="uid://hbyr1m23afr" path="res://Scripts/System/Waypoint/WaypointCircuit.cs" id="62_s3ju3"]
 
+[sub_resource type="Animation" id="Animation_2w0vd"]
+resource_name = "level_introduction"
+length = 12.1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_1gv2x"]
+_data = {
+&"level_introduction": SubResource("Animation_2w0vd")
+}
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hu8bd"]
 sky_top_color = Color(0.68574345, 0.2946731, 0.44894987, 1)
 sky_horizon_color = Color(0.7162888, 0.6437542, 0.53616107, 1)
@@ -36,6 +45,9 @@ transition = 2
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_2w0vd"]
 radius = 0.3
+
+[sub_resource type="Resource" id="Resource_2w0vd"]
+script = ExtResource("7_1gv2x")
 
 [sub_resource type="ZoneResource" id="ZoneResource_mlx1v"]
 heightMapImage = ExtResource("18_x8jfq")
@@ -81,8 +93,7 @@ shader_parameter/progress_bias = Vector2(10, 10)
 [sub_resource type="LabelSettings" id="LabelSettings_3ende"]
 font_size = 19
 
-[sub_resource type="Resource" id="Resource_2w0vd"]
-script = ExtResource("7_1gv2x")
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_m21gd"]
 
 [node name="LevelOne" type="Node3D" unique_id=781084026]
 script = ExtResource("1_tg57j")
@@ -92,6 +103,9 @@ LoadingScreenFadeOutValue = 19.0
 EnemyDroneScene = ExtResource("2_3ende")
 PlayerDroneScene = ExtResource("2_xyv5c")
 
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1863000512]
+libraries/ = SubResource("AnimationLibrary_1gv2x")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
 
@@ -99,19 +113,19 @@ environment = SubResource("Environment_1rm4e")
 unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
 
-[node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
+[node name="CameraHostContainer" type="Camera3D" parent="." unique_id=147421970]
 physics_interpolation_mode = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
 top_level = true
 fov = 37.849285
 
-[node name="PhantomCameraHost" type="Node" parent="MainCamera" unique_id=1070118859]
+[node name="PhantomCameraHost" type="Node" parent="CameraHostContainer" unique_id=1070118859]
 process_priority = 300
 process_physics_priority = 300
 script = ExtResource("5_xyv5c")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
-[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=2094052667 node_paths=PackedStringArray("follow_target")]
+[node name="PlayerCamera" type="Node3D" parent="." unique_id=2094052667 node_paths=PackedStringArray("follow_target")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
 script = ExtResource("6_2w0vd")
 priority = 10
@@ -139,6 +153,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.819727, 24.18441, 20.5710
 [node name="PlayerSpawnPoint" type="Node3D" parent="." unique_id=1709615815]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.74476, 7.810072, 105.36105)
+
+[node name="PhantomCamera3D" type="Node3D" parent="." unique_id=652634525]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.26567, 17.329689, 102.118965)
+top_level = true
+script = ExtResource("6_2w0vd")
+follow_mode = 4
+tween_resource = SubResource("Resource_2w0vd")
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="TerraBrush" type="TerraBrush" parent="." unique_id=2147200142]
 dataPath = "res://Scenes/Levels/LevelOne"
@@ -278,10 +300,9 @@ label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PhantomCamera3D2" type="Node3D" parent="." unique_id=1920218133]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.71985, 14.01713, 105.191765)
-script = ExtResource("6_2w0vd")
-tween_resource = SubResource("Resource_2w0vd")
-metadata/_custom_type_script = "uid://csjccrhj5wnx7"
-
 [node name="CameraTarget" type="Node3D" parent="." unique_id=1582613596]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.92688, -10.088852, 126.51331)
+
+[node name="EnemyPlaceholder1" type="MeshInstance3D" parent="." unique_id=764438211]
+transform = Transform3D(1, 0, 0, 0, 0.07047024, 0.9975139, 0, -0.9975139, 0.07047024, -14.873787, 12.107079, 104.68765)
+mesh = SubResource("CapsuleMesh_m21gd")
