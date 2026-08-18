@@ -9,18 +9,44 @@
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_1gv2x"]
 [ext_resource type="PackedScene" uid="uid://d4bqu2guhe4ck" path="res://Scenes/Levels/level_one_map.tscn" id="14_m21gd"]
-[ext_resource type="Image" uid="uid://c8ybnqc1bcq48" path="res://Scenes/Levels/LevelOne/Color_0_0.res" id="18_mlx1v"]
 [ext_resource type="Shader" uid="uid://duffsl8tm6jlx" path="res://Shaders/universal_transition_shader.gdshader" id="18_qu7dt"]
-[ext_resource type="Image" uid="uid://jpj60dxc6qtv" path="res://Scenes/Levels/LevelOne/Heightmap_0_0.res" id="18_x8jfq"]
 [ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/System/Waypoint/Waypoint.cs" id="62_qsocj"]
 [ext_resource type="Script" uid="uid://hbyr1m23afr" path="res://Scripts/System/Waypoint/WaypointCircuit.cs" id="62_s3ju3"]
+
+[sub_resource type="Animation" id="Animation_xyv5c"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EnemyPlaceholder1:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-14.873787, 12.107079, 104.68765)]
+}
 
 [sub_resource type="Animation" id="Animation_2w0vd"]
 resource_name = "level_introduction"
 length = 12.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EnemyPlaceholder1:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-14.873787, 12.107079, 104.68765), Vector3(-14.873787, 15.585798, 70.630264)]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1gv2x"]
 _data = {
+&"RESET": SubResource("Animation_xyv5c"),
 &"level_introduction": SubResource("Animation_2w0vd")
 }
 
@@ -48,13 +74,6 @@ radius = 0.3
 
 [sub_resource type="Resource" id="Resource_2w0vd"]
 script = ExtResource("7_1gv2x")
-
-[sub_resource type="ZoneResource" id="ZoneResource_mlx1v"]
-heightMapImage = ExtResource("18_x8jfq")
-colorImage = ExtResource("18_mlx1v")
-
-[sub_resource type="ZonesResource" id="ZonesResource_qu7dt"]
-zones = Array[ZoneResource]([SubResource("ZoneResource_mlx1v")])
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_daowb"]
 size = Vector3(300, 150, 302.689)
@@ -126,6 +145,7 @@ script = ExtResource("5_xyv5c")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="PlayerCamera" type="Node3D" parent="." unique_id=2094052667 node_paths=PackedStringArray("follow_target")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
 script = ExtResource("6_2w0vd")
 priority = 10
@@ -158,16 +178,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.74476, 7.810072, 105.3610
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.26567, 17.329689, 102.118965)
 top_level = true
 script = ExtResource("6_2w0vd")
+priority = 5
 follow_mode = 4
 tween_resource = SubResource("Resource_2w0vd")
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
-
-[node name="TerraBrush" type="TerraBrush" parent="." unique_id=2147200142]
-dataPath = "res://Scenes/Levels/LevelOne"
-terrainZones = SubResource("ZonesResource_qu7dt")
-physics_interpolation_mode = 2
-visible = false
-metadata/_edit_lock_ = false
 
 [node name="UpperBounds" type="StaticBody3D" parent="." unique_id=883336313]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -99.04303, 138.7955, 84.01219)
@@ -197,19 +211,19 @@ script = ExtResource("62_s3ju3")
 [node name="PatrolPoint1" type="Node3D" parent="WaypointCircuits/WaypointCircuit1" unique_id=1498681007 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.22314, 13.617944, 36.65452)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint2"), NodePath("../PatrolPoint7")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="PatrolPoint2" type="Node3D" parent="WaypointCircuits/WaypointCircuit1" unique_id=1965317438 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -106.80942, 14.311374, 61.96591)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint7"), NodePath("../PatrolPoint1")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="PatrolPoint7" type="Node3D" parent="WaypointCircuits/WaypointCircuit1" unique_id=1925587898 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.220573, 18.939207, 87.55239)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint1"), NodePath("../PatrolPoint2")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="WaypointCircuit2" type="Node" parent="WaypointCircuits" unique_id=340238008]
@@ -218,13 +232,13 @@ script = ExtResource("62_s3ju3")
 [node name="PatrolPoint3" type="Node3D" parent="WaypointCircuits/WaypointCircuit2" unique_id=1115022717 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -106.80942, 14.997312, 134.53888)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint4")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="PatrolPoint4" type="Node3D" parent="WaypointCircuits/WaypointCircuit2" unique_id=1542640876 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42.695667, 14.171154, 164.20815)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint3")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="WaypointCircuit3" type="Node" parent="WaypointCircuits" unique_id=1299225895]
@@ -233,13 +247,13 @@ script = ExtResource("62_s3ju3")
 [node name="PatrolPoint5" type="Node3D" parent="WaypointCircuits/WaypointCircuit3" unique_id=611895020 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.879344, 14.141485, 103.75287)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint6")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="PatrolPoint6" type="Node3D" parent="WaypointCircuits/WaypointCircuit3" unique_id=812210240 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.035907, 16.79985, 30.934277)
 script = ExtResource("62_qsocj")
-Connections = [NodePath("../PatrolPoint5")]
+Connections = []
 metadata/_edit_group_ = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1700749922]

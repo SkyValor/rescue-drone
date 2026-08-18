@@ -9,7 +9,6 @@ radius = 1.0232079
 
 [node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022]
 script = ExtResource("1_qfwpt")
-DroneRadius = 0.85
 
 [node name="DroneMesh" parent="." unique_id=247981542 instance=ExtResource("1_nrycx")]
 unique_name_in_owner = true
