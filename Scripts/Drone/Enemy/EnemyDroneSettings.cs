@@ -2,6 +2,7 @@
 
 using Godot;
 
+[GlobalClass]
 public partial class EnemyDroneSettings : Resource
 {
     /// <summary>

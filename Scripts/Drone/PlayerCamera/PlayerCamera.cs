@@ -10,25 +10,8 @@ public partial class PlayerCamera : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
 
-    #region Exports
-    [Export] public float MouseSensitivity { get; set; } = 0.005f;
-    
-    [Export(PropertyHint.Range, "-90.0, 0.0, 0.1")]
-    public float MinVerticalAngle { get; private set; } = -90f;
-
-    [Export(PropertyHint.Range, "0.0, 90.0, 0.1")]
-    public float MaxVerticalAngle { get; private set; } = 45f;
-
-    [Export(PropertyHint.Range, "1.0, 20.0, 0.1")]
-    public float MinZoom { get; private set; } = 2f;
-    
-    [Export(PropertyHint.Range, "1.0, 20.0, 0.1")]
-    public float MaxZoom { get; private set; } = 12f;
-    
-    [Export(PropertyHint.ResourceType, "PlayerCameraSettings")] 
+    [Export(PropertyHint.ResourceType, "PlayerCameraSettings")]
     public PlayerCameraSettings Settings { get; private set; }
-    
-    #endregion
 
     [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>(() => null);
     
@@ -43,8 +26,25 @@ public partial class PlayerCamera : Node3D
 
         CameraBinding = CameraLogic.Bind();
         CameraBinding.Handle((in PlayerCameraLogic.Output.RotationComputed output) => OnRotationComputed(output.Rotation));
+        CameraBinding.Handle((in PlayerCameraLogic.Output.ZoomComputed output) => OnZoomComputed(output.Length));
         
         CameraLogic.Start();
+    }
+
+    public override void _Process(double delta)
+    {
+        CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
+    }
+
+    // public void OnProcess(double delta)
+    // {
+    //     CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
+    // }
+
+    public void OnExitTree()
+    {
+        CameraLogic.Stop();
+        CameraBinding.Dispose();
     }
 
     public override void _Input(InputEvent @event)
@@ -56,6 +56,14 @@ public partial class PlayerCamera : Node3D
     {
         var playerCamera = GameRepo.PlayerPhantomCamera.Value;
         playerCamera?.SetThirdPersonRotation(cameraRotation);
+    }
+
+    private void OnZoomComputed(float zoom)
+    {
+        var playerCamera = GameRepo.PlayerPhantomCamera.Value;
+        if (playerCamera is null) return;
+        
+        playerCamera.SpringLength = zoom;
     }
     
 }

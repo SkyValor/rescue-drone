@@ -3,12 +3,20 @@
 [ext_resource type="Script" uid="uid://mm3q61myuxq8" path="res://Scripts/Drone/Player/PlayerTestScript.cs" id="1_623wg"]
 [ext_resource type="PackedScene" uid="uid://cvt3sk2nb8pdp" path="res://Assets/[TRON-ish] Low-Poly Drone/scene.gltf" id="1_l4njd"]
 [ext_resource type="Script" uid="uid://dr6vihyvghfx2" path="res://Scripts/Drone/PlayerCamera/PlayerCamera.cs" id="3_pkpl1"]
+[ext_resource type="Script" uid="uid://4t2dyl3int3t" path="res://Scripts/Drone/PlayerCamera/PlayerCameraSettings.cs" id="4_ggvqp"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_623wg"]
 radius = 0.8806135
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_ggvqp"]
 radius = 0.3
+
+[sub_resource type="Resource" id="Resource_muiep"]
+script = ExtResource("4_ggvqp")
+MinVerticalAngle = -45.0
+MinZoom = 5.0
+MaxZoom = 10.0
+metadata/_custom_type_script = "uid://4t2dyl3int3t"
 
 [node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel")]
 collision_mask = 24
@@ -32,4 +40,4 @@ spring_length = 6.0
 
 [node name="PhantomCameraController" type="Node3D" parent="." unique_id=446823110]
 script = ExtResource("3_pkpl1")
-MouseSensitivity = 0.005
+Settings = SubResource("Resource_muiep")

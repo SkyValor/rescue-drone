@@ -13,11 +13,15 @@ public partial class PlayerTestScript : CharacterBody3D
 	[Export] public float Acceleration { get; private set; } = 25f;
 	
 	[Export] public Node3D DroneModel { get; private set; }
+
+	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
+
 	// [Export] public Camera3D Camera { get; private set; }
 
 	public override void _Input(InputEvent @event)
 	{
-		// TODO: This input should only be listened to if Player is allowed to input (aka GameRepo.PlayerInControl is true)
+		if (!GameRepo.PlayerInControl.Value) return;
+		
 		if (@event.IsActionPressed("toggle_mouse_capture")) ToggleMouseCapture();
 	}
 

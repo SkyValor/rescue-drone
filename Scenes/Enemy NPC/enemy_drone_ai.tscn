@@ -2,13 +2,19 @@
 
 [ext_resource type="PackedScene" uid="uid://cmqkaellyg72y" path="res://Assets/[GAMICO] drone-game-ready-3d-model-free-dowwload/source/Parrot.fbx" id="1_nrycx"]
 [ext_resource type="Script" uid="uid://cayrfyts15qy4" path="res://Scripts/Drone/Enemy/EnemyAIDrone.cs" id="1_qfwpt"]
+[ext_resource type="Script" uid="uid://dmtctnnx3xkpl" path="res://Scripts/Drone/Enemy/EnemyDroneSettings.cs" id="2_v1mr3"]
 [ext_resource type="Script" uid="uid://ong37f20bev3" path="res://Scripts/Drone/SightSensor.cs" id="3_a665x"]
+
+[sub_resource type="Resource" id="Resource_31ski"]
+script = ExtResource("2_v1mr3")
+metadata/_custom_type_script = "uid://dmtctnnx3xkpl"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_qfwpt"]
 radius = 1.0232079
 
 [node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022]
 script = ExtResource("1_qfwpt")
+Settings = SubResource("Resource_31ski")
 
 [node name="DroneMesh" parent="." unique_id=247981542 instance=ExtResource("1_nrycx")]
 unique_name_in_owner = true

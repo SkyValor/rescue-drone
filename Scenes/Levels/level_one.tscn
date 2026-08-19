@@ -67,7 +67,8 @@ sky = SubResource("Sky_s3ju3")
 [sub_resource type="Resource" id="Resource_m21gd"]
 script = ExtResource("7_1gv2x")
 duration = 1.5
-transition = 2
+transition = 1
+ease = 1
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_2w0vd"]
 radius = 0.3
@@ -134,7 +135,7 @@ script = ExtResource("2_jaj5y")
 
 [node name="CameraHostContainer" type="Camera3D" parent="." unique_id=147421970]
 physics_interpolation_mode = 1
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 109.18449)
 top_level = true
 fov = 37.849285
 
@@ -146,15 +147,15 @@ metadata/_custom_type_script = "uid://bd046eokvcnu2"
 
 [node name="PlayerCamera" type="Node3D" parent="." unique_id=2094052667 node_paths=PackedStringArray("follow_target")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 107.18449)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 109.18449)
 script = ExtResource("6_2w0vd")
 priority = 10
 follow_mode = 6
 follow_target = NodePath("../PlayerTest")
 tween_resource = SubResource("Resource_m21gd")
 inactive_update_mode = 1
-follow_distance = 4.0
-spring_length = 4.0
+follow_distance = 6.0
+spring_length = 6.0
 collision_mask = 8
 shape = SubResource("SphereShape3D_2w0vd")
 _preview_noise = false
