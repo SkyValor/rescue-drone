@@ -2,6 +2,7 @@
 
 using System;
 using Chickensoft.Sync.Primitives;
+using Godot;
 using PhantomCamera;
 
 public interface IGameRepo : IDisposable
@@ -10,6 +11,7 @@ public interface IGameRepo : IDisposable
     
     IAutoValue<PlayerMover> Player { get; }
     IAutoValue<PhantomCamera3D> PlayerPhantomCamera { get; }
+    IAutoValue<Camera3D> MainCamera { get; }
     IAutoValue<SparseVoxelOctree> SVO { get; }
     IAutoValue<WaypointCircuit[]> WaypointCircuits { get; }
     
@@ -19,6 +21,7 @@ public interface IGameRepo : IDisposable
     
     void SetPlayer(PlayerMover player);
     void SetPlayerPhantomCamera(PhantomCamera3D camera);
+    void SetMainCamera(Camera3D camera);
     void SetSVO(SparseVoxelOctree tree);
     void SetWaypointCircuits(WaypointCircuit[] circuits);
 
@@ -35,6 +38,9 @@ public class GameRepo : IGameRepo
     public IAutoValue<PhantomCamera3D> PlayerPhantomCamera => playerCamera;
     private readonly AutoValue<PhantomCamera3D> playerCamera = new(null);
     
+    public IAutoValue<Camera3D> MainCamera => mainCamera;
+    private readonly AutoValue<Camera3D> mainCamera = new(null);
+    
     public IAutoValue<SparseVoxelOctree> SVO => svOctree;
     private readonly AutoValue<SparseVoxelOctree> svOctree = new(null);
 
@@ -50,6 +56,7 @@ public class GameRepo : IGameRepo
 
     public void SetPlayer(PlayerMover player) => this.player.Value = player;
     public void SetPlayerPhantomCamera(PhantomCamera3D camera) => playerCamera.Value = camera;
+    public void SetMainCamera(Camera3D camera) => mainCamera.Value = camera;
     public void SetSVO(SparseVoxelOctree tree) => svOctree.Value = tree;
     public void SetWaypointCircuits(WaypointCircuit[] circuits) => waypointCircuits.Value = circuits;
     public void SetPlayerInControl(bool inControl) => playerInControl.Value = inControl;

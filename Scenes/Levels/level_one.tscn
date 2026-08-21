@@ -133,13 +133,14 @@ environment = SubResource("Environment_1rm4e")
 unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
 
-[node name="CameraHostContainer" type="Camera3D" parent="." unique_id=147421970]
+[node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
+unique_name_in_owner = true
 physics_interpolation_mode = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 109.18449)
 top_level = true
 fov = 37.849285
 
-[node name="PhantomCameraHost" type="Node" parent="CameraHostContainer" unique_id=1070118859]
+[node name="PhantomCameraHost" type="Node" parent="MainCamera" unique_id=1070118859]
 process_priority = 300
 process_physics_priority = 300
 script = ExtResource("5_xyv5c")

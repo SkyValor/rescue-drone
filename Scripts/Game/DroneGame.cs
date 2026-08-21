@@ -42,6 +42,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	[Node] private Label LoadingLabel { get; set; }
 	
 	[Node] private SVOBuilder SVOBuilder { get; set; }
+	[Node] private Camera3D MainCamera { get; set; }
 	
 	[Node] private Node WaypointCircuits { get; set; }
 	[Node] private Node3D PlayerSpawnPoint { get; set; }
@@ -59,6 +60,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		
 		GameRepo = new GameRepo();
 		GameRepo.SetPlayerPhantomCamera(playerCamera);
+		GameRepo.SetMainCamera(MainCamera);
 		this.Provide();
 		
 		loadingScreenShader = LoadingScreen.Material as ShaderMaterial;
