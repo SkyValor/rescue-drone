@@ -2,7 +2,6 @@ namespace RescueDrone;
 
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
-using Chickensoft.LogicBlocks;
 using Godot;
 
 public interface IEnemyAIDrone : IFlyingDrone
@@ -15,10 +14,13 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 {
 	public override void _Notification(int what) => this.Notify(what);
 	
+	[Export] public bool StartInPatrol { get; set; }
+	[Export] public bool StayInPatrol { get; set; }
+	
 	[Export(PropertyHint.ResourceType, "EnemyDroneSettings")]
 	public EnemyDroneSettings Settings { get; private set; } = new();
-	
-	[Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>();
+
+	[Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>(() => null); // TODO: Temporary solution; remove later
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 
 	[Node] private CollisionShape3D Collider { get; set; }
@@ -26,7 +28,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 	
 	#region AI State Machine
 	public EnemyAILogic AIStateMachine { get; private set; }
-	private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
+	private EnemyAILogic.IBinding AIStateBinding { get; set; }
 	#endregion
 
 	private IPathfindSVO pathfinder;
@@ -41,13 +43,19 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 	public void OnResolved()
 	{
 		pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
-		
+		var data = new EnemyAILogic.Data
+		{
+			StartInPatrol = StartInPatrol,
+			StayInPatrol = StayInPatrol
+		};
+
 		AIStateMachine = new EnemyAILogic();
 		AIStateMachine.Set(this);
 		AIStateMachine.Set(GetWorld3D());
 		AIStateMachine.Set(pathfinder);
 		AIStateMachine.Set(Settings);
 		AIStateMachine.Set(Sight);
+		AIStateMachine.Set(data);
 		
 		AIStateBinding = AIStateMachine.Bind();
 		AIStateBinding

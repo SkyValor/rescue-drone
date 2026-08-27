@@ -9,7 +9,7 @@ public partial class EnemyAILogic
         [Meta]
         public partial record Disabled : State, IGet<Input.Enable>
         {
-            public Transition On(in Input.Enable input) => To<Idle>();
+            public Transition On(in Input.Enable input) => Get<Data>().StartInPatrol ? To<Patrol>() : To<Idle>();
         }
     }
 }

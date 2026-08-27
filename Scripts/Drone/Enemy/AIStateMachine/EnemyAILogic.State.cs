@@ -7,8 +7,28 @@ using Godot;
 public partial class EnemyAILogic
 {
     [Meta]
-    public partial record State : StateLogic<State>
+    public partial record State : StateLogic<State>, IGet<Input.MaintainPatrol>, IGet<Input.ClearSpecialCases>
     {
+        /// <summary>
+        /// This input tells our drone to remain in the Patrol state,
+        /// ignoring any input or conditions that might trigger a change.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public Transition On(in Input.MaintainPatrol input)
+        {
+            Get<Data>().StayInPatrol = input.doMaintain;
+            return ToSelf();
+        }
+
+        public Transition On(in Input.ClearSpecialCases input)
+        {
+            var data = Get<Data>();
+            data.StartInPatrol = false;
+            data.StayInPatrol = false;
+            return ToSelf();
+        }
+
         private Vector3[] GeneratePathway(Vector3 originPosition, Vector3 targetPosition)
         {
             var world = Get<World3D>();

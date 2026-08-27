@@ -165,8 +165,16 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	private void OnLoadingScreenFadeOutCompleted()
 	{
 		GD.Print("Loading screen fade out animation completed. Level can start!");
-		GameRepo.SetPlayerInControl(true);
-		GameRepo.InvokeLevelStart();
+		
+		GameRepo.InvokeLevelIntroStarted();
+		
+		// GameRepo.SetPlayerInControl(true);
+		// GameRepo.InvokeLevelStart();
+	}
+
+	private void OnIntroCompleted()
+	{
+		GameRepo.InvokeLevelIntroCompleted();
 	}
 
 }

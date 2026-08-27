@@ -8,6 +8,9 @@ using PhantomCamera;
 public interface IGameRepo : IDisposable
 {
     event Action LevelStart;
+    event Action LevelIntroStarted;
+    event Action LevelIntroSkipped;
+    event Action LevelIntroCompleted;
     
     IAutoValue<PlayerMover> Player { get; }
     IAutoValue<PhantomCamera3D> PlayerPhantomCamera { get; }
@@ -18,20 +21,25 @@ public interface IGameRepo : IDisposable
     IAutoValue<bool> PlayerInControl { get; }
 
     void InvokeLevelStart();
+    void InvokeLevelIntroStarted();
+    void InvokeLevelIntroSkipped();
+    void InvokeLevelIntroCompleted();
     
     void SetPlayer(PlayerMover player);
     void SetPlayerPhantomCamera(PhantomCamera3D camera);
     void SetMainCamera(Camera3D camera);
     void SetSVO(SparseVoxelOctree tree);
     void SetWaypointCircuits(WaypointCircuit[] circuits);
-
     void SetPlayerInControl(bool inControl);
 }
 
 public class GameRepo : IGameRepo
 {
     public event Action LevelStart;
-    
+    public event Action LevelIntroStarted;
+    public event Action LevelIntroSkipped;
+    public event Action LevelIntroCompleted;
+
     public IAutoValue<PlayerMover> Player => player;
     private readonly AutoValue<PlayerMover> player = new(null);
 
@@ -53,6 +61,9 @@ public class GameRepo : IGameRepo
     private bool disposingValue;
 
     public void InvokeLevelStart() => LevelStart?.Invoke();
+    public void InvokeLevelIntroStarted() => LevelIntroStarted?.Invoke();
+    public void InvokeLevelIntroSkipped() => LevelIntroSkipped?.Invoke();
+    public void InvokeLevelIntroCompleted() => LevelIntroCompleted?.Invoke();
 
     public void SetPlayer(PlayerMover player) => this.player.Value = player;
     public void SetPlayerPhantomCamera(PhantomCamera3D camera) => playerCamera.Value = camera;
@@ -71,6 +82,7 @@ public class GameRepo : IGameRepo
             // Dispose managed objects.
             player.Dispose();
             playerCamera.Dispose();
+            mainCamera.Dispose();
             svOctree.Dispose();
             waypointCircuits.Dispose();
             playerInControl.Dispose();

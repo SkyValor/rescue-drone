@@ -24,5 +24,9 @@ public partial class EnemyAILogic
         public readonly record struct InitiateRotatingLeft;
         public readonly record struct InitiateRotatingRight;
         public readonly record struct FinishedLookout;
+        
+        // Special use cases to force certain states to maintain
+        public readonly record struct MaintainPatrol(bool doMaintain);
+        public readonly record struct ClearSpecialCases;
     }
 }

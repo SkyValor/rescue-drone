@@ -18,5 +18,8 @@ public partial class EnemyAILogic
         public bool PlayerSeenLastFrame { get; set; }
         public Vector3 LastPlayerPosition { get; set; }
         public Vector3 LastRepathPosition { get; set; }
+        
+        public bool StartInPatrol { get; set; }
+        public bool StayInPatrol { get; set; }
     }
 }

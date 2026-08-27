@@ -33,13 +33,17 @@ public partial class EnemyAILogic
                 });
             }
             
+            public Transition On(in Input.PlayerInSight input)
+            {
+                var data = Get<Data>();
+                return data.StayInPatrol ? ToSelf() : To<Pursuit>();
+            } 
+            
             private void OnPlayerOnSight(Vector3 playerPosition)
             {
                 Get<Data>().LastPlayerPosition = playerPosition;
                 Input(new Input.PlayerInSight());
             }
-
-            public Transition On(in Input.PlayerInSight input) => To<Pursuit>();
 
             protected void ComputeMovementToWaypoint(double delta)
             {

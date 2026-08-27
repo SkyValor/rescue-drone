@@ -18,14 +18,26 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("EnemyPlaceholder1:position")
+tracks/0/path = NodePath("IntroCamera1:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector3(-14.873787, 12.107079, 104.68765)]
+"values": [Vector3(-36.889755, 49.695045, 34.404682)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("IntroCamera1:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.5375817, 2.2761407, 0.0037508279)]
 }
 
 [sub_resource type="Animation" id="Animation_2w0vd"]
@@ -34,14 +46,26 @@ length = 12.1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("EnemyPlaceholder1:position")
+tracks/0/path = NodePath("IntroCamera1:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 4),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-36.889755, 49.695045, 34.404682)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("IntroCamera1:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2.0333333),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector3(-14.873787, 12.107079, 104.68765), Vector3(-14.873787, 15.585798, 70.630264)]
+"values": [Vector3(-0.5375817, 2.2761407, 0.0037508279), Vector3(-0.5375817, 2.2761407, 0.0037508279)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1gv2x"]
@@ -63,6 +87,12 @@ sky_material = SubResource("ProceduralSkyMaterial_hu8bd")
 [sub_resource type="Environment" id="Environment_1rm4e"]
 background_mode = 2
 sky = SubResource("Sky_s3ju3")
+
+[sub_resource type="Resource" id="Resource_3ende"]
+script = ExtResource("7_1gv2x")
+
+[sub_resource type="Resource" id="Resource_xyv5c"]
+script = ExtResource("7_1gv2x")
 
 [sub_resource type="Resource" id="Resource_m21gd"]
 script = ExtResource("7_1gv2x")
@@ -113,8 +143,6 @@ shader_parameter/progress_bias = Vector2(10, 10)
 [sub_resource type="LabelSettings" id="LabelSettings_3ende"]
 font_size = 19
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_m21gd"]
-
 [node name="LevelOne" type="Node3D" unique_id=781084026]
 script = ExtResource("1_tg57j")
 WorldCenter = Vector3(-76, 0, 60)
@@ -135,8 +163,7 @@ script = ExtResource("2_jaj5y")
 
 [node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
 unique_name_in_owner = true
-physics_interpolation_mode = 1
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 109.18449)
+transform = Transform3D(-0.6497538, -0.38744238, 0.6539942, 0.003221764, 0.8589435, 0.5120603, -0.7601378, 0.33482018, -0.5568536, -36.889755, 49.695045, 34.404682)
 top_level = true
 fov = 37.849285
 
@@ -145,6 +172,19 @@ process_priority = 300
 process_physics_priority = 300
 script = ExtResource("5_xyv5c")
 metadata/_custom_type_script = "uid://bd046eokvcnu2"
+
+[node name="IntroCamera1" type="Node3D" parent="." unique_id=1455259293]
+transform = Transform3D(-0.6497538, -0.38744238, 0.6539942, 0.003221764, 0.8589435, 0.5120603, -0.7601378, 0.33482018, -0.5568536, -36.889755, 49.695045, 34.404682)
+script = ExtResource("6_2w0vd")
+priority_override = true
+tween_resource = SubResource("Resource_3ende")
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
+
+[node name="IntroCamera2" type="Node3D" parent="." unique_id=1711054713]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.185349, 17.978743, 63.03999)
+script = ExtResource("6_2w0vd")
+tween_resource = SubResource("Resource_xyv5c")
+metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="PlayerCamera" type="Node3D" parent="." unique_id=2094052667 node_paths=PackedStringArray("follow_target")]
 unique_name_in_owner = true
@@ -167,6 +207,11 @@ metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="PlayerTest" parent="." unique_id=29709242 instance=ExtResource("5_gpoiv")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 103.18449)
+
+[node name="EnemyDrone" parent="." unique_id=1527454022 instance=ExtResource("2_3ende")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.228667, 15.564768, 62.84432)
+StartInPatrol = true
+StayInPatrol = true
 
 [node name="EnemySpawnPoint" type="Node3D" parent="." unique_id=826680866]
 unique_name_in_owner = true
@@ -249,13 +294,13 @@ script = ExtResource("62_s3ju3")
 [node name="PatrolPoint5" type="Node3D" parent="WaypointCircuits/WaypointCircuit3" unique_id=611895020 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.879344, 14.141485, 103.75287)
 script = ExtResource("62_qsocj")
-Connections = []
+Connections = [NodePath("../PatrolPoint6")]
 metadata/_edit_group_ = true
 
 [node name="PatrolPoint6" type="Node3D" parent="WaypointCircuits/WaypointCircuit3" unique_id=812210240 node_paths=PackedStringArray("Connections")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.035907, 16.79985, 30.934277)
 script = ExtResource("62_qsocj")
-Connections = []
+Connections = [NodePath("../PatrolPoint5")]
 metadata/_edit_group_ = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1700749922]
@@ -315,10 +360,3 @@ text = "Testing 1 2 3"
 label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="CameraTarget" type="Node3D" parent="." unique_id=1582613596]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.92688, -10.088852, 126.51331)
-
-[node name="EnemyPlaceholder1" type="MeshInstance3D" parent="." unique_id=764438211]
-transform = Transform3D(1, 0, 0, 0, 0.07047024, 0.9975139, 0, -0.9975139, 0.07047024, -14.873787, 12.107079, 104.68765)
-mesh = SubResource("CapsuleMesh_m21gd")
