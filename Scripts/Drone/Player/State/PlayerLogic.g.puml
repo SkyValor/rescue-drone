@@ -1,0 +1,11 @@
+@startuml PlayerLogic
+state "PlayerLogic State" as RescueDrone_PlayerLogic_State {
+  state "Alive" as RescueDrone_PlayerLogic_State_Alive {
+    state "Idle" as RescueDrone_PlayerLogic_State_Idle
+    state "Moving" as RescueDrone_PlayerLogic_State_Moving
+  }
+  state "Dead" as RescueDrone_PlayerLogic_State_Dead
+  state "Disabled" as RescueDrone_PlayerLogic_State_Disabled
+}
+[*] --> RescueDrone_PlayerLogic_State_Disabled
+@enduml

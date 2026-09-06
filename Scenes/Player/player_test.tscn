@@ -23,7 +23,6 @@ metadata/_custom_type_script = "uid://4t2dyl3int3t"
 [node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel")]
 collision_mask = 24
 script = ExtResource("1_623wg")
-RotationSpeed = 5.0
 DroneModel = NodePath("DroneModel")
 
 [node name="DroneModel" parent="." unique_id=401999617 instance=ExtResource("1_l4njd")]

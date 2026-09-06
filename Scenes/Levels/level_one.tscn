@@ -8,7 +8,10 @@
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_xyv5c"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_1gv2x"]
+[ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Scenes/Rescue NPC/small_drone.tscn" id="13_3ende"]
+[ext_resource type="PackedScene" uid="uid://cowohnbnirfej" path="res://Scenes/Rescue NPC/small_drone_rescue_area.tscn" id="14_2w0vd"]
 [ext_resource type="PackedScene" uid="uid://d4bqu2guhe4ck" path="res://Scenes/Levels/level_one_map.tscn" id="14_m21gd"]
+[ext_resource type="PackedScene" uid="uid://dyvuo8kmnm5x6" path="res://Scenes/Rescue NPC/small_drone_delivery_area.tscn" id="15_1gv2x"]
 [ext_resource type="Shader" uid="uid://duffsl8tm6jlx" path="res://Shaders/universal_transition_shader.gdshader" id="18_qu7dt"]
 [ext_resource type="Script" uid="uid://kjer74wtm56a" path="res://Scripts/System/Waypoint/Waypoint.cs" id="62_qsocj"]
 [ext_resource type="Script" uid="uid://hbyr1m23afr" path="res://Scripts/System/Waypoint/WaypointCircuit.cs" id="62_s3ju3"]
@@ -163,7 +166,8 @@ script = ExtResource("2_jaj5y")
 
 [node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
 unique_name_in_owner = true
-transform = Transform3D(-0.6497538, -0.38744238, 0.6539942, 0.003221764, 0.8589435, 0.5120603, -0.7601378, 0.33482018, -0.5568536, -36.889755, 49.695045, 34.404682)
+physics_interpolation_mode = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 109.18449)
 top_level = true
 fov = 37.849285
 
@@ -176,7 +180,6 @@ metadata/_custom_type_script = "uid://bd046eokvcnu2"
 [node name="IntroCamera1" type="Node3D" parent="." unique_id=1455259293]
 transform = Transform3D(-0.6497538, -0.38744238, 0.6539942, 0.003221764, 0.8589435, 0.5120603, -0.7601378, 0.33482018, -0.5568536, -36.889755, 49.695045, 34.404682)
 script = ExtResource("6_2w0vd")
-priority_override = true
 tween_resource = SubResource("Resource_3ende")
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
@@ -360,3 +363,13 @@ text = "Testing 1 2 3"
 label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="SmallDrone" parent="." unique_id=457154522 instance=ExtResource("13_3ende")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -147.80911, 9.269405, 76.010826)
+
+[node name="SmallDroneRescueArea" parent="." unique_id=396461400 node_paths=PackedStringArray("SmallDrone") instance=ExtResource("14_2w0vd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -147.80911, 9.269405, 76.010826)
+SmallDrone = NodePath("../SmallDrone")
+
+[node name="SmallDroneDeliveryArea" parent="." unique_id=907295059 instance=ExtResource("15_1gv2x")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.697346, 0.5, 89.01245)

@@ -11,7 +11,7 @@ public partial class EnemyAILogic
         [Meta]
         public partial record ToNextWaypoint : Patrol, IGet<Input.PhysicsTick>
         {
-            private ToNextWaypoint()
+            public ToNextWaypoint()
             {
                 this.OnEnter(() =>
                 {

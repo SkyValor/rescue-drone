@@ -2,6 +2,8 @@ namespace RescueDrone;
 
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
+using Chickensoft.Sync.Primitives;
 using Godot;
 
 public interface IEnemyAIDrone : IFlyingDrone
@@ -28,9 +30,10 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 	
 	#region AI State Machine
 	public EnemyAILogic AIStateMachine { get; private set; }
-	private EnemyAILogic.IBinding AIStateBinding { get; set; }
+	private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
 	#endregion
 
+	private AutoValue<SparseVoxelOctree>.Binding octreeBind;
 	private IPathfindSVO pathfinder;
 	
 	public float DroneRadius => Collider.Shape is not SphereShape3D sphereShape ? 0f : sphereShape.Radius;
@@ -42,6 +45,32 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 
 	public void OnResolved()
 	{
+		var octree = GameRepo.SVO.Value;
+		if (octree is null)
+		{
+			octreeBind = GameRepo.SVO.Bind();
+			octreeBind.OnValue(StartAIStateMachine);
+		}
+		else
+		{
+			StartAIStateMachine(octree);
+		}
+	}
+
+	public void OnPhysicsProcess(double delta)
+	{
+		AIStateMachine.Input(new EnemyAILogic.Input.PhysicsTick(delta));
+
+		MoveAndSlide();
+		AIStateMachine.Input(new EnemyAILogic.Input.Moved());
+	}
+
+	private void StartAIStateMachine(SparseVoxelOctree octree)
+	{
+		if (octree is null) return;
+
+		octreeBind?.Dispose();
+
 		pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
 		var data = new EnemyAILogic.Data
 		{
@@ -63,14 +92,6 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		
 		AIStateMachine.Start();
-	}
-
-	public void OnPhysicsProcess(double delta)
-	{
-		AIStateMachine.Input(new EnemyAILogic.Input.PhysicsTick(delta));
-
-		MoveAndSlide();
-		AIStateMachine.Input(new EnemyAILogic.Input.Moved());
 	}
 	
 }
