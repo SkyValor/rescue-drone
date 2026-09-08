@@ -34,4 +34,14 @@ public partial class PlayerSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0, 100, 0.01")] 
     public float RotationSpeed { get; private set; } = 12f;
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    [Export] public float HoverBobFrequency { get; private set; } = 2f;
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    [Export] public float HoverBobAmplitude { get; private set; } = 0.05f;
 }

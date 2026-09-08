@@ -23,6 +23,8 @@ public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
         public readonly record struct VelocityComputed(Vector3 Velocity);
         public readonly record struct RotationComputed(Vector3 GlobalRotation);
         public readonly record struct ToggleMouseCapture;
+
+        public readonly record struct ToggleBobEffect(bool IsBobbing);
     }
     
 }
