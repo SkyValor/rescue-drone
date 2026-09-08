@@ -11,6 +11,10 @@ state "PlayerLogic State" as RescueDrone_PlayerLogic_State {
 RescueDrone_PlayerLogic_State_Alive --> RescueDrone_PlayerLogic_State_Alive : OnInputEvent
 RescueDrone_PlayerLogic_State_Alive --> RescueDrone_PlayerLogic_State_Alive : OnPhysicsTick
 RescueDrone_PlayerLogic_State_Disabled --> RescueDrone_PlayerLogic_State_Idle : Enable
+RescueDrone_PlayerLogic_State_Idle --> RescueDrone_PlayerLogic_State_Idle : OnAfterPhysicsTick
+RescueDrone_PlayerLogic_State_Idle --> RescueDrone_PlayerLogic_State_Moving : StartedMoving
+RescueDrone_PlayerLogic_State_Moving --> RescueDrone_PlayerLogic_State_Idle : StoppedMoving
+RescueDrone_PlayerLogic_State_Moving --> RescueDrone_PlayerLogic_State_Moving : OnAfterPhysicsTick
 
 RescueDrone_PlayerLogic_State_Alive : OnOnInputEvent → ToggleMouseCapture
 RescueDrone_PlayerLogic_State_Alive : OnOnPhysicsTick → RotationComputed, VelocityComputed

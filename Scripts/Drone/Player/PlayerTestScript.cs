@@ -9,7 +9,7 @@ public partial class PlayerTestScript : CharacterBody3D
 {
 	public override void _Notification(int what) => this.Notify(what);
 
-	[Export] public PlayerSettings Settings { get; private set; } = new();
+	[Export] public PlayerSettings Settings { get; private set; }
 	[Export] public Node3D DroneModel { get; private set; }
 
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
@@ -18,10 +18,12 @@ public partial class PlayerTestScript : CharacterBody3D
 	private PlayerLogic.IBinding Binding { get; set; }
 	
 	private bool isBobbing;
+	private float bobbingTime;
 
 	public void OnResolved()
 	{
 		StateMachine = new PlayerLogic();
+		StateMachine.Set(new PlayerLogic.Data());
 		StateMachine.Set(this);
 		StateMachine.Set(Settings);
 		StateMachine.Set(GameRepo);
@@ -29,8 +31,8 @@ public partial class PlayerTestScript : CharacterBody3D
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
+		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) => ToggleBobEffect(output.IsBobbing));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
-		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) => isBobbing = output.IsBobbing);
 
 		StateMachine.Start();
 	}
@@ -51,13 +53,17 @@ public partial class PlayerTestScript : CharacterBody3D
 
 	public override void _PhysicsProcess(double delta)
 	{
-		ApplyBobEffect();
+		ApplyBobEffect(delta);
 		
 		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
 		StateMachine.Input(new PlayerLogic.Input.OnPhysicsTick(delta));
 		MoveAndSlide();
+
+		StateMachine.Input(new PlayerLogic.Input.OnAfterPhysicsTick());
 	}
+
+	public bool IsMoving() => Velocity.Length() >= Settings.StoppingSpeed;
 
 	public Vector3 GetInputBasedOnCamera(Camera3D camera)
 	{
@@ -92,24 +98,33 @@ public partial class PlayerTestScript : CharacterBody3D
 		: Input.MouseModeEnum.Captured);
 	
 	private static bool IsMouseCaptured() => Input.MouseMode == Input.MouseModeEnum.Captured;
-	
-	private void ApplyBobEffect()
+
+	private void ToggleBobEffect(bool isBobbing)
 	{
+		this.isBobbing = isBobbing;
+		if (isBobbing)
+			bobbingTime = 0f;
+	}
+	
+	private void ApplyBobEffect(double delta)
+	{
+		var meshPosition = DroneModel.Position;
 		if (isBobbing)
 		{
+			bobbingTime += (float) delta;
+			
 			// Apply a subtle idle bob up and down
-			var bobOffset = Mathf.Sin(Time.GetTicksMsec() * 0.001f * Settings.HoverBobFrequency) * Settings.HoverBobAmplitude;
-			var meshPosition = DroneModel.Position;
+			var bobOffset = Mathf.Sin(bobbingTime * Settings.HoverBobFrequency) * Settings.HoverBobAmplitude;
 			meshPosition.Y = Mathf.Lerp(meshPosition.Y, bobOffset, 0.1f);
 			DroneModel.Position = meshPosition;
+			return;
 		}
-		else
-		{
-			// Return to local origin smoothly
-			var meshPosition = DroneModel.Position;
-			meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0.0f, 0.1f);
-			DroneModel.Position = meshPosition;
-		}
+
+		// Return to local origin smoothly
+		if (meshPosition.IsEqualApprox(Vector3.Zero)) return;
+		
+		meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0.0f, 0.1f);
+		DroneModel.Position = meshPosition;
 	}
 	
 }

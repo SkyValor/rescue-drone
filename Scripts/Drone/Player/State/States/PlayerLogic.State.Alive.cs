@@ -29,15 +29,18 @@ public partial class PlayerLogic
                 var moveDirection = player.GetInputBasedOnCamera(playerCamera);
                 var verticalDirection = player.GetVerticalInput();
 
+                // Set this property so that we have a comparison value when needed
+                Get<Data>().LastVelocity = player.Velocity;
+
                 var velocity = ComputeVelocity(player.Velocity, moveDirection, verticalDirection, settings, deltaTime);
                 Output(new Output.VelocityComputed(velocity));
 
                 var rotation = AlignDroneNoseWithCamera(playerCamera, player.GlobalRotation, settings.RotationSpeed, deltaTime);
                 Output(new Output.RotationComputed(rotation));
-
+                
                 return ToSelf();
             }
-            
+
             /// <summary>
             /// Given the current player velocity and the user's input in this frame, compute which value the player
             /// drone becomes in this frame.

@@ -2,8 +2,14 @@
 
 [ext_resource type="Script" uid="uid://mm3q61myuxq8" path="res://Scripts/Drone/Player/PlayerTestScript.cs" id="1_623wg"]
 [ext_resource type="PackedScene" uid="uid://cvt3sk2nb8pdp" path="res://Assets/[TRON-ish] Low-Poly Drone/scene.gltf" id="1_l4njd"]
+[ext_resource type="Script" uid="uid://dgf4yl411cog0" path="res://Scripts/Drone/Player/PlayerSettings.cs" id="2_muiep"]
 [ext_resource type="Script" uid="uid://dr6vihyvghfx2" path="res://Scripts/Drone/PlayerCamera/PlayerCamera.cs" id="3_pkpl1"]
 [ext_resource type="Script" uid="uid://4t2dyl3int3t" path="res://Scripts/Drone/PlayerCamera/PlayerCameraSettings.cs" id="4_ggvqp"]
+
+[sub_resource type="Resource" id="Resource_7cjgh"]
+script = ExtResource("2_muiep")
+HoverBobAmplitude = 0.05
+metadata/_custom_type_script = "uid://dgf4yl411cog0"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_623wg"]
 radius = 0.8806135
@@ -23,6 +29,7 @@ metadata/_custom_type_script = "uid://4t2dyl3int3t"
 [node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel")]
 collision_mask = 24
 script = ExtResource("1_623wg")
+Settings = SubResource("Resource_7cjgh")
 DroneModel = NodePath("DroneModel")
 
 [node name="DroneModel" parent="." unique_id=401999617 instance=ExtResource("1_l4njd")]

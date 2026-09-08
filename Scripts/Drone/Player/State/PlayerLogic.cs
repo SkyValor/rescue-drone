@@ -11,11 +11,18 @@ public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
 {
     public override Transition GetInitialState() => To<State.Disabled>();
 
+    [Meta]
+    public partial record State : StateLogic<State>;
+    
     public static class Input
     {
         public readonly record struct Enable;
         public readonly record struct OnInputEvent(InputEvent Event);
         public readonly record struct OnPhysicsTick(double Delta);
+        public readonly record struct OnAfterPhysicsTick;
+
+        public readonly record struct StartedMoving;
+        public readonly record struct StoppedMoving;
     }
 
     public static class Output
@@ -25,6 +32,14 @@ public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
         public readonly record struct ToggleMouseCapture;
 
         public readonly record struct ToggleBobEffect(bool IsBobbing);
+    }
+
+    public class Data
+    {
+        public Vector3 LastVelocity;
+
+        public bool WasMoving(float stoppingSpeed) => LastVelocity.Length() < stoppingSpeed;
+        public bool WasNotMoving(float stoppingSpeed) => !WasMoving(stoppingSpeed);
     }
     
 }
