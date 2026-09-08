@@ -9,7 +9,26 @@ public partial class PlayerLogic
         [Meta]
         public partial record Disabled : State, IGet<Input.Enable>
         {
-            public Transition On(in Input.Enable input) => throw new System.NotImplementedException();
+            public Disabled()
+            {
+                OnAttach(() =>
+                {
+                    Get<IGameRepo>().LevelStart += OnLevelStart;
+                });
+                
+                OnDetach(() =>
+                {
+                    Get<IGameRepo>().LevelStart -= OnLevelStart;
+                });
+            }
+
+            private void OnLevelStart()
+            {
+                Output(new Output.ToggleMouseCapture());
+                Input(new Input.Enable());
+            }
+            
+            public Transition On(in Input.Enable input) => To<Idle>();
         }
     }
 }

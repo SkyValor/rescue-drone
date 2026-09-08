@@ -14,33 +14,54 @@ public partial class PlayerTestScript : CharacterBody3D
 
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 	
+	public PlayerLogic StateMachine { get; private set; }
+	private PlayerLogic.IBinding Binding { get; set; }
+
+	public void OnResolved()
+	{
+		StateMachine = new PlayerLogic();
+		StateMachine.Set(this);
+		StateMachine.Set(Settings);
+		StateMachine.Set(GameRepo);
+
+		Binding = StateMachine.Bind();
+		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
+		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
+		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
+
+		StateMachine.Start();
+	}
+
+	public void OnExitTree()
+	{
+		Binding.Dispose();
+		StateMachine.Stop();
+	}
+
 	public override void _Input(InputEvent @event)
 	{
 		if (!GameRepo.PlayerInControl.Value) return;
+		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
-		if (@event.IsActionPressed(GameInputs.ToggleMouseCapture)) ToggleMouseCapture();
+		StateMachine.Input(new PlayerLogic.Input.OnInputEvent(@event));
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
-		var direction = Vector3.Zero;
-		var directionVertical = 0f;
+		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
-		var camera = GameRepo.MainCamera.Value;
-		if (GameRepo.PlayerInControl.Value)
-		{
-			direction = GetInputBasedOnCamera(camera);
-			directionVertical = GetVerticalInput();
-		}
-
-		var deltaTime = (float) delta;
-		Velocity = ComputeVelocity(direction, directionVertical, deltaTime);
-		AlignDroneNoseWithCamera(camera, deltaTime);
+		StateMachine.Input(new PlayerLogic.Input.OnPhysicsTick(delta));
 		MoveAndSlide();
 	}
 
-	private static Vector3 GetInputBasedOnCamera(Camera3D camera)
+	public Vector3 GetInputBasedOnCamera(Camera3D camera)
 	{
+		if (camera is null)
+		{
+			GD.PrintErr("Parameter 'camera' is null. Player drone cannot get input based on camera.");
+			return Vector3.Zero;
+		}
+		
 		var cameraBasis = camera.Basis;
 		var rawInput = Input.GetVector(
 			GameInputs.MoveLeft, GameInputs.MoveRight, 
@@ -56,50 +77,11 @@ public partial class PlayerTestScript : CharacterBody3D
 		return cameraBasis * input with { Y = 0f };
 	}
 
-	private static float GetVerticalInput()
+	public float GetVerticalInput()
 	{
 		return Input.GetAxis(GameInputs.ThrottleDown, GameInputs.ThrottleUp);
 	}
 
-	private Vector3 ComputeVelocity(Vector3 direction, float verticalDirection, float deltaTime)
-	{
-		var velocity = Velocity;
-		if (direction != Vector3.Zero)
-		{
-			// Accelerate the velocity until max speed
-			direction *= Settings.MaxSpeed;
-			velocity.X = Mathf.MoveToward(velocity.X, direction.X, Settings.Acceleration * deltaTime);
-			velocity.Z = Mathf.MoveToward(velocity.Z, direction.Z, Settings.Acceleration * deltaTime);
-		}
-		else
-		{
-			// Decelerate the velocity until zero
-			velocity.X = Mathf.MoveToward(velocity.X, 0f, Settings.Acceleration * deltaTime);
-			velocity.Z = Mathf.MoveToward(velocity.Z, 0f, Settings.Acceleration * deltaTime);
-		}
-
-		if (Mathf.IsEqualApprox(verticalDirection, 0f))
-		{
-			velocity.Y = Mathf.MoveToward(velocity.Y, 0f, Settings.VerticalAcceleration * deltaTime);
-		}
-		else
-		{
-			verticalDirection *= Settings.MaxVerticalSpeed;
-			velocity.Y = Mathf.MoveToward(velocity.Y, verticalDirection, Settings.VerticalAcceleration * deltaTime);
-		}
-
-		return velocity;
-	}
-
-	private void AlignDroneNoseWithCamera(Camera3D camera, float deltaTime)
-	{
-		var targetRotationY = camera.GlobalRotation.Y;
-		GlobalRotation = GlobalRotation with
-		{
-			Y = Mathf.RotateToward(GlobalRotation.Y, targetRotationY, Settings.RotationSpeed * deltaTime)
-		};
-	}
-	
 	private static void ToggleMouseCapture() => Input.SetMouseMode(IsMouseCaptured() 
 		? Input.MouseModeEnum.Visible 
 		: Input.MouseModeEnum.Captured);

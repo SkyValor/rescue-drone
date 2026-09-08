@@ -57,6 +57,11 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 		}
 	}
 
+	public void OnExitTree()
+	{
+		AIStateBinding.Dispose();
+	}
+
 	public void OnPhysicsProcess(double delta)
 	{
 		AIStateMachine.Input(new EnemyAILogic.Input.PhysicsTick(delta));

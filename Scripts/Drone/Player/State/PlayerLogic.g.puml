@@ -7,5 +7,14 @@ state "PlayerLogic State" as RescueDrone_PlayerLogic_State {
   state "Dead" as RescueDrone_PlayerLogic_State_Dead
   state "Disabled" as RescueDrone_PlayerLogic_State_Disabled
 }
+
+RescueDrone_PlayerLogic_State_Alive --> RescueDrone_PlayerLogic_State_Alive : OnInputEvent
+RescueDrone_PlayerLogic_State_Alive --> RescueDrone_PlayerLogic_State_Alive : OnPhysicsTick
+RescueDrone_PlayerLogic_State_Disabled --> RescueDrone_PlayerLogic_State_Idle : Enable
+
+RescueDrone_PlayerLogic_State_Alive : OnOnInputEvent → ToggleMouseCapture
+RescueDrone_PlayerLogic_State_Alive : OnOnPhysicsTick → RotationComputed, VelocityComputed
+RescueDrone_PlayerLogic_State_Disabled : OnLevelStart() → ToggleMouseCapture
+
 [*] --> RescueDrone_PlayerLogic_State_Disabled
 @enduml

@@ -21,6 +21,8 @@ public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
     public static class Output
     {
         public readonly record struct VelocityComputed(Vector3 Velocity);
+        public readonly record struct RotationComputed(Vector3 GlobalRotation);
+        public readonly record struct ToggleMouseCapture;
     }
     
 }
