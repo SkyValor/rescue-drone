@@ -367,9 +367,16 @@ vertical_alignment = 1
 [node name="SmallDrone" parent="." unique_id=457154522 instance=ExtResource("13_3ende")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -147.80911, 9.269405, 76.010826)
 
+[node name="SmallDrone2" parent="." unique_id=855863068 instance=ExtResource("13_3ende")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -71.52308, 11.010755, 177.63417)
+
 [node name="SmallDroneRescueArea" parent="." unique_id=396461400 node_paths=PackedStringArray("SmallDrone") instance=ExtResource("14_2w0vd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -147.80911, 9.269405, 76.010826)
 SmallDrone = NodePath("../SmallDrone")
+
+[node name="SmallDroneRescueArea2" parent="." unique_id=1960321019 node_paths=PackedStringArray("SmallDrone") instance=ExtResource("14_2w0vd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -71.52308, 11.010755, 177.63417)
+SmallDrone = NodePath("../SmallDrone2")
 
 [node name="SmallDroneDeliveryArea" parent="." unique_id=907295059 instance=ExtResource("15_1gv2x")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.697346, 0.5, 89.01245)
