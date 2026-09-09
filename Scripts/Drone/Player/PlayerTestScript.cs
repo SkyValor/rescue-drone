@@ -11,6 +11,7 @@ public partial class PlayerTestScript : CharacterBody3D
 
 	[Export] public PlayerSettings Settings { get; private set; }
 	[Export] public Node3D DroneModel { get; private set; }
+	[Export] public DroneFormation Formation { get; private set; }
 
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 	
@@ -45,7 +46,6 @@ public partial class PlayerTestScript : CharacterBody3D
 
 	public override void _Input(InputEvent @event)
 	{
-		if (!GameRepo.PlayerInControl.Value) return;
 		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
 		StateMachine.Input(new PlayerLogic.Input.OnInputEvent(@event));

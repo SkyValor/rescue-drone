@@ -5,9 +5,14 @@
 [ext_resource type="Script" uid="uid://dgf4yl411cog0" path="res://Scripts/Drone/Player/PlayerSettings.cs" id="2_muiep"]
 [ext_resource type="Script" uid="uid://dr6vihyvghfx2" path="res://Scripts/Drone/PlayerCamera/PlayerCamera.cs" id="3_pkpl1"]
 [ext_resource type="Script" uid="uid://4t2dyl3int3t" path="res://Scripts/Drone/PlayerCamera/PlayerCameraSettings.cs" id="4_ggvqp"]
+[ext_resource type="Script" uid="uid://dswfxj6pu71fe" path="res://Scripts/Drone/DroneFormation.cs" id="6_7cjgh"]
 
 [sub_resource type="Resource" id="Resource_7cjgh"]
 script = ExtResource("2_muiep")
+MaxSpeed = 15.0
+MaxVerticalSpeed = 7.25
+Acceleration = 12.75
+VerticalAcceleration = 7.25
 HoverBobAmplitude = 0.05
 metadata/_custom_type_script = "uid://dgf4yl411cog0"
 
@@ -26,13 +31,21 @@ MinZoom = 5.0
 MaxZoom = 10.0
 metadata/_custom_type_script = "uid://4t2dyl3int3t"
 
-[node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel")]
+[node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel", "Formation")]
 collision_mask = 24
 script = ExtResource("1_623wg")
 Settings = SubResource("Resource_7cjgh")
 DroneModel = NodePath("DroneModel")
+Formation = NodePath("DroneFormation")
 
 [node name="DroneModel" parent="." unique_id=401999617 instance=ExtResource("1_l4njd")]
+unique_name_in_owner = true
+
+[node name="DroneFormation" type="Node3D" parent="." unique_id=2006507683]
+unique_name_in_owner = true
+script = ExtResource("6_7cjgh")
+Spacing = 1.5
+VerticalSpacing = 0.9
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=566420539]
 shape = SubResource("SphereShape3D_623wg")

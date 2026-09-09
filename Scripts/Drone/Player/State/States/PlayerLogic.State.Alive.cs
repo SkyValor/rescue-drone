@@ -12,6 +12,8 @@ public partial class PlayerLogic
         {
             public Transition On(in Input.OnInputEvent input)
             {
+                if (!Get<IGameRepo>().PlayerInControl.Value) return ToSelf();
+                
                 if (input.Event.IsActionPressed(GameInputs.ToggleMouseCapture))
                     Output(new Output.ToggleMouseCapture());
                         

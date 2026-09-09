@@ -1,9 +1,16 @@
 ﻿namespace RescueDrone;
 
+using Chickensoft.AutoInject;
+using Chickensoft.Introspection;
 using Godot;
 
+[Meta(typeof(IAutoNode))]
 public abstract partial class SmallDroneReactArea : Area3D
 {
+    public override void _Notification(int what) => this.Notify(what);
+
+    [Dependency] protected IGameRepo GameRepo => this.DependOn<IGameRepo>();
+    
     protected DroneFormation DroneFormation;
     protected float TimeToAction;
     protected Color DebugColor;
@@ -11,20 +18,21 @@ public abstract partial class SmallDroneReactArea : Area3D
     private Timer countdownToAction;
     private float areaRadius;
 
-    public override void _Ready()
+    public virtual void OnReady()
     {
+        SetProcess(true);
         var collisionShape = GetNode<CollisionShape3D>("CollisionShape3D");
         if (collisionShape?.Shape is SphereShape3D sphere) 
             areaRadius = sphere.Radius;
     }
 
-    public override void _EnterTree()
+    public void OnEnterTree()
     {
         BodyEntered += OnBodyEntered;
         BodyExited += OnBodyExited;
     }
 
-    public override void _ExitTree()
+    public void OnExitTree()
     {
         BodyEntered -= OnBodyEntered;
         BodyExited -= OnBodyExited;
@@ -32,24 +40,24 @@ public abstract partial class SmallDroneReactArea : Area3D
         if (countdownToAction is not null)
             countdownToAction.Timeout -= OnCountdownTimeout;
     }
-    
-    public override void _Process(double delta)
+
+    public void OnProcess(double delta)
     {
-        DebugDraw3D.DrawSphere(GlobalPosition, areaRadius, DebugColor);
+        DrawReactionArea();
     }
     
     private void OnBodyEntered(Node3D other)
     {
-        if (other is not Drone player)
+        if (other is not PlayerTestScript player)
             return;
 
-        DroneFormation = player.DroneFormation;
+        DroneFormation = player.Formation;
         StartCountdown();
     }
 
     private void OnBodyExited(Node3D other)
     {
-        if (other is not Drone player || DroneFormation != player.DroneFormation)
+        if (other is not PlayerTestScript player || DroneFormation != player.Formation)
             return;
 
         DroneFormation = null;
@@ -61,26 +69,27 @@ public abstract partial class SmallDroneReactArea : Area3D
         if (countdownToAction is null)
         {
             countdownToAction = new Timer();
-            AddChild(countdownToAction);
+            countdownToAction.OneShot = true;
+            countdownToAction.WaitTime = TimeToAction;
             countdownToAction.Timeout += OnCountdownTimeout;
+            AddChild(countdownToAction);
+            
         }
         else
         {
             countdownToAction.Stop();
         }
 		
-        countdownToAction.Start(TimeToAction);
+        countdownToAction.Start();
     }
     
     private void StopCountdown()
     {
         countdownToAction?.Stop();
     }
+
+    private void DrawReactionArea() => DebugDraw3D.DrawSphere(GlobalPosition, areaRadius, DebugColor);
     
-    protected virtual void OnCountdownTimeout()
-    {
-        // droneFormation.AddDrone(SmallDrone);
-        // QueueFree();
-    }
+    protected virtual void OnCountdownTimeout() { }
     
 }

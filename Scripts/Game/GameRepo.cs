@@ -11,6 +11,9 @@ public interface IGameRepo : IDisposable
     event Action LevelIntroStarted;
     event Action LevelIntroSkipped;
     event Action LevelIntroCompleted;
+
+    event Action<SmallDrone> DronePickedUp;
+    event Action<SmallDrone[]> DronesDelivered;
     
     IAutoValue<PlayerMover> Player { get; }
     IAutoValue<PhantomCamera3D> PlayerPhantomCamera { get; }
@@ -24,6 +27,9 @@ public interface IGameRepo : IDisposable
     void InvokeLevelIntroStarted();
     void InvokeLevelIntroSkipped();
     void InvokeLevelIntroCompleted();
+    
+    void InvokeDronePickedUp(SmallDrone drone);
+    void InvokeDronesDelivered(SmallDrone[] drones);
     
     void SetPlayer(PlayerMover player);
     void SetPlayerPhantomCamera(PhantomCamera3D camera);
@@ -39,6 +45,9 @@ public class GameRepo : IGameRepo
     public event Action LevelIntroStarted;
     public event Action LevelIntroSkipped;
     public event Action LevelIntroCompleted;
+
+    public event Action<SmallDrone> DronePickedUp;
+    public event Action<SmallDrone[]> DronesDelivered;
 
     public IAutoValue<PlayerMover> Player => player;
     private readonly AutoValue<PlayerMover> player = new(null);
@@ -64,6 +73,9 @@ public class GameRepo : IGameRepo
     public void InvokeLevelIntroStarted() => LevelIntroStarted?.Invoke();
     public void InvokeLevelIntroSkipped() => LevelIntroSkipped?.Invoke();
     public void InvokeLevelIntroCompleted() => LevelIntroCompleted?.Invoke();
+
+    public void InvokeDronePickedUp(SmallDrone drone) => DronePickedUp?.Invoke(drone);
+    public void InvokeDronesDelivered(SmallDrone[] drones) => DronesDelivered?.Invoke(drones);
 
     public void SetPlayer(PlayerMover player) => this.player.Value = player;
     public void SetPlayerPhantomCamera(PhantomCamera3D camera) => playerCamera.Value = camera;

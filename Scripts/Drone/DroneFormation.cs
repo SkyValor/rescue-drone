@@ -16,14 +16,12 @@ public partial class DroneFormation : Node3D
             return;
         
         followers.Add(drone);
-        EventRepository.Instance.InvokePlayerSmallDronesFollowing((ushort)followers.Count);
         drone.SetFormation(this, followers.Count - 1);
     }
 
     public void RemoveDrone(SmallDrone drone)
     {
         followers.Remove(drone);
-        EventRepository.Instance.InvokePlayerSmallDronesFollowing((ushort)followers.Count);
         ReassignIndexes();
     }
 
