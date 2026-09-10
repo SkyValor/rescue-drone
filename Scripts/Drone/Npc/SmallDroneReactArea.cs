@@ -48,7 +48,7 @@ public abstract partial class SmallDroneReactArea : Area3D
     
     private void OnBodyEntered(Node3D other)
     {
-        if (other is not PlayerTestScript player)
+        if (other is not PlayerDrone player)
             return;
 
         DroneFormation = player.Formation;
@@ -57,7 +57,7 @@ public abstract partial class SmallDroneReactArea : Area3D
 
     private void OnBodyExited(Node3D other)
     {
-        if (other is not PlayerTestScript player || DroneFormation != player.Formation)
+        if (other is not PlayerDrone player || DroneFormation != player.Formation)
             return;
 
         DroneFormation = null;

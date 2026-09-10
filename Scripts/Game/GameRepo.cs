@@ -15,11 +15,14 @@ public interface IGameRepo : IDisposable
     event Action<SmallDrone> DronePickedUp;
     event Action<SmallDrone[]> DronesDelivered;
     
-    IAutoValue<PlayerMover> Player { get; }
+    IAutoValue<PlayerDrone> PlayerDrone { get; }
     IAutoValue<PhantomCamera3D> PlayerPhantomCamera { get; }
     IAutoValue<Camera3D> MainCamera { get; }
     IAutoValue<SparseVoxelOctree> SVO { get; }
     IAutoValue<WaypointCircuit[]> WaypointCircuits { get; }
+    IAutoValue<EnemyAIDrone[]> EnemyDrones { get; }
+    
+    // TODO: Set the enemy drones here...
     
     IAutoValue<bool> PlayerInControl { get; }
 
@@ -31,11 +34,12 @@ public interface IGameRepo : IDisposable
     void InvokeDronePickedUp(SmallDrone drone);
     void InvokeDronesDelivered(SmallDrone[] drones);
     
-    void SetPlayer(PlayerMover player);
+    void SetPlayer(PlayerDrone player);
     void SetPlayerPhantomCamera(PhantomCamera3D camera);
     void SetMainCamera(Camera3D camera);
     void SetSVO(SparseVoxelOctree tree);
     void SetWaypointCircuits(WaypointCircuit[] circuits);
+    void SetEnemyDrones(EnemyAIDrone[] enemies);
     void SetPlayerInControl(bool inControl);
 }
 
@@ -49,8 +53,8 @@ public class GameRepo : IGameRepo
     public event Action<SmallDrone> DronePickedUp;
     public event Action<SmallDrone[]> DronesDelivered;
 
-    public IAutoValue<PlayerMover> Player => player;
-    private readonly AutoValue<PlayerMover> player = new(null);
+    public IAutoValue<PlayerDrone> PlayerDrone => playerDrone;
+    private readonly AutoValue<PlayerDrone> playerDrone = new(null);
 
     public IAutoValue<PhantomCamera3D> PlayerPhantomCamera => playerCamera;
     private readonly AutoValue<PhantomCamera3D> playerCamera = new(null);
@@ -63,6 +67,9 @@ public class GameRepo : IGameRepo
 
     public IAutoValue<WaypointCircuit[]> WaypointCircuits => waypointCircuits;
     private readonly AutoValue<WaypointCircuit[]> waypointCircuits = new(null);
+
+    public IAutoValue<EnemyAIDrone[]> EnemyDrones => enemyDrones;
+    private readonly AutoValue<EnemyAIDrone[]> enemyDrones = new(null);
     
     public IAutoValue<bool> PlayerInControl => playerInControl;
     private readonly AutoValue<bool> playerInControl = new(false);
@@ -77,11 +84,12 @@ public class GameRepo : IGameRepo
     public void InvokeDronePickedUp(SmallDrone drone) => DronePickedUp?.Invoke(drone);
     public void InvokeDronesDelivered(SmallDrone[] drones) => DronesDelivered?.Invoke(drones);
 
-    public void SetPlayer(PlayerMover player) => this.player.Value = player;
+    public void SetPlayer(PlayerDrone player) => playerDrone.Value = player;
     public void SetPlayerPhantomCamera(PhantomCamera3D camera) => playerCamera.Value = camera;
     public void SetMainCamera(Camera3D camera) => mainCamera.Value = camera;
     public void SetSVO(SparseVoxelOctree tree) => svOctree.Value = tree;
     public void SetWaypointCircuits(WaypointCircuit[] circuits) => waypointCircuits.Value = circuits;
+    public void SetEnemyDrones(EnemyAIDrone[] enemies) => enemyDrones.Value = enemies;
     public void SetPlayerInControl(bool inControl) => playerInControl.Value = inControl;
 
     #region Internals
@@ -92,11 +100,12 @@ public class GameRepo : IGameRepo
         if (disposing)
         {
             // Dispose managed objects.
-            player.Dispose();
+            playerDrone.Dispose();
             playerCamera.Dispose();
             mainCamera.Dispose();
             svOctree.Dispose();
             waypointCircuits.Dispose();
+            enemyDrones.Dispose();
             playerInControl.Dispose();
         }
 

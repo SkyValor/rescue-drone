@@ -16,10 +16,11 @@ public partial class EnemyAILogic
         public Waypoint CurrentWaypoint { get; set; }
         
         public bool PlayerSeenLastFrame { get; set; }
-        public Vector3 LastPlayerPosition { get; set; }
-        public Vector3 LastRepathPosition { get; set; }
         
-        public bool StartInPatrol { get; set; }
-        public bool StayInPatrol { get; set; }
+        /// <summary>
+        /// The most recent player position (in global space) that is relevant to be registered.
+        /// </summary>
+        public Vector3 LastPlayerPosition { get; set; }
+        public Vector3 LastRepathPosition { get; set; } // TODO are we using this?
     }
 }

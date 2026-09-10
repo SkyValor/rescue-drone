@@ -20,7 +20,7 @@ public partial class PlayerLogic
             {
                 var settings = Get<PlayerSettings>();
 
-                var isMoving = Get<PlayerTestScript>().IsMoving();
+                var isMoving = Get<PlayerDrone>().IsMoving();
                 var wasNotMoving = Get<Data>().WasNotMoving(settings.StoppingSpeed);
                 
                 if (isMoving && wasNotMoving) Input(new Input.StartedMoving());

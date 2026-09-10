@@ -28,7 +28,7 @@ public partial class EnemyBullet : RigidBody3D
 
     private void OnBodyEntered(Node body)
     {
-        if (body is not PlayerTestScript player)
+        if (body is not PlayerDrone player)
             return;
 
         GD.Print("EnemyBullet collision with player drone!");

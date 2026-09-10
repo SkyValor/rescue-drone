@@ -14,8 +14,8 @@ public partial class EnemyAILogic
         public readonly record struct MoveToWaypoint;
         public readonly record struct StartScanning;
 
-        public readonly record struct PlayerInSight;
-        public readonly record struct LostSightOfPlayer;
+        // public readonly record struct PlayerInSight;
+        // public readonly record struct LostSightOfPlayer;
 
         public readonly record struct PlayerDroneCloseEnough;
         public readonly record struct PlayerDroneTooClose;
@@ -24,9 +24,5 @@ public partial class EnemyAILogic
         public readonly record struct InitiateRotatingLeft;
         public readonly record struct InitiateRotatingRight;
         public readonly record struct FinishedLookout;
-        
-        // Special use cases to force certain states to maintain
-        public readonly record struct MaintainPatrol(bool doMaintain);
-        public readonly record struct ClearSpecialCases;
     }
 }

@@ -23,7 +23,7 @@ public partial class PlayerLogic
             public Transition On(in Input.OnPhysicsTick input)
             {
                 var deltaTime = (float) input.Delta;
-                var player = Get<PlayerTestScript>();
+                var player = Get<PlayerDrone>();
                 var settings = Get<PlayerSettings>();
                 var gameRepo = Get<IGameRepo>();
 

@@ -5,20 +5,40 @@ using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Godot;
 
-[Meta(typeof(IAutoOn))]
+[Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class SightSensor : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
-
-    public event Action<Vector3> PlayerInSight;
-    public event Action LostSightOfPlayer;
     
+    public event Action<IFlyingDrone> DroneOnSight;
+    
+    public enum DroneWatchType { Player, Enemy }
+
     [Export] public float DepthRange { get; private set; }
     [Export] public float VisionRange { get; private set; }
     
-    [Node] private RayCast3D VisionRaycast { get; set; }
+    [Export] public DroneWatchType WatchType { get; private set; }
 
+    /// <summary>
+    /// This flag turns the sensor on/off.
+    /// </summary>
+    [Export]
+    public bool IsTracking
+    {
+        get => isTracking;
+        set
+        {
+            isTracking = value;
+            SetPhysicsProcess(isTracking);
+        }
+    }
+
+    [Dependency] public IGameRepo GameRepo => this.DependOn<IGameRepo>();
+    
+    [Node] private RayCast3D VisionRaycast { get; set; }
+    
     private PlayerMover playerTracked;
+    private bool isTracking;
     private bool inSight;
 
     public void OnReady()
@@ -32,24 +52,31 @@ public partial class SightSensor : Node3D
 
     public void OnPhysicsProcess(double delta)
     {
-        if (playerTracked is null) return;
-
-        if (TargetInSight(playerTracked))
+        DetectDrones();
+    }
+    
+    private void DetectDrones()
+    {
+        if (WatchType is DroneWatchType.Player)
         {
-            inSight = true;
-            PlayerInSight?.Invoke(playerTracked.GlobalPosition);
+            var playerDrone = GameRepo.PlayerDrone.Value;
+            if (playerDrone is null) return;
+            
+            if (TargetInSight(playerDrone)) 
+                DroneOnSight?.Invoke(playerDrone);
         }
-        else if (inSight)
+        else if (WatchType is DroneWatchType.Enemy)
         {
-            inSight = false;
-            LostSightOfPlayer?.Invoke();
+            var enemyDrones = GameRepo.EnemyDrones.Value;
+            if (enemyDrones is null || enemyDrones.Length == 0) return;
+            
+            foreach (var enemyDrone in enemyDrones)
+            {
+                if (TargetInSight(enemyDrone)) 
+                    DroneOnSight?.Invoke(enemyDrone);
+            }
         }
     }
-
-    // TODO: In the future, make this track any drone!!
-    
-    public void TrackPlayer(PlayerMover player) => playerTracked = player;
-    public void StopTracking() => playerTracked = null;
 
     public bool TargetInSight(Node3D target)
     {
@@ -78,4 +105,5 @@ public partial class SightSensor : Node3D
         VisionRaycast.ForceRaycastUpdate();
         return !VisionRaycast.IsColliding();
     }
+    
 }

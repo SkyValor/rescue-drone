@@ -15,7 +15,7 @@ public partial class EnemyAILogic
                 base.On(input);
                 
                 var enemy = Get<EnemyAIDrone>();
-                var player = Get<IGameRepo>().Player.Value;
+                var player = Get<IGameRepo>().PlayerDrone.Value;
                 var settings = Get<EnemyDroneSettings>();
                 var deltaTime = (float) input.Delta;
                 var world = Get<World3D>();

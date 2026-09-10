@@ -7,35 +7,33 @@ public partial class EnemyAILogic
 {
     public partial record State
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [Meta]
-        public partial record Chase : State, IGet<Input.PhysicsTick>, IGet<Input.PlayerInSight>, IGet<Input.LostSightOfPlayer>
+        public partial record Chase : State, IGet<Input.PhysicsTick>
         {
             public Chase()
             {
                 OnAttach(() =>
                 {
                     var sight = Get<SightSensor>();
-                    sight.PlayerInSight += OnPlayerInSight;
-                    sight.LostSightOfPlayer += OnLostSightOfPlayer;
+                    sight.DroneOnSight += OnPlayerInSight;
                 });
                 
                 OnDetach(() =>
                 {
                     var sight = Get<SightSensor>();
-                    sight.PlayerInSight -= OnPlayerInSight;
-                    sight.LostSightOfPlayer -= OnLostSightOfPlayer;
+                    sight.DroneOnSight -= OnPlayerInSight;
                 });
             }
 
-            private void OnPlayerInSight(Vector3 playerPosition)
+            private void OnPlayerInSight(IFlyingDrone playerDrone)
             {
-                Get<Data>().LastPlayerPosition = playerPosition;
+                if (playerDrone is not Node3D playerNode) return;
+                
+                Get<Data>().LastPlayerPosition = playerNode.GlobalRotation;
                 Input(new Input.PlayerInSight());
-            }
-
-            private void OnLostSightOfPlayer()
-            {
-                Input(new Input.LostSightOfPlayer());
             }
             
             public virtual Transition On(in Input.PhysicsTick input)
@@ -45,6 +43,9 @@ public partial class EnemyAILogic
                 return ToSelf();
             }
 
+            /// <summary>
+            /// Check the current distance from this drone to the player's last registered position.
+            /// </summary>
             private void CheckDistanceToPlayer()
             {
                 var settings = Get<EnemyDroneSettings>();
@@ -63,7 +64,7 @@ public partial class EnemyAILogic
             private void CheckPlayerInSight()
             {
                 var sight = Get<SightSensor>();
-                var player = Get<IGameRepo>().Player.Value;
+                var player = Get<IGameRepo>().PlayerDrone.Value;
                 
                 if (sight.TargetInSight(player))
                     Input(new Input.PlayerInSight());
@@ -74,7 +75,7 @@ public partial class EnemyAILogic
             public virtual Transition On(in Input.PlayerInSight input)
             {
                 var data = Get<Data>();
-                var player = Get<IGameRepo>().Player.Value;
+                var player = Get<IGameRepo>().PlayerDrone.Value;
                 data.LastPlayerPosition = player.GlobalPosition;
                 data.PlayerSeenLastFrame = true;
                 return ToSelf();

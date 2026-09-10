@@ -6,13 +6,8 @@ using Chickensoft.LogicBlocks;
 using Chickensoft.Sync.Primitives;
 using Godot;
 
-public interface IEnemyAIDrone : IFlyingDrone
-{
-	float DroneRadius { get; }
-}
-
 [Meta(typeof(IAutoNode))]
-public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
+public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 {
 	public override void _Notification(int what) => this.Notify(what);
 	
@@ -77,11 +72,13 @@ public partial class EnemyAIDrone : CharacterBody3D, IEnemyAIDrone
 		octreeBind?.Dispose();
 
 		pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
-		var data = new EnemyAILogic.Data
-		{
-			StartInPatrol = StartInPatrol,
-			StayInPatrol = StayInPatrol
-		};
+		// var data = new EnemyAILogic.Data
+		// {
+		// 	StartInPatrol = StartInPatrol,
+		// 	StayInPatrol = StayInPatrol
+		// };
+
+		var data = new EnemyAILogic.Data();
 
 		AIStateMachine = new EnemyAILogic();
 		AIStateMachine.Set(this);
