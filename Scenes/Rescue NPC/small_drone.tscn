@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://3vnxw3jcn0h6"]
 
-[ext_resource type="Script" uid="uid://cxi8eu2b8f4fo" path="res://Scripts/Drone/SmallDrone.cs" id="1_rbbha"]
+[ext_resource type="Script" uid="uid://cxi8eu2b8f4fo" path="res://Scripts/Drone/Npc/SmallDrone.cs" id="1_rbbha"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_njt5m"]
 

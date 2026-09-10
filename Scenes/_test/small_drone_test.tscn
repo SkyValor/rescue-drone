@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cplqlnsccxvgl"]
 
-[ext_resource type="Script" uid="uid://c7jhilqthwltt" path="res://Scripts/Core/EventRepository.cs" id="1_n6b6q"]
+[ext_resource type="Script" path="res://Scripts/Game/EventRepository.cs" id="1_n6b6q"]
 [ext_resource type="PackedScene" uid="uid://cowohnbnirfej" path="res://Scenes/Rescue NPC/small_drone_rescue_area.tscn" id="2_m0fj3"]
-[ext_resource type="Script" uid="uid://mgutfsyyy8jv" path="res://Scripts/Drone/SmallDronePickupArea.cs" id="2_tdbi5"]
+[ext_resource type="Script" uid="uid://mgutfsyyy8jv" path="res://Scripts/Drone/Npc/SmallDronePickupArea.cs" id="2_tdbi5"]
 [ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Scenes/Rescue NPC/small_drone.tscn" id="3_m0fj3"]
 [ext_resource type="PackedScene" uid="uid://bacf4mllwuq5q" path="res://Scenes/Player/player_drone.tscn" id="5_aehdy"]
 [ext_resource type="PackedScene" uid="uid://dyvuo8kmnm5x6" path="res://Scenes/Rescue NPC/small_drone_delivery_area.tscn" id="6_n6b6q"]
@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="7_sjvqn"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="8_aaiei"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="9_70ww4"]
-[ext_resource type="Script" uid="uid://dq40csp6dxald" path="res://Scripts/Drone/PlayerPhantomCameraOnMovement.cs" id="10_ica6n"]
+[ext_resource type="Script" path="res://Scripts/Drone/PlayerPhantomCameraOnMovement.cs" id="10_ica6n"]
 [ext_resource type="PackedScene" uid="uid://1hp7ptjeyoo3" path="res://Scenes/Player/camera_rig.tscn" id="12_n6b6q"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_7x1fn"]

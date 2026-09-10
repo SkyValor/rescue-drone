@@ -1,32 +1,31 @@
 ﻿namespace RescueDrone;
 
+using Chickensoft.AutoInject;
+using Chickensoft.Introspection;
 using Godot;
 
+[Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class DeliverySystem : Node
 {
-    private ushort points;
+    public override void _Notification(int what) => this.Notify(what);
 
-    public override void _Ready()
+    [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
+
+    public ushort Points { get; private set; }
+
+    public void OnResolved()
     {
-        CallDeferred(MethodName.SetupDeliverySystem);
+        GameRepo.DronesDelivered += OnDeliverySuccessful;
     }
 
-    public override void _ExitTree()
+    public void OnExitTree()
     {
-        if (EventRepository.Instance is not null)
-            EventRepository.Instance.PlayerDeliveredSmallDrone -= OnDeliverySuccessful;
+        GameRepo.DronesDelivered -= OnDeliverySuccessful;
     }
 
-    public ushort GetPoints() => points;
-
-    private void SetupDeliverySystem()
+    private void OnDeliverySuccessful(SmallDrone[] drones)
     {
-        EventRepository.Instance.PlayerDeliveredSmallDrone += OnDeliverySuccessful;
-    }
-
-    private void OnDeliverySuccessful()
-    {
-        points++;
+        Points += (ushort) drones.Length;
     }
     
 }

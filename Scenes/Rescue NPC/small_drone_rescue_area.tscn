@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cowohnbnirfej"]
 
-[ext_resource type="Script" uid="uid://mgutfsyyy8jv" path="res://Scripts/Drone/SmallDronePickupArea.cs" id="1_gskjj"]
+[ext_resource type="Script" uid="uid://mgutfsyyy8jv" path="res://Scripts/Drone/Npc/SmallDronePickupArea.cs" id="1_gskjj"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_7x1fn"]
 radius = 3.7877047
