@@ -29,7 +29,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 	#endregion
 
 	private AutoValue<SparseVoxelOctree>.Binding octreeBind;
-	private IPathfindSVO pathfinder;
+	// private IPathfindSVO pathfinder;
 	
 	public float DroneRadius => Collider.Shape is not SphereShape3D sphereShape ? 0f : sphereShape.Radius;
 
@@ -71,22 +71,15 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 
 		octreeBind?.Dispose();
 
-		pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
-		// var data = new EnemyAILogic.Data
-		// {
-		// 	StartInPatrol = StartInPatrol,
-		// 	StayInPatrol = StayInPatrol
-		// };
-
-		var data = new EnemyAILogic.Data();
+		IPathfindSVO pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
 
 		AIStateMachine = new EnemyAILogic();
-		AIStateMachine.Set(this);
+		AIStateMachine.Set(new EnemyAILogic.Data());
 		AIStateMachine.Set(GetWorld3D());
 		AIStateMachine.Set(pathfinder);
 		AIStateMachine.Set(Settings);
 		AIStateMachine.Set(Sight);
-		AIStateMachine.Set(data);
+		AIStateMachine.Set(this);
 		
 		AIStateBinding = AIStateMachine.Bind();
 		AIStateBinding

@@ -60,7 +60,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		StateMachine.Input(new PlayerLogic.Input.OnPhysicsTick(delta));
 		MoveAndSlide();
 
-		StateMachine.Input(new PlayerLogic.Input.OnAfterPhysicsTick());
+		StateMachine.Input(new PlayerLogic.Input.AfterMove());
 	}
 
 	public bool IsMoving() => Velocity.Length() >= Settings.StoppingSpeed;

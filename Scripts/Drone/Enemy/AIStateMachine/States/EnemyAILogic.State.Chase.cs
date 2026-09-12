@@ -77,14 +77,14 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 var player = Get<IGameRepo>().PlayerDrone.Value;
                 data.LastPlayerPosition = player.GlobalPosition;
-                data.PlayerSeenLastFrame = true;
+                data.PlayerDetectedThisFrame = true;
                 return ToSelf();
             }
 
             public Transition On(in Input.LostSightOfPlayer input)
             {
                 var data = Get<Data>();
-                data.PlayerSeenLastFrame = false;
+                data.PlayerDetectedThisFrame = false;
                 return ToSelf();
             }
             

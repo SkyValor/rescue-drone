@@ -1,6 +1,5 @@
 ﻿namespace RescueDrone;
 
-using System;
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 using Godot;
@@ -10,32 +9,36 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record Scanning : Patrol, IGet<Input.Moved>, IGet<Input.PhysicsTick>
+        public partial record Scanning : Patrol, IGet<Input.Moved>
         {
             private int currentScanCount;
             private float currentScanTime;
             private Vector3 currentLookDirection;
-            private Random random;
+            private RandomNumberGenerator random;
             private bool isScanning;
             
             public Scanning()
             {
                 this.OnEnter(() =>
                 {
-                    random ??= new Random();
+                    random ??= new RandomNumberGenerator();
                     SetRandomLookingDirection();
                     currentScanCount = 0;
                     currentScanTime = 0f;
                 });
             }
 
-            public Transition On(in Input.PhysicsTick input)
+            public override Transition On(in Input.PhysicsTick input)
             {
+                base.On(input);
+
+                var deltaTime = (float) input.Delta;
                 var settings = Get<EnemyDroneSettings>();
+                
                 if (isScanning)
                 {
-                    currentScanTime += (float) input.Delta;
-                    if (currentScanTime < settings.ScanWaitTime) return ToSelf();
+                    currentScanTime += deltaTime;
+                    if (currentScanTime < settings.ScanDuration) return ToSelf();
 
                     if (++currentScanCount < settings.NumberOfScans)
                     {
@@ -50,7 +53,7 @@ public partial class EnemyAILogic
                 }
                 
                 var enemy = Get<EnemyAIDrone>();
-                SmoothlyRotate(enemy, currentLookDirection, settings.TurnSpeed, (float) input.Delta);
+                SmoothlyRotate(enemy, currentLookDirection, settings.TurnSpeed, deltaTime);
                 return ToSelf();
             }
 
@@ -68,10 +71,10 @@ public partial class EnemyAILogic
             private void SetRandomLookingDirection()
             {
                 // Generate a random horizontal angle (Yaw) between -180 and 180 degrees
-                var rotationX = (float) (random.NextDouble() * 2.0 * Mathf.Pi - Mathf.Pi);
+                var rotationX = Mathf.DegToRad(random.RandfRange(-180f, 180f));
                     
                 // Generate a random vertical angle (Pitch) between -30 and 30 degrees
-                var rotationY = Mathf.DegToRad(random.Next(-30, 30));
+                var rotationY = Mathf.DegToRad(random.RandfRange(-30f, 30f));
                 var newLookDirection = ConvertSphericalAngleTo3DForward(rotationX, rotationY);
                     
                 currentLookDirection = newLookDirection;

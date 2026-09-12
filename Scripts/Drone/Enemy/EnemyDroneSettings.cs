@@ -32,7 +32,8 @@ public partial class EnemyDroneSettings : Resource
     public float TurnSpeed = 20;
 
     /// <summary>
-    /// Distance from the target at which the drone starts lowering speed.
+    /// Distance from the target at which the drone starts lowering speed. For example, the distance
+    /// before reaching a curve in which the drone begins to decelerate.
     /// </summary>
     [ExportCategory("Momentum Settings")] 
     [Export(PropertyHint.Range, "0.1, 20, 0.1")]
@@ -45,10 +46,18 @@ public partial class EnemyDroneSettings : Resource
     public float MinTurnSpeedPercentage = 0.25f;
     
     /// <summary>
-    /// Distance to register reaching a checkpoint.
+    /// Distance to register reaching a checkpoint, like for example a waypoint in
+    /// a circuit. This value is used during movement, so that the drone reacts to a curve
+    /// before reaching it.
     /// </summary>
     [Export(PropertyHint.Range, "0.1, 15, 0.01")]
     public float CheckpointRadius = 2f;
+
+    /// <summary>
+    /// The percentage of maximum speed the drone can reach when in patrol state.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.01, 1, 0.01")]
+    public float MaxSpeedPercentageAtPatrol = 0.25f;
     
     /// <summary>
     /// Minimum distance to the player that is permitted before the drone starts drifting away.
@@ -78,6 +87,13 @@ public partial class EnemyDroneSettings : Resource
     /// <summary>
     /// Seconds to hold a gaze when scanning for the player.
     /// </summary>
-    [Export(PropertyHint.Range, "1, 10, 0.1")]
-    public float ScanWaitTime = 3f;
+    [Export(PropertyHint.Range, "0.1, 10.0, 0.1")]
+    public float ScanDuration = 3f;
+
+    /// <summary>
+    /// How long the drone holds in idle state before deciding to patrol, in case
+    /// where the player drone is not in sight.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.1, 10, 0.1")]
+    public float IdleWaitTime = 2f;
 }

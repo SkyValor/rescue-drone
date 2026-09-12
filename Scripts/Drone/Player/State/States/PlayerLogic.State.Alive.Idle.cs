@@ -8,7 +8,7 @@ public partial class PlayerLogic
     public partial record State
     {
         [Meta]
-        public partial record Idle : Alive, IGet<Input.OnAfterPhysicsTick>, IGet<Input.StartedMoving>
+        public partial record Idle : Alive, IGet<Input.AfterMove>, IGet<Input.StartedMoving>
         {
             public Idle()
             {
@@ -16,7 +16,7 @@ public partial class PlayerLogic
                 this.OnExit(() => Output(new Output.ToggleBobEffect(IsBobbing: false)));
             }
 
-            public Transition On(in Input.OnAfterPhysicsTick input)
+            public Transition On(in Input.AfterMove input)
             {
                 var settings = Get<PlayerSettings>();
 

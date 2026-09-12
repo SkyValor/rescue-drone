@@ -7,9 +7,9 @@ public partial class PlayerLogic
     public partial record State
     {
         [Meta]
-        public partial record Moving : Alive, IGet<Input.OnAfterPhysicsTick>, IGet<Input.StoppedMoving>
+        public partial record Moving : Alive, IGet<Input.AfterMove>, IGet<Input.StoppedMoving>
         {
-            public Transition On(in Input.OnAfterPhysicsTick input)
+            public Transition On(in Input.AfterMove input)
             {
                 var settings = Get<PlayerSettings>();
                 

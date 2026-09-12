@@ -19,7 +19,7 @@ public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
         public readonly record struct Enable;
         public readonly record struct OnInputEvent(InputEvent Event);
         public readonly record struct OnPhysicsTick(double Delta);
-        public readonly record struct OnAfterPhysicsTick;
+        public readonly record struct AfterMove;
 
         public readonly record struct StartedMoving;
         public readonly record struct StoppedMoving;

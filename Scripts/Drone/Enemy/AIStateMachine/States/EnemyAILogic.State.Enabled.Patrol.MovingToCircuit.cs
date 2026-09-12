@@ -8,14 +8,21 @@ public partial class EnemyAILogic
 {
     public partial record State
     {
+        /// <summary>
+        /// This is the initial state inside the <see cref="State.Patrol"/> superstate.
+        ///
+        /// The enemy drone moves towards the <see cref="WaypointCircuit"/> that is currently registered to,
+        /// by generating a point path towards the nearest waypoint in that circuit and setting it as the target
+        /// in this pathway.
+        /// </summary>
         [Meta]
-        public partial record MovingToCircuit : Patrol, IGet<Input.StartScanning>, IGet<Input.PhysicsTick>
+        public partial record MovingToCircuit : Patrol, IGet<Input.ReturnToIdle>, IGet<Input.MoveToWaypoint>
         {
             public MovingToCircuit()
             {
                 this.OnEnter(() =>
                 {
-                    var enemy = Get<Mover>();
+                    var enemy = Get<EnemyAIDrone>();
                     var data = Get<Data>();
                     if (data.CurrentCircuit is null)
                     {
@@ -41,15 +48,41 @@ public partial class EnemyAILogic
                 });
             }
 
-            public Transition On(in Input.PhysicsTick input)
+            public Transition On(in Input.ReturnToIdle input) => To<Idle>();
+
+            public override Transition On(in Input.PhysicsTick input)
             {
-                ComputeMovementToWaypoint(input.Delta);
+                base.On(input);
+
+                var data = Get<Data>();
+                var enemy = Get<EnemyAIDrone>();
+                var settings = Get<EnemyDroneSettings>();
+                
+                var targetPosition = data.SVOPath[data.CurrentPathIndex];
+                var isLastPoint = data.CurrentPathIndex == data.SVOPath.Length - 1;
+                if (isLastPoint && enemy.GlobalPosition.IsEqualApprox(targetPosition))
+                {
+                    // We have reached the circuit. Move to another waypoint before scanning.
+                    Input(new Input.MoveToWaypoint());
+                    return ToSelf();
+                }
+
+                if (!isLastPoint && enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
+                {
+                    // We are close enough to consider reaching this point and can now move
+                    // to the following point. We do this early to anticipate the curve and have a more
+                    // realistic behavior.
+                    data.CurrentPathIndex++;
+                    return ToSelf();
+                }
+                
+                ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) input.Delta);
                 return ToSelf();
             }
 
-            public Transition On(in Input.StartScanning input) => To<Scanning>();
-            
-            private void FindPathToClosestWaypoint(Mover enemy, Data data)
+            public Transition On(in Input.MoveToWaypoint input) => To<ToNextWaypoint>();
+
+            private void FindPathToClosestWaypoint(EnemyAIDrone enemy, Data data)
             {
                 var origin = enemy.GlobalPosition;
                 var target = data.CurrentWaypoint.GlobalPosition;
@@ -66,26 +99,26 @@ public partial class EnemyAILogic
                     Input(new Input.ReturnToIdle());
                 }
             }
-            
+
             private static WaypointCircuit GetClosestFreeCircuit(Vector3 selfPosition, WaypointCircuit[] circuits)
             {
-                var shortestDistance = float.MaxValue;
                 WaypointCircuit closestCircuit = null;
+                var shortestDistance = float.MaxValue;
                 foreach (var currentCircuit in circuits)
                 {
                     if (!currentCircuit.IsFreeToPatrol()) continue;
-                    
+
                     var closestWaypoint = currentCircuit.GetClosestWaypoint(selfPosition);
                     var currentDistance = closestWaypoint.GlobalPosition.DistanceTo(selfPosition);
                     if (currentDistance > shortestDistance) continue;
-                    
+
                     shortestDistance = currentDistance;
                     closestCircuit = currentCircuit;
                 }
 
                 return closestCircuit;
             }
-            
+
         }
     }
 }
