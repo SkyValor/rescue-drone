@@ -14,33 +14,13 @@ public partial class SightSensor : Node3D
     
     public enum DroneWatchType { Player, Enemy }
 
+    [Export] public DroneWatchType WatchType { get; private set; }
     [Export] public float DepthRange { get; private set; }
     [Export] public float VisionRange { get; private set; }
-    
-    [Export] public DroneWatchType WatchType { get; private set; }
-
-    /// <summary>
-    /// This flag turns the sensor on/off.
-    /// </summary>
-    [Export]
-    public bool IsTracking
-    {
-        get => isTracking;
-        set
-        {
-            isTracking = value;
-            SetPhysicsProcess(isTracking);
-        }
-    }
 
     [Dependency] public IGameRepo GameRepo => this.DependOn<IGameRepo>();
-    
     [Node] private RayCast3D VisionRaycast { get; set; }
     
-    private PlayerMover playerTracked;
-    private bool isTracking;
-    private bool inSight;
-
     public void OnReady()
     {
         if (VisionRaycast is not null) return;
@@ -49,13 +29,8 @@ public partial class SightSensor : Node3D
         AddChild(raycast);
         VisionRaycast = raycast;
     }
-
-    public void OnPhysicsProcess(double delta)
-    {
-        DetectDrones();
-    }
     
-    private void DetectDrones()
+    public void DetectDrones()
     {
         if (WatchType is DroneWatchType.Player)
         {

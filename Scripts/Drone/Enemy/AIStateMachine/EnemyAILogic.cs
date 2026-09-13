@@ -23,7 +23,8 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
         public readonly record struct MoveToWaypoint;
         public readonly record struct StartScanning;
 
-        public readonly record struct PlayerDetected(PlayerDrone Player);
+        public readonly record struct PlayerDetected;
+        public readonly record struct PlayerLost;
         
         public readonly record struct PlayerDroneCloseEnough;
         public readonly record struct PlayerDroneTooClose;

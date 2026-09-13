@@ -97,7 +97,7 @@ public partial class EnemyAILogic
         /// <summary>
         /// Pinpoint the current location of the enemy drone inside the point pathway. If we are approaching a curve,
         /// then adjust the target speed accordingly. The target speed decreases from a combination of distance to said curve
-        /// and how tight said curve is.
+        /// and how tight said curve is. If we are still not near the next curve, returns <c>maxSpeed</c> instead.
         /// </summary>
         /// <param name="data"></param>
         /// <param name="settings"></param>

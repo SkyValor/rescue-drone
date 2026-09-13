@@ -8,8 +8,8 @@ public partial class EnemyAILogic
     public partial record State
     {
         /// <summary>
-        /// A superstate that continuously listens for the detection of the player drone and sends input
-        /// about it.
+        /// A superstate that continuously attempts to detect the player drone. In case of detection,
+        /// an event is listened and internal data is updated. Child states will use that information.
         /// </summary>
         [Meta]
         public abstract partial record Enabled : State, IGet<Input.PhysicsTick>
@@ -22,9 +22,8 @@ public partial class EnemyAILogic
             
             public virtual Transition On(in Input.PhysicsTick input)
             {
-                // We set this flag as false for now. If the nested sight sensor detects the player,
-                // it will fire an event and we updated it.
                 Get<Data>().PlayerDetectedThisFrame = false;
+                Get<SightSensor>().DetectDrones(); // It will fire an event if the player is detected
                 return ToSelf();
             }
 
@@ -35,7 +34,7 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 data.PlayerDetectedThisFrame = true;
                 data.LastPlayerPosition = playerDrone.GlobalPosition;
-                Input(new Input.PlayerDetected(playerDrone));
+                Input(new Input.PlayerDetected());
             }
             
         }

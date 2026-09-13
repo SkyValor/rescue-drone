@@ -13,25 +13,23 @@ public partial class EnemyAILogic
         /// Otherwise, if the player drone gets farther away, the state changes to <see cref="State.Pursuit"/>.
         /// </summary>
         [Meta]
-        public partial record Stay : Chase
+        public partial record Stay : Chase, IGet<Input.PlayerDroneTooClose>, IGet<Input.PlayerDroneTooFar>
         {
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
                 
-                // Maintain position while looking at player drone.
                 var enemy = Get<EnemyAIDrone>();
-                var player = Get<IGameRepo>().PlayerDrone.Value;
                 var settings = Get<EnemyDroneSettings>();
-                SmoothlyRotate(enemy, player.GlobalPosition, settings.TurnSpeed, (float) input.Delta);
-
-                var distanceToPlayer = enemy.GlobalPosition.DistanceTo(player.GlobalPosition);
-                return distanceToPlayer < settings.MinDistance
-                    ? To<Retreat>()
-                    : distanceToPlayer > settings.MaxDistance
-                        ? To<Pursuit>()
-                        : ToSelf();
+                var playerPosition = Get<Data>().LastPlayerPosition;
+                SmoothlyRotate(enemy, playerPosition, settings.TurnSpeed, (float) input.Delta);
+                return ToSelf();
             }
+
+            public Transition On(in Input.PlayerDroneTooClose input) => To<Retreat>();
+
+            public Transition On(in Input.PlayerDroneTooFar input) => To<Pursuit>();
+            
         }
     }
 }

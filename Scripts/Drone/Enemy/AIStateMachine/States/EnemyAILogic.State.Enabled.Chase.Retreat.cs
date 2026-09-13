@@ -7,6 +7,14 @@ public partial class EnemyAILogic
 {
     public partial record State
     {
+        /// <summary>
+        /// The enemy drone finds a way to back away from the player drone. This can be done by moving in the opposite direction,
+        /// or in another close by direction. As a fallback, the enemy drone may have to simply ascend, but will do no movement
+        /// if there are obstacles all around.
+        ///
+        /// The enemy drone continues to look at the player drone. If said player is far enough, the state changes to
+        /// <see cref="State.Stay"/>; likewise, if the player is too far, the state changes to <see cref="State.Pursuit"/>.
+        /// </summary>
         [Meta]
         public partial record Retreat : Chase, IGet<Input.PlayerDroneTooFar>, IGet<Input.PlayerDroneCloseEnough>
         {
@@ -21,7 +29,7 @@ public partial class EnemyAILogic
                 var world = Get<World3D>();
 
                 var toPlayer = player.GlobalPosition - enemy.GlobalPosition;
-                var retreatDirection = FindSafeRetreatDirection(enemy, player.GlobalPosition, world, deltaTime);
+                var retreatDirection = FindSafeRetreatDirection(enemy, player.GlobalPosition, world, deltaTime); // TODO: deltaTime when requesting retreatDistance !!!
                 if (retreatDirection == Vector3.Zero) return ToSelf();
                 
                 // Smoothly rotate to face the player while strafing/retreating away.
