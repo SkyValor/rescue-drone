@@ -7,9 +7,9 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record AlertLookout : Search
+        public abstract partial record Search : Enabled, IGet<Input.PlayerDetected>
         {
-            
+            public Transition On(in Input.PlayerDetected input) => To<Pursuit>();
         }
     }
 }

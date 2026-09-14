@@ -152,5 +152,28 @@ public partial class EnemyAILogic
             var t = Mathf.Clamp(distanceToDestination / breakingDistance, 0f, 1f);
             return Mathf.Lerp(startingSpeed, maxSpeed, t);
         }
+
+        private static Vector3 GetRandomLookingDirection(EnemyDroneSettings.ScanSettings settings)
+        {
+            var random = new RandomNumberGenerator();
+            
+            // Generate a random horizontal angle (Yaw)
+            var rotationX = Mathf.DegToRad(random.RandfRange(-settings.AngleInX, settings.AngleInX));
+                    
+            // Generate a random vertical angle (Pitch)
+            var rotationY = Mathf.DegToRad(random.RandfRange(-settings.AngleInY, settings.AngleInY));
+            return ConvertSphericalAngleTo3DForward(rotationX, rotationY);
+        }
+
+        private static Vector3 ConvertSphericalAngleTo3DForward(float rotationX, float rotationY)
+        {
+            // Convert these spherical angles into a 3D forward direction vector
+            return new Vector3
+            {
+                X = Mathf.Sin(rotationX) * Mathf.Cos(rotationY),
+                Y = Mathf.Sin(rotationY),
+                Z = Mathf.Cos(rotationX) * Mathf.Cos(rotationY)
+            }.Normalized();
+        }
     }
 }

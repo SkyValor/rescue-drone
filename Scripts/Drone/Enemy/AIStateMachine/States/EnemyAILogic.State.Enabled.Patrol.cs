@@ -15,7 +15,7 @@ public partial class EnemyAILogic
         /// and moving towards its <see cref="Waypoint"/>s. The drone stops at a waypoint and scans
         /// around for some time before moving onto another waypoint.
         ///
-        /// In case of player detection, the state is changed to <see cref="State.Chase"/>.
+        /// In case of player detection, the state is changed to <see cref="State.Pursuit"/>.
         /// </summary>
         [Meta]
         public abstract partial record Patrol : Enabled, IGet<Input.PlayerDetected>
@@ -54,7 +54,7 @@ public partial class EnemyAILogic
                 ComputeMovementAlongPath(enemy, targetPosition, patrolMaxSpeed, (float) delta);
             }
 
-            public Transition On(in Input.PlayerDetected input) => To<Chase>();
+            public Transition On(in Input.PlayerDetected input) => To<Pursuit>();
 
         }
     }

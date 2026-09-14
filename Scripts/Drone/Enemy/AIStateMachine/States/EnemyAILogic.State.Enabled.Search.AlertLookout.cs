@@ -8,17 +8,17 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record Scanning : Patrol, IGet<Input.Moved>
+        public partial record AlertLookout : Search, IGet<Input.Moved>
         {
-            public Scanning()
+            public AlertLookout()
             {
-                this.OnEnter(() => OnEnterScan(Get<EnemyDroneSettings>().PatrolScanSettings));
+                this.OnEnter(() => OnEnterScan(Get<EnemyDroneSettings>().SearchScanSettings));
             }
 
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-                return OnPhysicsTickScan(input, Get<EnemyDroneSettings>().PatrolScanSettings);
+                return OnPhysicsTickScan(input, Get<EnemyDroneSettings>().SearchScanSettings);
             }
 
             public Transition On(in Input.Moved input) => OnMovedScan();

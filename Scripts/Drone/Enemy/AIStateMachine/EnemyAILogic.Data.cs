@@ -46,5 +46,22 @@ public partial class EnemyAILogic
         /// The node process order is top to bottom, so likely the player position has not been updated this frame.
         /// </summary>
         public bool PlayerDetectedThisFrame { get; set; }
+        
+        /// <summary>
+        /// How many times has the enemy drone performed the scanning feature.
+        /// </summary>
+        public int CurrentScanCount { get; set; }
+        
+        /// <summary>
+        /// Time elapsed since the start of this instance of scan.
+        /// </summary>
+        public float CurrentScanTime { get; set; }
+        
+        /// <summary>
+        /// The direction for the enemy drone to look at when scanning for the player drone.
+        /// </summary>
+        public Vector3 ScanDirection { get; set; }
+        
+        public bool IsScanning { get; set; }
     }
 }

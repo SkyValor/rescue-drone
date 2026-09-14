@@ -11,7 +11,7 @@ public partial class EnemyAILogic
         /// It sends input to this state machine according to the result of said distance. Child nodes will
         /// react to the distance changing.
         ///
-        /// When the player drone is not detected, the state is changed to <see cref="State.Search"/>. 
+        /// When the player drone is not detected, the state is changed to <see cref="State.Fetch"/>. 
         /// </summary>
         [Meta]
         public partial record Chase : Enabled, IGet<Input.PlayerLost>
@@ -44,7 +44,7 @@ public partial class EnemyAILogic
                     Input(new Input.PlayerDroneCloseEnough());
             }
             
-            public Transition On(in Input.PlayerLost input) => To<Search>();
+            public Transition On(in Input.PlayerLost input) => To<Fetch>();
             
         }
     }

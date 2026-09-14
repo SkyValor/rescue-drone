@@ -28,7 +28,7 @@ public partial class EnemyAILogic
                 // If we are waiting for longer than IdleWaitTime and no sight of player,
                 // change to Patrol state.
                 var idleTime = Get<EnemyDroneSettings>().IdleWaitTime;
-                return timeElapsed >= idleTime ? To<Patrol>() : ToSelf();
+                return timeElapsed >= idleTime ? To<MovingToCircuit>() : ToSelf();
             }
 
             public Transition On(in Input.PlayerDetected input) => To<Chase>();
