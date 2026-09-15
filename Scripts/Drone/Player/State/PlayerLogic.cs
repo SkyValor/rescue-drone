@@ -1,0 +1,45 @@
+﻿namespace RescueDrone;
+
+using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
+using Godot;
+
+public interface IPlayerLogic : ILogicBlock<PlayerLogic.State>;
+
+[Meta, LogicBlock(typeof(State), Diagram = true)]
+public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
+{
+    public override Transition GetInitialState() => To<State.Disabled>();
+
+    [Meta]
+    public partial record State : StateLogic<State>;
+    
+    public static class Input
+    {
+        public readonly record struct Enable;
+        public readonly record struct OnInputEvent(InputEvent Event);
+        public readonly record struct OnPhysicsTick(double Delta);
+        public readonly record struct AfterMove;
+
+        public readonly record struct StartedMoving;
+        public readonly record struct StoppedMoving;
+    }
+
+    public static class Output
+    {
+        public readonly record struct VelocityComputed(Vector3 Velocity);
+        public readonly record struct RotationComputed(Vector3 GlobalRotation);
+        public readonly record struct ToggleMouseCapture;
+
+        public readonly record struct ToggleBobEffect(bool IsBobbing);
+    }
+
+    public class Data
+    {
+        public Vector3 LastVelocity;
+
+        public bool WasMoving(float stoppingSpeed) => LastVelocity.Length() < stoppingSpeed;
+        public bool WasNotMoving(float stoppingSpeed) => !WasMoving(stoppingSpeed);
+    }
+    
+}

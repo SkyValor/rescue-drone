@@ -1,11 +1,8 @@
 [gd_scene format=3 uid="uid://c0vdhqd0tqsrv"]
 
-[ext_resource type="Script" uid="uid://dt770q1kpfpdw" path="res://Scripts/Drone/Enemy/EnemyDrone.cs" id="1_lutf3"]
 [ext_resource type="PackedScene" uid="uid://dvic66dcoda8y" path="res://Assets/drone_yellow/scene.gltf" id="2_47bv1"]
-[ext_resource type="Script" uid="uid://dfw7wsppby1v7" path="res://Scripts/Drone/DroneMovementByPosition.cs" id="3_47bv1"]
 [ext_resource type="Script" uid="uid://btdyx2u40xg3l" path="res://Scripts/Drone/Enemy/EnemyWeapon.cs" id="4_ofc5j"]
 [ext_resource type="PackedScene" uid="uid://bxituc32a3gm4" path="res://Scenes/Enemy NPC/enemy_bullet.tscn" id="5_khmxc"]
-[ext_resource type="Script" uid="uid://8fgb03s08nh0" path="res://Scripts/Drone/SphereCastingObstacleAvoidance.cs" id="6_d03pp"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lutf3"]
 size = Vector3(0.94506836, 0.7248535, 0.74121094)
@@ -23,16 +20,12 @@ data = PackedVector3Array(0, 6.75, 0, 0, 6.75, 0, 0, 4.0499997, 2.3, 0, 6.75, 0,
 [sub_resource type="SphereShape3D" id="SphereShape3D_khmxc"]
 radius = 0.85
 
-[node name="EnemyDroneYellow" type="CharacterBody3D" unique_id=1302784249 node_paths=PackedStringArray("Waypoints")]
+[node name="EnemyDroneYellow" type="CharacterBody3D" unique_id=1302784249]
 collision_layer = 2
 collision_mask = 11
 motion_mode = 1
 platform_floor_layers = 4278190088
 platform_wall_layers = 8
-script = ExtResource("1_lutf3")
-Waypoints = []
-VisionRange = 20.0
-VisionAngle = 90.0
 
 [node name="DroneModel" parent="." unique_id=283621651 instance=ExtResource("2_47bv1")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
@@ -42,10 +35,6 @@ shape = SubResource("BoxShape3D_lutf3")
 
 [node name="DroneMovement" type="Node3D" parent="." unique_id=1240950875]
 unique_name_in_owner = true
-script = ExtResource("3_47bv1")
-SpringStrength = 10.0
-Damping = 6.0
-MaxSpeed = 8.0
 
 [node name="WeaponComponent" type="Node3D" parent="." unique_id=1160291008]
 unique_name_in_owner = true
@@ -140,7 +129,6 @@ debug_shape_custom_color = Color(0, 0.75686276, 0, 1)
 
 [node name="ObstacleAvoidance" type="Node3D" parent="." unique_id=1995013106]
 unique_name_in_owner = true
-script = ExtResource("6_d03pp")
 
 [node name="SphereCast" type="ShapeCast3D" parent="ObstacleAvoidance" unique_id=693230431]
 unique_name_in_owner = true

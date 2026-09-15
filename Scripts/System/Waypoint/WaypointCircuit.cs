@@ -11,7 +11,7 @@ public interface IWaypointCircuit : INode
     Waypoint[] Waypoints { get; }
     
     bool IsFreeToPatrol();
-    void SetPatrolling(Mover drone);
+    void SetPatrolling(EnemyAIDrone drone);
     void RemovePatrolling();
     Waypoint GetClosestWaypoint(Vector3 toPosition);
     Waypoint NextWaypoint();
@@ -24,7 +24,7 @@ public partial class WaypointCircuit : Node, IWaypointCircuit
 
     public Waypoint[] Waypoints { get; private set; }
     private Waypoint cachedWaypoint;
-    private Mover droneInCircuit;
+    private EnemyAIDrone droneInCircuit;
 
     public void OnReady()
     {
@@ -40,7 +40,7 @@ public partial class WaypointCircuit : Node, IWaypointCircuit
 
     public bool IsFreeToPatrol() => droneInCircuit is null;
 
-    public void SetPatrolling(Mover drone)
+    public void SetPatrolling(EnemyAIDrone drone)
     {
         if (droneInCircuit is not null && droneInCircuit != drone)
         {

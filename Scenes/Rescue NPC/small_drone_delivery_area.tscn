@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dyvuo8kmnm5x6"]
 
-[ext_resource type="Script" uid="uid://c0vkaj3bap284" path="res://Scripts/Drone/SmallDroneDeliveryArea.cs" id="1_sdd0h"]
+[ext_resource type="Script" uid="uid://c0vkaj3bap284" path="res://Scripts/Drone/Npc/SmallDroneDeliveryArea.cs" id="1_sdd0h"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_3tl1i"]
 radius = 2.75

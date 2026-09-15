@@ -1,96 +1,92 @@
-﻿namespace RescueDrone;
+namespace RescueDrone;
 
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Chickensoft.Sync.Primitives;
 using Godot;
 
-public interface IEnemyAIDrone : IFlyingDrone;
-
 [Meta(typeof(IAutoNode))]
-public partial class EnemyAIDrone : FlyingDrone
+public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 {
-    public override void _Notification(int what) => this.Notify(what);
-    
-    #region Exports
-    [ExportGroup("Speed Settings")]
-    [Export] public float MaxSpeed { get; private set; } = 15f;
-    [Export] public float Acceleration { get; private set; } = 5f;
-    [Export] public float Deceleration { get; private set; } = 8f;
-    [Export] public float TurnSpeed { get; private set; } = 5f;
-    
-    [ExportGroup("Momentum Settings")]
-    [Export] public float BreakingDistance { get; private set; } = 6f;
-    [Export] public float MinTurnSpeedPercentage { get; private set; } = 0.25f;
-    
-    [ExportGroup("Player Seeking Settings")]
-    [Export] public float MinDistance { get; private set; } = 4f;
-    [Export] public float MaxDistance { get; private set; } = 7f;
-    [Export] public float RepathThreshold { get; private set; } = 2f; // Only recalculate SVO path if player moves this much
-    
-    [ExportGroup("SVO Calculations")]
-    [Export] public float DroneRadius { get; private set; } = 1f;
-    [Export] public float PointTargetRadius { get; private set; } = 2f;
-    
-    [ExportGroup("Patrol")]
-    [Export] public Node3D[] PatrolWaypoints { get; private set; }
-    [Export] public int NumberOfScans { get; private set; } = 5;
-    [Export] public float ScanWaitTime { get; private set; } = 3f;
-    #endregion
-    
-    #region Dependecies
-    [Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>();
-    [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
-    #endregion
+	public override void _Notification(int what) => this.Notify(what);
+	
+	[Export] public bool StartInPatrol { get; set; }
+	[Export] public bool StayInPatrol { get; set; }
+	
+	[Export(PropertyHint.ResourceType, "EnemyDroneSettings")]
+	public EnemyDroneSettings Settings { get; private set; } = new();
 
-    #region Nodes
-    [Node] private SightSensor Sight { get; set; }
-    #endregion
-    
-    #region AI State Machine
-    public EnemyAILogic AIStateMachine { get; private set; }
-    public EnemyAILogic.Settings Settings { get; private set; }
-    private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
-    #endregion
+	[Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>(() => null); // TODO: Temporary solution; remove later
+	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 
-    private IDronePathfindingSVO dronePathfinder;
+	[Node] private CollisionShape3D Collider { get; set; }
+	[Node] private SightSensor Sight { get; set; }
+	
+	#region AI State Machine
+	public EnemyAILogic AIStateMachine { get; private set; }
+	private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
+	#endregion
 
-    public void OnReady()
-    {
-        
-    }
+	private AutoValue<SparseVoxelOctree>.Binding octreeBind;
+	// private IPathfindSVO pathfinder;
+	
+	public float DroneRadius => Collider.Shape is not SphereShape3D sphereShape ? 0f : sphereShape.Radius;
 
-    public void OnResolved()
-    {
-        dronePathfinder = new DronePathfindingSVO(GameRepo.SVOctree.Value, DroneRadius, GetWorld3D());
-        
-        Settings = new EnemyAILogic.Settings(
-            DroneRadius,
-            MaxSpeed, Acceleration, Deceleration, TurnSpeed, 
-            BreakingDistance, MinTurnSpeedPercentage,
-            NumberOfScans, ScanWaitTime,
-            MinDistance, MaxDistance, RepathThreshold);
-        
-        AIStateMachine = new EnemyAILogic();
-        AIStateMachine.Set(this);
-        AIStateMachine.Set(GetWorld3D());
-        AIStateMachine.Set(dronePathfinder);
-        AIStateMachine.Set(Settings);
-        AIStateMachine.Set(Sight);
-        
-        AIStateBinding
-            .Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
-            .Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
+	public void OnReady()
+	{
+		SetPhysicsProcess(false);
+	}
 
-        AIStateBinding = AIStateMachine.Bind();
-    }
+	public void OnResolved()
+	{
+		var octree = GameRepo.SVO.Value;
+		if (octree is null)
+		{
+			octreeBind = GameRepo.SVO.Bind();
+			octreeBind.OnValue(StartAIStateMachine);
+		}
+		else
+		{
+			StartAIStateMachine(octree);
+		}
+	}
 
-    public void OnPhysicsProcess(double delta)
-    {
-        AIStateMachine.Input(new EnemyAILogic.Input.PhysicsTick(delta));
+	public void OnExitTree()
+	{
+		AIStateBinding.Dispose();
+	}
 
-        MoveAndSlide();
-        AIStateMachine.Input(new EnemyAILogic.Input.Moved());
-    }
-    
+	public void OnPhysicsProcess(double delta)
+	{
+		AIStateMachine.Input(new EnemyAILogic.Input.PhysicsTick(delta));
+
+		MoveAndSlide();
+		AIStateMachine.Input(new EnemyAILogic.Input.Moved());
+	}
+
+	private void StartAIStateMachine(SparseVoxelOctree octree)
+	{
+		if (octree is null) return;
+
+		octreeBind?.Dispose();
+
+		IPathfindSVO pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
+
+		AIStateMachine = new EnemyAILogic();
+		AIStateMachine.Set(new EnemyAILogic.Data());
+		AIStateMachine.Set(GetWorld3D());
+		AIStateMachine.Set(pathfinder);
+		AIStateMachine.Set(Settings);
+		AIStateMachine.Set(Sight);
+		AIStateMachine.Set(this);
+		
+		AIStateBinding = AIStateMachine.Bind();
+		AIStateBinding
+			.Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
+			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
+		
+		AIStateMachine.Start();
+	}
+	
 }

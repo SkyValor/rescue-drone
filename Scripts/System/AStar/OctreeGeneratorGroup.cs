@@ -1,14 +1,8 @@
 ﻿namespace RescueDrone;
 
-using Chickensoft.GodotNodeInterfaces;
 using Godot;
 
-public interface IOctreeGenerator : INode3D
-{
-    
-}
-
-public partial class OctreeGeneratorGroup : Node3D, IOctreeGenerator
+public partial class OctreeGeneratorGroup : Node3D
 {
     [Export] public Node3D GroupObjects { get; private set; }
     [Export] public float MinNodeSize { get; private set; }
@@ -16,7 +10,7 @@ public partial class OctreeGeneratorGroup : Node3D, IOctreeGenerator
     
     public SparseVoxelOctreeShape Tree { get; private set; }
 
-    public override void _Ready()
+    public void CreateSVOTree()
     {
         Tree = new SparseVoxelOctreeShape(GlobalPosition, Scale, MinNodeSize, GetWorld3D(), SubdivideMax);
     }

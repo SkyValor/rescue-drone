@@ -12,7 +12,7 @@ public partial class AppLogic
         {
             public LeavingMainMenu()
             {
-                this.OnEnter(() => Output(new Output.FadeToBlack()));
+                this.OnEnter(() => Output(new Output.TransitionToBlack()));
             }
 
             public Transition On(in Input.FadeOutFinished input) => To<InGame>();

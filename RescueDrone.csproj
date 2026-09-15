@@ -3,8 +3,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
+    <!-- Catch compiler-mismatch issues with the Introspection generator -->
+    <WarningsAsErrors>CS9057</WarningsAsErrors>
   </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="GodotSharp.SourceGenerators" Version="2.7.0" />
         <PackageReference Include="Chickensoft.Sync" Version="3.0.0" />
         <PackageReference Include="Chickensoft.Collections" Version="3.1.4" />
         <PackageReference Include="Chickensoft.Introspection" Version="3.0.2" />
@@ -16,6 +19,6 @@
         <PackageReference Include="Chickensoft.GodotNodeInterfaces" Version="3.0.3" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Scripts\Drone\Enemy\State\States\" />
+      <Folder Include="Scripts\Drone\Npc\" />
     </ItemGroup>
 </Project>
