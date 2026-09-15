@@ -1,10 +1,19 @@
 [gd_scene format=3 uid="uid://b2i80m12vv71l"]
 
 [ext_resource type="PackedScene" uid="uid://cvt3sk2nb8pdp" path="res://Assets/[TRON-ish] Low-Poly Drone/scene.gltf" id="1_l4njd"]
-[ext_resource type="Script" path="res://Scripts/Drone/Player/PlayerDrone.cs" id="1_muiep"]
+[ext_resource type="Script" uid="uid://mm3q61myuxq8" path="res://Scripts/Drone/Player/PlayerDrone.cs" id="1_muiep"]
+[ext_resource type="Script" uid="uid://dgf4yl411cog0" path="res://Scripts/Drone/Player/PlayerSettings.cs" id="2_7cjgh"]
 [ext_resource type="Script" uid="uid://dr6vihyvghfx2" path="res://Scripts/Drone/PlayerCamera/PlayerCamera.cs" id="3_pkpl1"]
 [ext_resource type="Script" uid="uid://4t2dyl3int3t" path="res://Scripts/Drone/PlayerCamera/PlayerCameraSettings.cs" id="4_ggvqp"]
 [ext_resource type="Script" uid="uid://dswfxj6pu71fe" path="res://Scripts/Drone/DroneFormation.cs" id="6_7cjgh"]
+
+[sub_resource type="Resource" id="Resource_omdfs"]
+script = ExtResource("2_7cjgh")
+MaxSpeed = 15.0
+MaxVerticalSpeed = 7.25
+Acceleration = 12.75
+VerticalAcceleration = 7.25
+metadata/_custom_type_script = "uid://dgf4yl411cog0"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_623wg"]
 radius = 0.8806135
@@ -21,9 +30,12 @@ MinZoom = 5.0
 MaxZoom = 10.0
 metadata/_custom_type_script = "uid://4t2dyl3int3t"
 
-[node name="PlayerTest" type="CharacterBody3D" unique_id=29709242]
+[node name="PlayerTest" type="CharacterBody3D" unique_id=29709242 node_paths=PackedStringArray("DroneModel", "Formation")]
 collision_mask = 24
 script = ExtResource("1_muiep")
+Settings = SubResource("Resource_omdfs")
+DroneModel = NodePath("DroneModel")
+Formation = NodePath("DroneFormation")
 
 [node name="DroneModel" parent="." unique_id=401999617 instance=ExtResource("1_l4njd")]
 unique_name_in_owner = true
