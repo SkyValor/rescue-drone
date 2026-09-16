@@ -13,6 +13,7 @@ MaxSpeed = 15.0
 MaxVerticalSpeed = 7.25
 Acceleration = 12.75
 VerticalAcceleration = 7.25
+TiltLerpSpeed = 1.75
 metadata/_custom_type_script = "uid://dgf4yl411cog0"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_623wg"]
@@ -37,8 +38,11 @@ Settings = SubResource("Resource_omdfs")
 DroneModel = NodePath("DroneModel")
 Formation = NodePath("DroneFormation")
 
-[node name="DroneModel" parent="." unique_id=401999617 instance=ExtResource("1_l4njd")]
+[node name="DroneModel" type="Node3D" parent="." unique_id=485843305]
 unique_name_in_owner = true
+
+[node name="Body" parent="DroneModel" unique_id=401999617 instance=ExtResource("1_l4njd")]
+transform = Transform3D(1, 0, 0, 0, 0.9402525, -0.340478, 0, 0.340478, 0.9402525, 0, 0, -0.07780817)
 
 [node name="DroneFormation" type="Node3D" parent="." unique_id=2006507683]
 unique_name_in_owner = true

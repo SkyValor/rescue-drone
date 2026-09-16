@@ -20,7 +20,6 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 	
 	private bool isBobbing;
 	private float bobbingTime;
-	private bool isTilting;
 
 	public void OnResolved()
 	{
@@ -33,7 +32,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
-		Binding.Handle((in PlayerLogic.Output.ToggleTiltEffect output) => ToggleTiltEffect(output.IsTilting));
+		Binding.Handle((in PlayerLogic.Output.MoveDirectionTilt output) => OnMoveDirectionTilt(output.InputDirection, output.Delta));
 		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) => ToggleBobEffect(output.IsBobbing));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
 
@@ -57,7 +56,6 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 	{
 		var deltaTime = (float) delta;
 		ApplyBobEffect(deltaTime);
-		ApplyVisualTilt(deltaTime);
 		
 		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
@@ -69,6 +67,11 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 	public bool IsMoving() => Velocity.Length() >= Settings.StoppingSpeed;
 
+	public Vector2 GetInputDirection()
+	{
+		return Input.GetVector(GameInputs.MoveLeft, GameInputs.MoveRight, GameInputs.MoveForward, GameInputs.MoveBack);
+	}
+	
 	public Vector3 GetInputBasedOnCamera(Camera3D camera)
 	{
 		if (camera is null)
@@ -102,11 +105,6 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		: Input.MouseModeEnum.Captured);
 	
 	private static bool IsMouseCaptured() => Input.MouseMode == Input.MouseModeEnum.Captured;
-
-	private void ToggleTiltEffect(bool isTilting)
-	{
-		this.isTilting = isTilting;
-	}
 	
 	private void ToggleBobEffect(bool isBobbing)
 	{
@@ -115,28 +113,19 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 			bobbingTime = 0f;
 	}
 
-	private void ApplyVisualTilt(float deltaTime)
+	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
 	{
-		var currentHorizontalVelocity = Velocity with { Y = 0f };
-		if (isTilting)
+		if (inputDirection.IsEqualApprox(Vector2.Zero) && DroneModel.Rotation.IsEqualApprox(Vector3.Zero))
+			return;
+
+		var targetRotation = new Vector3
 		{
-			var localVelocity = Transform.Basis.Inverse() *  currentHorizontalVelocity;
-			var targetRotation = new Vector3
-			{
-				X = (localVelocity.Z / Settings.MaxSpeed) * Mathf.DegToRad(Settings.MaxTiltAngleDegrees),
-				Y = 0f,
-				Z = -(localVelocity.X / Settings.MaxSpeed) * Mathf.DegToRad(Settings.MaxTiltAngleDegrees)
-			};
-			
-			DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * deltaTime);
-		}
-		else
-		{
-			if (currentHorizontalVelocity.IsEqualApprox(Vector3.Zero) && DroneModel.Rotation.IsEqualApprox(Vector3.Zero))
-				return;
-			
-			DroneModel.Rotation = DroneModel.Rotation.MoveToward(Vector3.Zero, Settings.TiltLerpSpeed * deltaTime);
-		}
+			X = Mathf.DegToRad(inputDirection.Y * Settings.MaxTiltAngleDegrees),
+			Y = 0f,
+			Z = Mathf.DegToRad(-inputDirection.X * Settings.MaxTiltAngleDegrees)
+		};
+
+		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
 	}
 	
 	private void ApplyBobEffect(float deltaTime)
@@ -152,10 +141,10 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 			DroneModel.Position = meshPosition;
 			return;
 		}
-
-		// Return to local origin smoothly
-		if (meshPosition.IsEqualApprox(Vector3.Zero)) return;
 		
+		if (meshPosition.IsZeroApprox()) return;
+		
+		// Return to local origin smoothly
 		meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0.0f, 0.1f);
 		DroneModel.Position = meshPosition;
 	}

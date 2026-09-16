@@ -31,7 +31,7 @@ public partial class PlayerLogic : LogicBlock<PlayerLogic.State>, IPlayerLogic
         public readonly record struct RotationComputed(Vector3 GlobalRotation);
         public readonly record struct ToggleMouseCapture;
 
-        public readonly record struct ToggleTiltEffect(bool IsTilting);
+        public readonly record struct MoveDirectionTilt(Vector2 InputDirection, double Delta);
         public readonly record struct ToggleBobEffect(bool IsBobbing);
     }
 
