@@ -17,7 +17,7 @@ RescueDrone_PlayerLogic_State_Moving --> RescueDrone_PlayerLogic_State_Idle : St
 RescueDrone_PlayerLogic_State_Moving --> RescueDrone_PlayerLogic_State_Moving : AfterMove
 
 RescueDrone_PlayerLogic_State_Alive : OnOnInputEvent → ToggleMouseCapture
-RescueDrone_PlayerLogic_State_Alive : OnOnPhysicsTick → RotationComputed, VelocityComputed
+RescueDrone_PlayerLogic_State_Alive : OnOnPhysicsTick → MoveDirectionTilt, RotationComputed, VelocityComputed
 RescueDrone_PlayerLogic_State_Disabled : OnLevelStart() → ToggleMouseCapture
 RescueDrone_PlayerLogic_State_Idle : OnEnter → ToggleBobEffect
 RescueDrone_PlayerLogic_State_Idle : OnExit → ToggleBobEffect

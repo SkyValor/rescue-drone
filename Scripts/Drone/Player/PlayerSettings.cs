@@ -54,4 +54,10 @@ public partial class PlayerSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0.01, 1, 0.01")] 
     public float HoverBobAmplitude { get; private set; } = 0.05f;
+
+    [Export(PropertyHint.Range, "0.01, 90, 0.01")]
+    public float MaxTiltAngleDegrees { get; private set; } = 25f;
+    
+    [Export(PropertyHint.Range, "0.01, 20, 0.01")]
+    public float TiltLerpSpeed { get; private set; } = 6f;
 }

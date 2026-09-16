@@ -32,6 +32,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
+		Binding.Handle((in PlayerLogic.Output.MoveDirectionTilt output) => OnMoveDirectionTilt(output.InputDirection, output.Delta));
 		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) => ToggleBobEffect(output.IsBobbing));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
 
@@ -53,7 +54,8 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 	public override void _PhysicsProcess(double delta)
 	{
-		ApplyBobEffect(delta);
+		var deltaTime = (float) delta;
+		ApplyBobEffect(deltaTime);
 		
 		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
@@ -65,6 +67,11 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 	public bool IsMoving() => Velocity.Length() >= Settings.StoppingSpeed;
 
+	public Vector2 GetInputDirection()
+	{
+		return Input.GetVector(GameInputs.MoveLeft, GameInputs.MoveRight, GameInputs.MoveForward, GameInputs.MoveBack);
+	}
+	
 	public Vector3 GetInputBasedOnCamera(Camera3D camera)
 	{
 		if (camera is null)
@@ -98,20 +105,35 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		: Input.MouseModeEnum.Captured);
 	
 	private static bool IsMouseCaptured() => Input.MouseMode == Input.MouseModeEnum.Captured;
-
+	
 	private void ToggleBobEffect(bool isBobbing)
 	{
 		this.isBobbing = isBobbing;
 		if (isBobbing)
 			bobbingTime = 0f;
 	}
+
+	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
+	{
+		if (inputDirection.IsEqualApprox(Vector2.Zero) && DroneModel.Rotation.IsEqualApprox(Vector3.Zero))
+			return;
+
+		var targetRotation = new Vector3
+		{
+			X = Mathf.DegToRad(inputDirection.Y * Settings.MaxTiltAngleDegrees),
+			Y = 0f,
+			Z = Mathf.DegToRad(-inputDirection.X * Settings.MaxTiltAngleDegrees)
+		};
+
+		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
+	}
 	
-	private void ApplyBobEffect(double delta)
+	private void ApplyBobEffect(float deltaTime)
 	{
 		var meshPosition = DroneModel.Position;
 		if (isBobbing)
 		{
-			bobbingTime += (float) delta;
+			bobbingTime += deltaTime;
 			
 			// Apply a subtle idle bob up and down
 			var bobOffset = Mathf.Sin(bobbingTime * Settings.HoverBobFrequency) * Settings.HoverBobAmplitude;
@@ -119,10 +141,10 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 			DroneModel.Position = meshPosition;
 			return;
 		}
-
-		// Return to local origin smoothly
-		if (meshPosition.IsEqualApprox(Vector3.Zero)) return;
 		
+		if (meshPosition.IsZeroApprox()) return;
+		
+		// Return to local origin smoothly
 		meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0.0f, 0.1f);
 		DroneModel.Position = meshPosition;
 	}
