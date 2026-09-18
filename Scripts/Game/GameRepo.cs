@@ -17,6 +17,7 @@ public interface IGameRepo : IDisposable
     
     IAutoValue<PlayerDrone> PlayerDrone { get; }
     IAutoValue<PhantomCamera3D> PlayerPhantomCamera { get; }
+    IAutoValue<InputDeviceHandler> InputDeviceHandler { get; }
     IAutoValue<Camera3D> MainCamera { get; }
     IAutoValue<SparseVoxelOctree> SVO { get; }
     IAutoValue<WaypointCircuit[]> WaypointCircuits { get; }
@@ -36,6 +37,7 @@ public interface IGameRepo : IDisposable
     
     void SetPlayer(PlayerDrone player);
     void SetPlayerPhantomCamera(PhantomCamera3D camera);
+    void SetInputDeviceHandler(InputDeviceHandler handler);
     void SetMainCamera(Camera3D camera);
     void SetSVO(SparseVoxelOctree tree);
     void SetWaypointCircuits(WaypointCircuit[] circuits);
@@ -58,6 +60,9 @@ public class GameRepo : IGameRepo
 
     public IAutoValue<PhantomCamera3D> PlayerPhantomCamera => playerCamera;
     private readonly AutoValue<PhantomCamera3D> playerCamera = new(null);
+    
+    public IAutoValue<InputDeviceHandler> InputDeviceHandler => inputDeviceHandler;
+    private readonly AutoValue<InputDeviceHandler> inputDeviceHandler = new(null);
     
     public IAutoValue<Camera3D> MainCamera => mainCamera;
     private readonly AutoValue<Camera3D> mainCamera = new(null);
@@ -86,6 +91,7 @@ public class GameRepo : IGameRepo
 
     public void SetPlayer(PlayerDrone player) => playerDrone.Value = player;
     public void SetPlayerPhantomCamera(PhantomCamera3D camera) => playerCamera.Value = camera;
+    public void SetInputDeviceHandler(InputDeviceHandler handler) => inputDeviceHandler.Value = handler;
     public void SetMainCamera(Camera3D camera) => mainCamera.Value = camera;
     public void SetSVO(SparseVoxelOctree tree) => svOctree.Value = tree;
     public void SetWaypointCircuits(WaypointCircuit[] circuits) => waypointCircuits.Value = circuits;
@@ -102,6 +108,7 @@ public class GameRepo : IGameRepo
             // Dispose managed objects.
             playerDrone.Dispose();
             playerCamera.Dispose();
+            inputDeviceHandler.Dispose();
             mainCamera.Dispose();
             svOctree.Dispose();
             waypointCircuits.Dispose();

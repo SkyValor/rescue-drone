@@ -41,6 +41,9 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	[Node] private ProgressBar LoadingBar { get; set; }
 	[Node] private Label LoadingLabel { get; set; }
 	
+	[Node] private InputDeviceHandler DeviceHandler { get; set; }
+	[Node] private KeyboardMouseInputComponent KeyboardMouseInputComponent { get; set; }
+	
 	[Node] private SVOBuilder SVOBuilder { get; set; }
 	[Node] private Camera3D MainCamera { get; set; }
 	
@@ -60,6 +63,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		
 		GameRepo = new GameRepo();
 		GameRepo.SetPlayerPhantomCamera(playerCamera);
+		GameRepo.SetInputDeviceHandler(DeviceHandler);
 		GameRepo.SetMainCamera(MainCamera);
 		this.Provide();
 		

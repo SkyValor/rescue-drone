@@ -21,4 +21,7 @@ public partial class PlayerCameraSettings : Resource
     
     [Export(PropertyHint.Range, "1.0, 20.0, 0.1")]
     public float MaxZoom { get; private set; } = 12f;
+
+    [Export(PropertyHint.Range, "0.01, 20.0, 0.01")]
+    public float ZoomLerpPower { get; private set; } = 5f;
 }

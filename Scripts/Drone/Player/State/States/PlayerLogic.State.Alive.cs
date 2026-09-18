@@ -27,6 +27,12 @@ public partial class PlayerLogic
                 var settings = Get<PlayerSettings>();
                 var gameRepo = Get<IGameRepo>();
 
+                // var inputComponent = Get<InputComponent>();
+                // inputComponent.PhysicsUpdate();
+                //
+                // var moveDir = inputComponent.MoveDirectionInput;
+                // var camRot = inputComponent.CameraRotationInput;
+
                 // Get the user's horizontal movement input and output it
                 // to fuel the tilting feature.
                 var inputDirection = player.GetInputDirection();

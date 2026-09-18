@@ -29,17 +29,13 @@ public partial class PlayerCamera : Node3D
         CameraBinding.Handle((in PlayerCameraLogic.Output.ZoomComputed output) => OnZoomComputed(output.Length));
         
         CameraLogic.Start();
+        SetProcess(true);
     }
 
-    public override void _Process(double delta)
+    public void OnProcess(double delta)
     {
         CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
     }
-
-    // public void OnProcess(double delta)
-    // {
-    //     CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
-    // }
 
     public void OnExitTree()
     {
@@ -49,7 +45,7 @@ public partial class PlayerCamera : Node3D
 
     public override void _Input(InputEvent @event)
     {
-        CameraLogic.Input(new PlayerCameraLogic.Input.OnInputEvent(@event));
+        // CameraLogic.Input(new PlayerCameraLogic.Input.OnInputEvent(@event));
     }
 
     private void OnRotationComputed(Vector3 cameraRotation)

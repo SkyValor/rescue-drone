@@ -4,9 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://d0u2bhddxk4v3" path="res://Scenes/Enemy NPC/enemy_drone_ai.tscn" id="2_3ende"]
 [ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
 [ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/player_drone.tscn" id="2_xyv5c"]
+[ext_resource type="Script" uid="uid://bpswo35ium6ns" path="res://Scripts/Input/InputDeviceHandler.cs" id="4_m21gd"]
 [ext_resource type="PackedScene" uid="uid://b2i80m12vv71l" path="res://Scenes/Player/player_test.tscn" id="5_gpoiv"]
+[ext_resource type="Script" uid="uid://cixkagnkb76fs" path="res://Scripts/Input/KeyboardMouseInputComponent.cs" id="5_jaj5y"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_xyv5c"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
+[ext_resource type="Resource" uid="uid://dq0bsbwg0autx" path="res://Data/keyboard_mouse_control_scheme.tres" id="6_x8jfq"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_1gv2x"]
 [ext_resource type="PackedScene" uid="uid://3vnxw3jcn0h6" path="res://Scenes/Rescue NPC/small_drone.tscn" id="13_3ende"]
 [ext_resource type="PackedScene" uid="uid://cowohnbnirfej" path="res://Scenes/Rescue NPC/small_drone_rescue_area.tscn" id="14_2w0vd"]
@@ -159,6 +162,16 @@ libraries/ = SubResource("AnimationLibrary_1gv2x")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
+
+[node name="DeviceHandler" type="Node" parent="." unique_id=298400630 node_paths=PackedStringArray("CurrentInputComponent")]
+unique_name_in_owner = true
+script = ExtResource("4_m21gd")
+CurrentInputComponent = NodePath("../KeyboardMouseInputComponent")
+
+[node name="KeyboardMouseInputComponent" type="Node" parent="." unique_id=125450790]
+unique_name_in_owner = true
+script = ExtResource("5_jaj5y")
+ControlScheme = ExtResource("6_x8jfq")
 
 [node name="SVOBuilder" type="Node3D" parent="." unique_id=818987673]
 unique_name_in_owner = true
@@ -316,6 +329,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 
 [node name="LoadingScreen" type="ColorRect" parent="UI" unique_id=1557388143]
 unique_name_in_owner = true
@@ -326,6 +340,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 color = Color(0, 0, 0, 1)
 
 [node name="LoadingBar" type="ProgressBar" parent="UI" unique_id=1921408001]
@@ -342,6 +357,7 @@ offset_right = 567.0
 offset_bottom = -114.00049
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 1
 value = 15.17
 show_percentage = false
 
@@ -359,6 +375,7 @@ offset_right = 379.0
 offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 1
 text = "Testing 1 2 3"
 label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1

@@ -10,78 +10,92 @@ public partial class PlayerCameraLogic
     {
         [Meta]
         public partial record Enabled : State, 
-            IGet<Input.OnInputEvent>, 
-            // IGet<Input.OnProcessTick>, 
+            IGet<Input.OnCameraZoomInput>,
+            IGet<Input.OnCameraRotationInput>, 
+            IGet<Input.OnProcessTick>, 
             IGet<Input.Disable>
         {
-            private Vector3 cameraRotationTarget = Vector3.Zero;
-            
             public Enabled()
             {
                 OnAttach(() =>
                 {
-                    var playerCamera = Get<IGameRepo>().PlayerPhantomCamera.Value;
-                    cameraRotationTarget = playerCamera.GetThirdPersonRotation();
+                    var deviceHandler = Get<IGameRepo>().InputDeviceHandler.Value;
+                    if (deviceHandler is null) return;
+                    
+                    var inputComponent = deviceHandler.CurrentInputComponent;
+                    inputComponent.CameraZoomInput += OnCameraZoomInput;
+                    inputComponent.CameraRotationInput += OnCameraRotationInput;
+                });
+                
+                OnDetach(() =>
+                {
+                    var deviceHandler = Get<IGameRepo>().InputDeviceHandler.Value;
+                    if (deviceHandler is null) return;
+                    
+                    var inputComponent = deviceHandler.CurrentInputComponent;
+                    inputComponent.CameraZoomInput -= OnCameraZoomInput;
+                    inputComponent.CameraRotationInput -= OnCameraRotationInput;
                 });
             }
             
             public Transition On(in Input.Disable input) => To<Disabled>();
-            
-            // public Transition On(in Input.OnProcessTick input)
-            // {
-            //     var playerCamera = Get<IGameRepo>().PlayerPhantomCamera.Value;
-            //     var currentRotation = playerCamera.GetThirdPersonRotation();
-            //
-            //     if (currentRotation.IsEqualApprox(cameraRotationTarget)) return ToSelf();
-            //
-            //     var lerpPower = Get<PlayerCameraSettings>().LerpPower;
-            //     var smoothRotation = currentRotation.Lerp(cameraRotationTarget, (float) input.Delta * lerpPower);
-            //     
-            //     playerCamera.SetThirdPersonRotation(smoothRotation);
-            //     return ToSelf();
-            // }
 
-            public Transition On(in Input.OnInputEvent inputEvent)
+            public Transition On(in Input.OnProcessTick input)
+            {
+                var deviceHandler = Get<IGameRepo>().InputDeviceHandler.Value;
+                var inputComponent = deviceHandler.CurrentInputComponent;
+                inputComponent.PhysicsMovementUpdate();
+                
+                return ToSelf();
+            }
+
+            private void OnCameraZoomInput(InputComponent.CameraZoomType cameraZoom) => Input(new Input.OnCameraZoomInput(cameraZoom));
+
+            public Transition On(in Input.OnCameraZoomInput input)
             {
                 var settings = Get<PlayerCameraSettings>();
                 var playerCamera = Get<IGameRepo>().PlayerPhantomCamera.Value;
+
+                var zoomType = input.ZoomType;
+                if (zoomType is InputComponent.CameraZoomType.ZoomIn) 
+                    OnZoomIn(playerCamera, settings.MinZoom);
+                else 
+                    OnZoomOut(playerCamera, settings.MaxZoom);
                 
-                var @event = inputEvent.Event;
-
-                if (@event is InputEventKey { Pressed: true, Keycode: Key.K }) GD.Print(cameraRotationTarget);
-                
-                if (@event.IsActionPressed(GameInputs.WheelUp)) OnWheelUp(playerCamera, settings.MinZoom);
-                if (@event.IsActionPressed(GameInputs.WheelDown)) OnWheelDown(playerCamera, settings.MaxZoom);
-
-                if (@event is not InputEventMouseMotion mouseMotion || !IsMouseCaptured()) return ToSelf();
-
-                var cameraRotation = playerCamera.GetThirdPersonRotation();
-                cameraRotation.X -= mouseMotion.Relative.Y * settings.MouseSensitivity;
-                cameraRotation.X = Mathf.Clamp(cameraRotation.X, Mathf.DegToRad(settings.MinVerticalAngle), Mathf.DegToRad(settings.MaxVerticalAngle));
-                // cameraRotation.Y = Mathf.Clamp(cameraRotation.Y, 0f, Mathf.Tau);
-                cameraRotation.Y -= mouseMotion.Relative.X * settings.MouseSensitivity;
-                cameraRotation.Y = Mathf.Wrap(cameraRotation.Y, 0f, Mathf.Tau); // Between 0 and 360 degrees
-                playerCamera.SetThirdPersonRotation(cameraRotation);
-                // cameraRotationTarget = cameraRotation;
                 return ToSelf();
-
-                // Output(new Output.RotationComputed(cameraRotation));
-                // return ToSelf();
             }
-
-            private void OnWheelUp(PhantomCamera3D playerCamera, float minZoom)
+            
+            private void OnZoomIn(PhantomCamera3D playerCamera, float minZoom)
             {
                 var length = Mathf.Max(playerCamera.SpringLength - 1, minZoom);
                 Output(new Output.ZoomComputed(length));
             }
 
-            private void OnWheelDown(PhantomCamera3D playerCamera, float maxZoom)
+            private void OnZoomOut(PhantomCamera3D playerCamera, float maxZoom)
             {
                 var length = Mathf.Min(playerCamera.SpringLength + 1, maxZoom);
                 Output(new Output.ZoomComputed(length));
             }
-    
-            private static bool IsMouseCaptured() => Godot.Input.MouseMode == Godot.Input.MouseModeEnum.Captured;
+
+            private void OnCameraRotationInput(Vector2 cameraRelative) => Input(new Input.OnCameraRotationInput(cameraRelative));
+
+            public Transition On(in Input.OnCameraRotationInput input)
+            {
+                var settings = Get<PlayerCameraSettings>();
+                var playerCamera = Get<IGameRepo>().PlayerPhantomCamera.Value;
+                var motionRelative = input.CameraRelative;
+
+                var minAngle = settings.MinVerticalAngle;
+                var maxAngle = settings.MaxVerticalAngle;
+                
+                var cameraRotation = playerCamera.GetThirdPersonRotation();
+                cameraRotation.X -= motionRelative.X;
+                cameraRotation.X = Mathf.Clamp(cameraRotation.X, Mathf.DegToRad(minAngle), Mathf.DegToRad(maxAngle));
+                cameraRotation.Y -= motionRelative.Y;
+                cameraRotation.Y = Mathf.Wrap(cameraRotation.Y, 0f, Mathf.Tau);
+                playerCamera.SetThirdPersonRotation(cameraRotation);
+                return ToSelf();
+            }
             
         }
     }
