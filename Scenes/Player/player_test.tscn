@@ -12,7 +12,9 @@ script = ExtResource("2_7cjgh")
 MaxSpeed = 15.0
 MaxVerticalSpeed = 7.25
 Acceleration = 12.75
+Deceleration = 8.25
 VerticalAcceleration = 7.25
+VerticalDeceleration = 5.55
 TiltLerpSpeed = 1.75
 metadata/_custom_type_script = "uid://dgf4yl411cog0"
 

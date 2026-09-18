@@ -22,36 +22,54 @@ public partial class PlayerLogic
 
             public Transition On(in Input.OnPhysicsTick input)
             {
-                var deltaTime = (float) input.Delta;
-                var player = Get<PlayerDrone>();
                 var settings = Get<PlayerSettings>();
                 var gameRepo = Get<IGameRepo>();
+                var player = Get<PlayerDrone>();
 
-                // var inputComponent = Get<InputComponent>();
-                // inputComponent.PhysicsUpdate();
-                //
-                // var moveDir = inputComponent.MoveDirectionInput;
-                // var camRot = inputComponent.CameraRotationInput;
-
-                // Get the user's horizontal movement input and output it
-                // to fuel the tilting feature.
-                var inputDirection = player.GetInputDirection();
-                Output(new Output.MoveDirectionTilt(inputDirection, input.Delta));
+                var deltaTime = (float) input.Delta;
+                var deviceHandler = gameRepo.InputDeviceHandler.Value;
+                if (deviceHandler is null) return ToSelf();
                 
+                var inputComponent = deviceHandler.CurrentInputComponent;
+                inputComponent.PhysicsMovementUpdate();
+                
+                // Get the user's horizontal movement input and output it to fuel the tilting feature
+                var horizontalInputDirection = inputComponent.HorizontalInput;
+                Output(new Output.MoveDirectionTilt(horizontalInputDirection, input.Delta));
+
+                // Get this input direction based on the player drone's nose
                 var playerCamera = gameRepo.MainCamera.Value;
-                var moveDirection = player.GetInputBasedOnCamera(playerCamera);
-                var verticalDirection = player.GetVerticalInput();
+                var moveDirection = GetInputBasedOnCamera(horizontalInputDirection, playerCamera);
+                var verticalInputDirection = inputComponent.VerticalInput;
 
-                // Set this property so that we have a comparison value when needed
+                // Cache this value for a later comparison
                 Get<Data>().LastVelocity = player.Velocity;
-
-                var velocity = ComputeVelocity(player.Velocity, moveDirection, verticalDirection, settings, deltaTime);
+                
+                var velocity = ComputeVelocity(player.Velocity, moveDirection, verticalInputDirection, settings, deltaTime);
                 Output(new Output.VelocityComputed(velocity));
-
+                
                 var rotation = AlignDroneNoseWithCamera(playerCamera, player.GlobalRotation, settings.RotationSpeed, deltaTime);
                 Output(new Output.RotationComputed(rotation));
                 
                 return ToSelf();
+            }
+
+            private static Vector3 GetInputBasedOnCamera(Vector2 inputDirection, Camera3D camera)
+            {
+                if (camera is null)
+                {
+                    GD.PrintErr("Parameter 'camera' is null. Player drone cannot get input based on camera.");
+                    return Vector3.Zero;
+                }
+
+                var cameraBasis = camera.Basis;
+                var input = new Vector3
+                {
+                    X = inputDirection.X,
+                    Z = inputDirection.Y,
+                };
+
+                return cameraBasis * input with { Y = 0f };
             }
 
             /// <summary>
@@ -76,14 +94,14 @@ public partial class PlayerLogic
                 else
                 {
                     // Decelerate the horizontal velocity until zero
-                    velocity.X = Mathf.MoveToward(velocity.X, 0f, settings.Acceleration * deltaTime);
-                    velocity.Z = Mathf.MoveToward(velocity.Z, 0f, settings.Acceleration * deltaTime);
+                    velocity.X = Mathf.MoveToward(velocity.X, 0f, settings.Deceleration * deltaTime);
+                    velocity.Z = Mathf.MoveToward(velocity.Z, 0f, settings.Deceleration * deltaTime);
                 }
 
                 if (Mathf.IsEqualApprox(verticalDirection, 0f))
                 {
                     // Decelerate the vertical velocity until zero
-                    velocity.Y = Mathf.MoveToward(velocity.Y, 0f, settings.VerticalAcceleration * deltaTime);
+                    velocity.Y = Mathf.MoveToward(velocity.Y, 0f, settings.VerticalDeceleration * deltaTime);
                 }
                 else
                 {

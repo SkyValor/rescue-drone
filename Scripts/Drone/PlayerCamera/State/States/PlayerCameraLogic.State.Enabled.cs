@@ -12,7 +12,6 @@ public partial class PlayerCameraLogic
         public partial record Enabled : State, 
             IGet<Input.OnCameraZoomInput>,
             IGet<Input.OnCameraRotationInput>, 
-            IGet<Input.OnProcessTick>, 
             IGet<Input.Disable>
         {
             public Enabled()
@@ -39,15 +38,6 @@ public partial class PlayerCameraLogic
             }
             
             public Transition On(in Input.Disable input) => To<Disabled>();
-
-            public Transition On(in Input.OnProcessTick input)
-            {
-                var deviceHandler = Get<IGameRepo>().InputDeviceHandler.Value;
-                var inputComponent = deviceHandler.CurrentInputComponent;
-                inputComponent.PhysicsMovementUpdate();
-                
-                return ToSelf();
-            }
 
             private void OnCameraZoomInput(InputComponent.CameraZoomType cameraZoom) => Input(new Input.OnCameraZoomInput(cameraZoom));
 
@@ -83,8 +73,8 @@ public partial class PlayerCameraLogic
             {
                 var settings = Get<PlayerCameraSettings>();
                 var playerCamera = Get<IGameRepo>().PlayerPhantomCamera.Value;
+                
                 var motionRelative = input.CameraRelative;
-
                 var minAngle = settings.MinVerticalAngle;
                 var maxAngle = settings.MaxVerticalAngle;
                 

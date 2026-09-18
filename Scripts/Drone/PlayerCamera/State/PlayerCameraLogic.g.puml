@@ -8,7 +8,6 @@ RescueDrone_PlayerCameraLogic_State_Disabled --> RescueDrone_PlayerCameraLogic_S
 RescueDrone_PlayerCameraLogic_State_Enabled --> RescueDrone_PlayerCameraLogic_State_Disabled : Disable
 RescueDrone_PlayerCameraLogic_State_Enabled --> RescueDrone_PlayerCameraLogic_State_Enabled : OnCameraRotationInput
 RescueDrone_PlayerCameraLogic_State_Enabled --> RescueDrone_PlayerCameraLogic_State_Enabled : OnCameraZoomInput
-RescueDrone_PlayerCameraLogic_State_Enabled --> RescueDrone_PlayerCameraLogic_State_Enabled : OnProcessTick
 
 RescueDrone_PlayerCameraLogic_State_Enabled : OnZoomIn() → ZoomComputed
 RescueDrone_PlayerCameraLogic_State_Enabled : OnZoomOut() → ZoomComputed

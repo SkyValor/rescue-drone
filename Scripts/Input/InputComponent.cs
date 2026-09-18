@@ -5,7 +5,7 @@ using Godot;
 
 public partial class InputComponent : Node
 {
-    public enum CameraZoomType { ZoomIn, ZoomOut}
+    public enum CameraZoomType { ZoomIn, ZoomOut }
     
     public event Action<Vector2> OnHorizontalInput;
     public event Action<Vector3> OnMoveInput;

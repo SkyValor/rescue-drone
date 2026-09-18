@@ -16,9 +16,7 @@ public partial class PlayerCameraLogic : LogicBlock<PlayerCameraLogic.State>
     {
         public readonly record struct Enable;
         public readonly record struct Disable;
-        public readonly record struct OnInputEvent(InputEvent Event);
         public readonly record struct OnProcessTick(double Delta);
-        
         public readonly record struct OnCameraZoomInput(InputComponent.CameraZoomType ZoomType);
         public readonly record struct OnCameraRotationInput(Vector2 CameraRelative);
     }
