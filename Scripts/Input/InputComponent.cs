@@ -1,15 +1,16 @@
 ﻿namespace RescueDrone;
 
 using System;
+using Chickensoft.AutoInject;
+using Chickensoft.Introspection;
 using Godot;
 
+[Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class InputComponent : Node
 {
-    public enum CameraZoomType { ZoomIn, ZoomOut }
+    public override void _Notification(int what) => this.Notify(what);
     
-    public event Action<Vector2> OnHorizontalInput;
-    public event Action<Vector3> OnMoveInput;
-    public event Action<Vector2> CameraRotationInputChanged;
+    public enum CameraZoomType { ZoomIn, ZoomOut }
     
     public event Action<CameraZoomType> CameraZoomInput;
     public event Action<Vector2> CameraRotationInput;
@@ -17,10 +18,18 @@ public partial class InputComponent : Node
     public Vector3 MoveDirectionInput => new(HorizontalInput.X, VerticalInput, HorizontalInput.Y);
     public Vector2 HorizontalInput { get; set; }
     public float VerticalInput { get; set; }
+    
+    [Dependency] private IGameRepo GameRepo { get; set; }
+
+    public void OnResolved()
+    {
+        
+    }
 
     public void ToggleComponent(bool enabled)
     {
         SetProcessInput(enabled);
+        SetProcessUnhandledInput(enabled);
     }
     
     public virtual void PhysicsMovementUpdate() { }

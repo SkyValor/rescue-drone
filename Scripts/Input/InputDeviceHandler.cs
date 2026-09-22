@@ -1,24 +1,35 @@
 ﻿namespace RescueDrone;
 
+using System;
+using Chickensoft.Sync.Primitives;
 using Godot;
 
-public partial class InputDeviceHandler : Node
+public partial class InputDeviceHandler : Node, IDisposable
 {
-    [Export] public InputComponent CurrentInputComponent { get; private set; }
+    public IAutoValue<InputDeviceType> CurrentDeviceType => deviceType;
+    private AutoValue<InputDeviceType> deviceType;
+
+    public IAutoValue<InputDeviceScheme> CurrentDeviceScheme => deviceScheme;
+    private AutoValue<InputDeviceScheme> deviceScheme;
     
+    [Export] public InputComponent CurrentInputComponent { get; private set; }
     [Export] public UserSettings UserSettings { get; private set; }
+    
+    public int LastDeviceID { get; protected set; }
+    public InputDeviceScheme LastDeviceScheme { get; protected set; }
+    public long LastTimePressedInput { get; protected set; }
 
     private int currentDeviceID;
     private string currentJoyName;
+    private bool disposingValue;
     
     public override void _Ready()
     {
         var joypads = Input.GetConnectedJoypads();
-
-        Input.JoyConnectionChanged += OnConnectionChanged;
-        
         foreach (var deviceID in joypads)
             PrintDeviceName(deviceID);
+
+        Input.JoyConnectionChanged += OnConnectionChanged;
     }
 
     public override void _ExitTree()
@@ -76,4 +87,36 @@ public partial class InputDeviceHandler : Node
             GD.Print("No external device detected. Defaulting to Keyboard and Mouse.");
         }
     }
+    
+    private static InputDeviceScheme DeviceSchemeFromName(string deviceName)
+    {
+        if (deviceName.Contains("steam")) return InputDeviceScheme.SteamController;
+        if (deviceName.Contains("nintendo switch 2")) return InputDeviceScheme.NintendoSwitch2;
+        if (deviceName.Contains("nintendo switch")) return  InputDeviceScheme.NintendoSwitch;
+        if (deviceName.Contains("xbox")) return InputDeviceScheme.Xbox;
+        if (deviceName.Contains("playstation") || deviceName.Contains("ps4") || deviceName.Contains("dualshock")) 
+            return InputDeviceScheme.Playstation;
+        
+        return  InputDeviceScheme.KeyboardAndMouse;
+    }
+
+    #region Internals
+    private void Dispose(bool disposing)
+    {
+        if (disposingValue) return;
+        if (disposing)
+        {
+            deviceType.Dispose();
+            deviceScheme.Dispose();
+        }
+        disposingValue = true;
+    }
+    
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+    #endregion
+    
 }

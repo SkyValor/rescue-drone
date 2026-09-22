@@ -15,8 +15,12 @@ public partial class KeyboardMouseInputComponent : InputComponent
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        var zoomIn = @event.IsActionPressed(GameInputs.CamZoomIn);
-        var zoomOut = @event.IsActionPressed(GameInputs.CamZoomOut);
+        // We are only listening for input from Keyboard and Mouse
+        if (@event is not InputEventKey && @event is not InputEventMouseButton && @event is not InputEventMouseMotion) 
+            return;
+        
+        var zoomIn = @event.IsActionPressed(GameInputs.KbCamZoomIn);
+        var zoomOut = @event.IsActionPressed(GameInputs.KbCamZoomOut);
 
         if (zoomIn && !zoomOut) InvokeCameraZoomInput(CameraZoomType.ZoomIn);
         if (zoomOut && !zoomIn) InvokeCameraZoomInput(CameraZoomType.ZoomOut);
@@ -31,8 +35,8 @@ public partial class KeyboardMouseInputComponent : InputComponent
     }
     
     private static Vector2 GetHorizontalMoveInput() => 
-        Input.GetVector(GameInputs.MoveLeft, GameInputs.MoveRight, GameInputs.MoveForward, GameInputs.MoveBack);
+        Input.GetVector(GameInputs.KbMoveLeft, GameInputs.KbMoveRight, GameInputs.KbMoveForward, GameInputs.KbMoveBack);
     
-    private static float GetVerticalInput() => Input.GetAxis(GameInputs.ThrottleDown, GameInputs.ThrottleUp);
+    private static float GetVerticalInput() => Input.GetAxis(GameInputs.KbDescend, GameInputs.KbAscend);
     
 }

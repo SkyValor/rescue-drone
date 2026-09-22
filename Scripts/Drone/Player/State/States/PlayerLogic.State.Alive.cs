@@ -14,7 +14,7 @@ public partial class PlayerLogic
             {
                 if (!Get<IGameRepo>().PlayerInControl.Value) return ToSelf();
                 
-                if (input.Event.IsActionPressed(GameInputs.ToggleMouseCapture))
+                if (input.Event.IsActionPressed(GameInputs.KbToggleMouseCapture))
                     Output(new Output.ToggleMouseCapture());
                         
                 return ToSelf();
