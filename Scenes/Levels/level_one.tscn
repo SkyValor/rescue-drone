@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bpswo35ium6ns" path="res://Scripts/Input/InputDeviceHandler.cs" id="4_m21gd"]
 [ext_resource type="PackedScene" uid="uid://b2i80m12vv71l" path="res://Scenes/Player/player_test.tscn" id="5_gpoiv"]
 [ext_resource type="Script" uid="uid://cixkagnkb76fs" path="res://Scripts/Input/KeyboardMouseInputComponent.cs" id="5_jaj5y"]
+[ext_resource type="Script" uid="uid://d2b0ewpfp3wo2" path="res://Scripts/Input/InputComponent.cs" id="5_mlx1v"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_xyv5c"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
 [ext_resource type="Resource" uid="uid://dq0bsbwg0autx" path="res://Data/keyboard_mouse_control_scheme.tres" id="6_x8jfq"]
@@ -167,6 +168,10 @@ environment = SubResource("Environment_1rm4e")
 unique_name_in_owner = true
 script = ExtResource("4_m21gd")
 CurrentInputComponent = NodePath("../KeyboardMouseInputComponent")
+
+[node name="InputComponent" type="Node" parent="." unique_id=1290527756]
+unique_name_in_owner = true
+script = ExtResource("5_mlx1v")
 
 [node name="KeyboardMouseInputComponent" type="Node" parent="." unique_id=125450790]
 unique_name_in_owner = true

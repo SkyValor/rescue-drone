@@ -37,6 +37,6 @@ public partial class KeyboardMouseInputComponent : InputComponent
     private static Vector2 GetHorizontalMoveInput() => 
         Input.GetVector(GameInputs.KbMoveLeft, GameInputs.KbMoveRight, GameInputs.KbMoveForward, GameInputs.KbMoveBack);
     
-    private static float GetVerticalInput() => Input.GetAxis(GameInputs.KbDescend, GameInputs.KbAscend);
+    private new static float GetVerticalInput() => Input.GetAxis(GameInputs.KbDescend, GameInputs.KbAscend);
     
 }

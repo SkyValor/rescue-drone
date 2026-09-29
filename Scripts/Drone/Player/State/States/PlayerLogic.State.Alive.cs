@@ -27,11 +27,7 @@ public partial class PlayerLogic
                 var player = Get<PlayerDrone>();
 
                 var deltaTime = (float) input.Delta;
-                var deviceHandler = gameRepo.InputDeviceHandler.Value;
-                if (deviceHandler is null) return ToSelf();
-                
-                var inputComponent = deviceHandler.CurrentInputComponent;
-                inputComponent.PhysicsMovementUpdate();
+                var inputComponent = gameRepo.InputComponent.Value;
                 
                 // Get the user's horizontal movement input and output it to fuel the tilting feature
                 var horizontalInputDirection = inputComponent.HorizontalInput;

@@ -112,6 +112,9 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		if (isBobbing)
 			bobbingTime = 0f;
 	}
+	
+	// TODO: Encapsulate the movement tilt effect in its own class TiltComponent.
+	// TODO: Create a data class TiltSettings to hold configurations used by this component.
 
 	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
 	{
@@ -127,6 +130,9 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
 	}
+	
+	// TODO: Encapsulate the hover bob effect in its own class HoverBobComponent.
+	// TODO: Create a data class HoverBobSettings to hold configurations used by this component.
 	
 	private void ApplyBobEffect(float deltaTime)
 	{

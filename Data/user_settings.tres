@@ -4,4 +4,5 @@
 
 [resource]
 script = ExtResource("1_cpg58")
+PreferredInputDevice = 1
 metadata/_custom_type_script = "uid://kmarmu66bdwo"
