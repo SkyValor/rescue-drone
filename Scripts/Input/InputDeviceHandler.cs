@@ -5,7 +5,6 @@ using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Chickensoft.Sync.Primitives;
 using Godot;
-using Godot.Collections;
 using NathanHoad;
 
 [Meta(typeof(IAutoOn), typeof(IDependent))]
@@ -13,9 +12,17 @@ public partial class InputDeviceHandler : Node, IDisposable
 {
     public override void _Notification(int what) => this.Notify(what);
     
-    public IAutoValue<InputDeviceType> CurrentDeviceType => deviceType;
-    private readonly AutoValue<InputDeviceType> deviceType = new(InputDeviceType.Computer);
+    /// <summary>
+    /// The currently being used input type. This represents the device(s) that the user will use
+    /// in order to interact with the game.
+    /// </summary>
+    public IAutoValue<InputType> CurrentInputType => inputType;
+    private readonly AutoValue<InputType> inputType = new(InputType.KeyboardAndMouse);
 
+    /// <summary>
+    /// The device scheme that represents the current input type. This is reactive and will update based on
+    /// user settings and what device most recently passed input.
+    /// </summary>
     public IAutoValue<InputDeviceScheme> CurrentDeviceScheme => deviceScheme;
     private readonly AutoValue<InputDeviceScheme> deviceScheme = new(InputDeviceScheme.KeyboardAndMouse);
 
@@ -40,75 +47,53 @@ public partial class InputDeviceHandler : Node, IDisposable
         GD.Print("InputDeviceHandler setting initial input device.");
         var userSettings = GameRepo.UserSettings.Value;
         var preferredDevice = userSettings.PreferredInputDevice;
-        if (preferredDevice is InputDeviceType.Computer)
-        {
-            SetCurrentDeviceAsKeyboard();
-            return;
-        }
-        
-        var connectedJoypads = Input.GetConnectedJoypads();
-        if (connectedJoypads.Count == 0)
-        {
-            SetCurrentDeviceAsKeyboard();
-            return;
-        }
-        
-        SetCurrentDeviceAsJoypad(userSettings, connectedJoypads);
-    }
 
-    private void SetCurrentDeviceAsKeyboard()
-    {
-        GD.Print("Setting current device to keyboard...");
-        var userSettings = GameRepo.UserSettings.Value;
-        
-        deviceType.Value = InputDeviceType.Computer;
-        deviceScheme.Value = userSettings.RotateCameraWithMouse
-            ? InputDeviceScheme.KeyboardAndMouse
-            : InputDeviceScheme.Keyboard;
-        
-        GD.Print("Device set to keyboard. Mouse included: " + userSettings.RotateCameraWithMouse);
-    }
-
-    private void SetCurrentDeviceAsJoypad(UserSettings userSettings, Array<int> connectedJoypads)
-    {
-        GD.Print("Setting current device to Joypad...");
-        deviceType.Value = InputDeviceType.Joypad;
-        var preferredScheme = userSettings.PreferredInputDeviceScheme;
-        foreach (var joypadID in connectedJoypads)
+        switch (preferredDevice)
         {
-            var joypadName = Input.GetJoyName(joypadID);
-            var deviceName = InputHelper.GetSimplifiedDeviceName(joypadName);
-            var scheme = DeviceSchemeFromName(deviceName);
-            
-            if (scheme != preferredScheme) continue;
-            
-            deviceScheme.Value = scheme;
-            break;
+            case InputType.KeyboardAndMouse:
+                GD.Print("=> Setting current device to keyboard and mouse...");
+                inputType.Value = InputType.KeyboardAndMouse;
+                deviceScheme.Value = InputDeviceScheme.KeyboardAndMouse;
+                break;
+            case InputType.KeyboardOnly:
+                GD.Print("=> Setting current device to keyboard only...");
+                inputType.Value = InputType.KeyboardOnly;
+                deviceScheme.Value = InputDeviceScheme.Keyboard;
+                break;
+            case InputType.Joypad:
+                var connectedJoypads = Input.GetConnectedJoypads();
+                if (connectedJoypads.Count == 0)
+                {
+                    GD.Print("=> No joypads connected. Setting current device to keyboard and mouse...");
+                    inputType.Value = InputType.KeyboardAndMouse;
+                    deviceScheme.Value =  InputDeviceScheme.KeyboardAndMouse;
+                }
+                else
+                {
+                    GD.Print("=> Setting current device to joypad...");
+                    inputType.Value = InputType.Joypad;
+                    deviceScheme.Value = userSettings.PreferredInputDeviceScheme;
+                }
+                break;
+            default:
+                throw new NotImplementedException($"Input type \"{preferredDevice}\" has no implementation.");
         }
-        
-        GD.Print("Joypad scheme set to: " + deviceScheme.Value);
     }
 
     private void OnDeviceChanged(string device, int deviceIndex)
     {
-        GD.Print("Device changed: " + device + ", of index: " + deviceIndex);
-
-        deviceType.Value = DeviceTypeFromName(device);
-        if (deviceType.Value is not InputDeviceType.Computer)
-            return;
-        
-        var userSettings = GameRepo.UserSettings.Value;
-        deviceScheme.Value = userSettings.RotateCameraWithMouse 
-            ? InputDeviceScheme.KeyboardAndMouse 
-            : InputDeviceScheme.Keyboard;
+        // When we are using joypad input type, an input from a different controller should change
+        // the current scheme.
+        if (CurrentInputType.Value.IsKeyboardInclusive()) return;
+        deviceScheme.Value = DeviceSchemeFromName(device);
     }
 
-    private static InputDeviceType DeviceTypeFromName(string deviceName)
+    private static InputType DeviceTypeFromName(string deviceName)
     {
         return deviceName switch
         {
-            InputHelper.DEVICE_KEYBOARD => InputDeviceType.Computer,
-            _                           => InputDeviceType.Joypad
+            InputHelper.DEVICE_KEYBOARD => InputType.KeyboardAndMouse,
+            _                           => InputType.Joypad
         };
     }
     
@@ -131,7 +116,7 @@ public partial class InputDeviceHandler : Node, IDisposable
         if (disposingValue) return;
         if (disposing)
         {
-            deviceType.Dispose();
+            inputType.Dispose();
             deviceScheme.Dispose();
         }
         disposingValue = true;

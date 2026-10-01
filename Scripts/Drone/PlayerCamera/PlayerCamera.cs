@@ -43,20 +43,15 @@ public partial class PlayerCamera : Node3D
         CameraBinding.Dispose();
     }
 
-    public override void _Input(InputEvent @event)
-    {
-        // CameraLogic.Input(new PlayerCameraLogic.Input.OnInputEvent(@event));
-    }
-
     private void OnRotationComputed(Vector3 cameraRotation)
     {
-        var playerCamera = GameRepo.PlayerPhantomCamera.Value;
+        var playerCamera = GameRepo?.PlayerPhantomCamera.Value;
         playerCamera?.SetThirdPersonRotation(cameraRotation);
     }
 
     private void OnZoomComputed(float zoom)
     {
-        var playerCamera = GameRepo.PlayerPhantomCamera.Value;
+        var playerCamera = GameRepo?.PlayerPhantomCamera.Value;
         if (playerCamera is null) return;
         
         playerCamera.SpringLength = zoom;

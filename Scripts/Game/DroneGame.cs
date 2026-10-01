@@ -45,7 +45,6 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	
 	[Node] private InputDeviceHandler DeviceHandler { get; set; }
 	[Node] private InputComponent InputComponent { get; set; }
-	[Node] private KeyboardMouseInputComponent KeyboardMouseInputComponent { get; set; }
 	
 	[Node] private SVOBuilder SVOBuilder { get; set; }
 	[Node] private Camera3D MainCamera { get; set; }

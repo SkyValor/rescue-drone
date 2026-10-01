@@ -8,7 +8,7 @@ RescueDrone_PlayerCameraLogic_State_Disabled --> RescueDrone_PlayerCameraLogic_S
 RescueDrone_PlayerCameraLogic_State_Enabled --> RescueDrone_PlayerCameraLogic_State_Disabled : Disable
 RescueDrone_PlayerCameraLogic_State_Enabled --> RescueDrone_PlayerCameraLogic_State_Enabled : OnPhysicsTick
 
-RescueDrone_PlayerCameraLogic_State_Enabled : OnOnPhysicsTick → ZoomComputed
+RescueDrone_PlayerCameraLogic_State_Enabled : HandleCameraZoomInput() → ZoomComputed
 
 [*] --> RescueDrone_PlayerCameraLogic_State_Disabled
 @enduml

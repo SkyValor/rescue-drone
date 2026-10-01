@@ -3,31 +3,18 @@
 using System;
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
+using Chickensoft.Sync.Primitives;
 using Godot;
 
 [Meta(typeof(IAutoOn), typeof(IDependent))]
-public partial class InputComponent : Node
+public partial class InputComponent : Node, IDisposable
 {
     public override void _Notification(int what) => this.Notify(what);
     
-    public enum CameraZoomType { ZoomIn, ZoomOut }
-    
-    public event Action<CameraZoomType> CameraZoomInput;
-    public event Action<Vector2> CameraRotationInput;
-    
     [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
     
-    public Vector3 MoveDirectionInput => new(HorizontalInput.X, VerticalInput, HorizontalInput.Y);
-    public Vector2 HorizontalInput { get; set; }
-    public float VerticalInput { get; set; }
-
+    private AutoValue<InputType>.Binding inputTypeBinding;
     private Vector2 lastMouseMotion = Vector2.Zero;
-
-    public void ToggleComponent(bool enabled)
-    {
-        SetProcessInput(enabled);
-        SetProcessUnhandledInput(enabled);
-    }
 
     public override void _Input(InputEvent @event)
     {
@@ -37,7 +24,23 @@ public partial class InputComponent : Node
 
     public void OnReady()
     {
-        SetPhysicsProcess(true);
+        SetProcessInput(false);
+        SetPhysicsProcess(false);
+    }
+
+    public void OnResolved()
+    {
+        var deviceHandler = GameRepo.DeviceHandler.Value;
+        inputTypeBinding = deviceHandler.CurrentInputType.Bind().OnValue(OnDeviceTypeChanged);
+        
+        OnDeviceTypeChanged(deviceHandler.CurrentInputType.Value);
+    }
+
+    public new void Dispose()
+    {
+        base.Dispose();
+        inputTypeBinding.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public void OnPhysicsProcess(double delta)
@@ -50,6 +53,17 @@ public partial class InputComponent : Node
     private void ResetLastMouseMotion()
     {
         lastMouseMotion = Vector2.Zero;
+    }
+
+    private void OnDeviceTypeChanged(InputType inputType)
+    {
+        // We enable _Input and OnPhysicsProcess when mouse is enabled
+        // so that we capture the mouse motion each frame
+        
+        var isMouseEnabled = inputType is InputType.KeyboardAndMouse;
+        
+        SetProcessInput(isMouseEnabled);
+        SetPhysicsProcess(isMouseEnabled);
     }
 
     /// <summary>
@@ -103,10 +117,13 @@ public partial class InputComponent : Node
     /// <returns></returns>
     public Vector2 GetCameraRotationInput()
     {
+        // The mouse motion is relative to its previous position on the screen. The origin is the top-left, therefore
+        // moving the cursor up will actually input a negative Y-axis value. To keep it consistent with other input types,
+        // we invert the Y-axis on lastMouseMotion.
         if (IsCurrentDeviceTypeKeyboard())
         {
             return DoesCurrentSchemeIncludeMouse()
-                ? lastMouseMotion
+                ? lastMouseMotion * new Vector2(1, -1)
                 : Input.GetVector(
                     GameInputs.KbCamRotateLeft, GameInputs.KbCamRotateRight, 
                     GameInputs.KbCamRotateDown, GameInputs.KbCamRotateUp);
@@ -117,17 +134,9 @@ public partial class InputComponent : Node
             GameInputs.JoyCamRotateDown, GameInputs.JoyCamRotateUp);
     }
 
-    public virtual void PhysicsMovementUpdate()
-    {
-        
-    }
-
     private bool IsCurrentDeviceTypeKeyboard() 
-        => GameRepo.DeviceHandler.Value.CurrentDeviceType.Value is InputDeviceType.Computer;
+        => GameRepo.DeviceHandler.Value.CurrentInputType.Value is InputType.KeyboardAndMouse;
     private bool DoesCurrentSchemeIncludeMouse() 
         => GameRepo.DeviceHandler.Value.CurrentDeviceScheme.Value is InputDeviceScheme.KeyboardAndMouse;
-
-    protected void InvokeCameraZoomInput(CameraZoomType cameraZoom) => CameraZoomInput?.Invoke(cameraZoom);
-    protected void InvokeCameraRotationInput(Vector2 cameraRelative) => CameraRotationInput?.Invoke(cameraRelative);
     
 }
