@@ -164,10 +164,9 @@ libraries/ = SubResource("AnimationLibrary_1gv2x")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
 
-[node name="DeviceHandler" type="Node" parent="." unique_id=298400630 node_paths=PackedStringArray("CurrentInputComponent")]
+[node name="DeviceHandler" type="Node" parent="." unique_id=298400630]
 unique_name_in_owner = true
 script = ExtResource("4_m21gd")
-CurrentInputComponent = NodePath("../KeyboardMouseInputComponent")
 
 [node name="InputComponent" type="Node" parent="." unique_id=1290527756]
 unique_name_in_owner = true
@@ -268,7 +267,7 @@ collision_mask = 3
 shape = SubResource("BoxShape3D_tswcn")
 
 [node name="Map" parent="." unique_id=2018743283 instance=ExtResource("14_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76, 0, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -75.99966, 0, 60.013252)
 
 [node name="WaypointCircuits" type="Node" parent="." unique_id=392925600]
 unique_name_in_owner = true

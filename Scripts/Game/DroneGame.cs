@@ -20,6 +20,8 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 {
 	public override void _Notification(int what) => this.Notify(what);
 
+	private static readonly string USER_SETTINGS_PATH = "res://Data/user_settings.tres";
+
 	#region Exports
 	[Export] private Vector3 WorldCenter { get; set; } = Vector3.Zero;
 	[Export] private float WorldSize { get; set; } = 50f;
@@ -61,8 +63,10 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	public void OnReady()
 	{
 		var playerCamera = GetNode<Node3D>("%PlayerCamera").AsPhantomCamera3D();
+		var userSettings = GD.Load<UserSettings>(USER_SETTINGS_PATH);
 		
 		GameRepo = new GameRepo();
+		GameRepo.SetUserSettings(userSettings);
 		GameRepo.SetPlayerPhantomCamera(playerCamera);
 		GameRepo.SetInputComponent(InputComponent);
 		GameRepo.SetDeviceHandler(DeviceHandler);

@@ -5,8 +5,6 @@ using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Godot;
 
-// TODO: Update the PlayerLogic and PlayerCameraLogic to use the new approach of reaching the InputComponent!!
-
 [Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class InputComponent : Node
 {

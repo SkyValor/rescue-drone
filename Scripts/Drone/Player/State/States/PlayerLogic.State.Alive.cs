@@ -30,13 +30,13 @@ public partial class PlayerLogic
                 var inputComponent = gameRepo.InputComponent.Value;
                 
                 // Get the user's horizontal movement input and output it to fuel the tilting feature
-                var horizontalInputDirection = inputComponent.HorizontalInput;
+                var horizontalInputDirection = inputComponent.GetDirectionalInput();
                 Output(new Output.MoveDirectionTilt(horizontalInputDirection, input.Delta));
 
                 // Get this input direction based on the player drone's nose
                 var playerCamera = gameRepo.MainCamera.Value;
                 var moveDirection = GetInputBasedOnCamera(horizontalInputDirection, playerCamera);
-                var verticalInputDirection = inputComponent.VerticalInput;
+                var verticalInputDirection = inputComponent.GetVerticalInput();
 
                 // Cache this value for a later comparison
                 Get<Data>().LastVelocity = player.Velocity;

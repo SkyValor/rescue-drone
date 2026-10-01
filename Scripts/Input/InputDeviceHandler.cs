@@ -5,6 +5,7 @@ using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Chickensoft.Sync.Primitives;
 using Godot;
+using Godot.Collections;
 using NathanHoad;
 
 [Meta(typeof(IAutoOn), typeof(IDependent))]
@@ -19,8 +20,6 @@ public partial class InputDeviceHandler : Node, IDisposable
     private readonly AutoValue<InputDeviceScheme> deviceScheme = new(InputDeviceScheme.KeyboardAndMouse);
 
     [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
-    
-    [Export] public InputComponent CurrentInputComponent { get; private set; }
     
     private bool disposingValue;
 
@@ -38,6 +37,7 @@ public partial class InputDeviceHandler : Node, IDisposable
     public void OnResolved()
     {
         // Get the user settings and check which can be the initial input device
+        GD.Print("InputDeviceHandler setting initial input device.");
         var userSettings = GameRepo.UserSettings.Value;
         var preferredDevice = userSettings.PreferredInputDevice;
         if (preferredDevice is InputDeviceType.Computer)
@@ -53,6 +53,26 @@ public partial class InputDeviceHandler : Node, IDisposable
             return;
         }
         
+        SetCurrentDeviceAsJoypad(userSettings, connectedJoypads);
+    }
+
+    private void SetCurrentDeviceAsKeyboard()
+    {
+        GD.Print("Setting current device to keyboard...");
+        var userSettings = GameRepo.UserSettings.Value;
+        
+        deviceType.Value = InputDeviceType.Computer;
+        deviceScheme.Value = userSettings.RotateCameraWithMouse
+            ? InputDeviceScheme.KeyboardAndMouse
+            : InputDeviceScheme.Keyboard;
+        
+        GD.Print("Device set to keyboard. Mouse included: " + userSettings.RotateCameraWithMouse);
+    }
+
+    private void SetCurrentDeviceAsJoypad(UserSettings userSettings, Array<int> connectedJoypads)
+    {
+        GD.Print("Setting current device to Joypad...");
+        deviceType.Value = InputDeviceType.Joypad;
         var preferredScheme = userSettings.PreferredInputDeviceScheme;
         foreach (var joypadID in connectedJoypads)
         {
@@ -65,16 +85,8 @@ public partial class InputDeviceHandler : Node, IDisposable
             deviceScheme.Value = scheme;
             break;
         }
-    }
-
-    private void SetCurrentDeviceAsKeyboard()
-    {
-        var userSettings = GameRepo.UserSettings.Value;
         
-        deviceType.Value = InputDeviceType.Computer;
-        deviceScheme.Value = userSettings.RotateCameraWithMouse
-            ? InputDeviceScheme.KeyboardAndMouse
-            : InputDeviceScheme.Keyboard;
+        GD.Print("Joypad scheme set to: " + deviceScheme.Value);
     }
 
     private void OnDeviceChanged(string device, int deviceIndex)

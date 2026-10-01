@@ -5,7 +5,7 @@ using Chickensoft.Introspection;
 using Godot;
 using PhantomCamera;
 
-[Meta(typeof(IAutoNode))]
+[Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class PlayerCamera : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
@@ -29,12 +29,12 @@ public partial class PlayerCamera : Node3D
         CameraBinding.Handle((in PlayerCameraLogic.Output.ZoomComputed output) => OnZoomComputed(output.Length));
         
         CameraLogic.Start();
-        SetProcess(true);
+        SetPhysicsProcess(true);
     }
 
-    public void OnProcess(double delta)
+    public void OnPhysicsProcess(double delta)
     {
-        CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
+        CameraLogic?.Input(new PlayerCameraLogic.Input.OnPhysicsTick());
     }
 
     public void OnExitTree()
