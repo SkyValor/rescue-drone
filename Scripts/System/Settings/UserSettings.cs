@@ -12,9 +12,9 @@ public partial class UserSettings : Resource
     [Export] public SensitivitySettings MouseSensitivity { get; private set; }
     [Export] public SensitivitySettings KeyboardSensitivity { get; private set; }
     [Export] public SensitivitySettings AnalogSensitivity { get; private set; }
-
-    [Export(PropertyHint.Range, "1, 10, 1")]
-    public int AnalogSensitivityIndex { get; set; }
+    
+    [Export] public bool InvertCameraXAxis { get; set; }
+    [Export] public bool InvertCameraYAxis { get; set; }
 
     public SensitivitySettings GetSensitivitySettings(InputType forType)
     {

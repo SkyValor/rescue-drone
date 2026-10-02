@@ -47,14 +47,23 @@ public partial class PlayerCameraLogic
                 
                 if (rotationInput.IsZeroApprox()) return;
 
+                var userSettings = gameRepo.UserSettings.Value;
+                HandleCameraInversion(ref rotationInput, userSettings);
+
                 var inputType = gameRepo.DeviceHandler.Value.CurrentInputType.Value;
-                var sensitivitySettings = gameRepo.UserSettings.Value.GetSensitivitySettings(inputType);
+                var sensitivitySettings = userSettings.GetSensitivitySettings(inputType);
                 var inputDelta = rotationInput * sensitivitySettings.GetSensitivityMultiplier();
                 
                 var playerCamera = gameRepo.PlayerPhantomCamera.Value;
                 var cameraRotation = playerCamera.GetThirdPersonRotation();
                 ComputeCameraRotation(ref cameraRotation, settings, inputDelta);
                 playerCamera.SetThirdPersonRotation(cameraRotation);
+            }
+
+            private static void HandleCameraInversion(ref Vector2 rotationInput, UserSettings settings)
+            {
+                if (settings.InvertCameraXAxis) rotationInput.X = -rotationInput.X;
+                if (settings.InvertCameraYAxis) rotationInput.Y = -rotationInput.Y;
             }
             
             private static void ComputeCameraRotation(ref Vector3 cameraRotation, PlayerCameraSettings settings, Vector2 inputDelta)

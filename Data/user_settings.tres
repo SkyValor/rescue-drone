@@ -29,9 +29,9 @@ metadata/_custom_type_script = "uid://bv4tw7ha82m1a"
 
 [resource]
 script = ExtResource("1_cpg58")
-PreferredInputDevice = 2
-PreferredInputDeviceScheme = 2
+PreferredInputDeviceScheme = 1
 MouseSensitivity = SubResource("Resource_n4sl3")
 KeyboardSensitivity = SubResource("Resource_8i3vh")
 AnalogSensitivity = SubResource("Resource_u76ut")
+InvertCameraYAxis = true
 metadata/_custom_type_script = "uid://kmarmu66bdwo"
