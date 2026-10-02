@@ -12,7 +12,7 @@ public partial class InputComponent : Node, IDisposable
     public override void _Notification(int what) => this.Notify(what);
     
     [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
-    
+
     private AutoValue<InputType>.Binding inputTypeBinding;
     private Vector2 lastMouseMotion = Vector2.Zero;
 
@@ -50,10 +50,7 @@ public partial class InputComponent : Node, IDisposable
         CallDeferred(MethodName.ResetLastMouseMotion);
     }
 
-    private void ResetLastMouseMotion()
-    {
-        lastMouseMotion = Vector2.Zero;
-    }
+    private void ResetLastMouseMotion() => lastMouseMotion = Vector2.Zero;
 
     private void OnDeviceTypeChanged(InputType inputType)
     {
@@ -73,13 +70,13 @@ public partial class InputComponent : Node, IDisposable
     /// <returns></returns>
     public Vector2 GetDirectionalInput()
     {
-        return IsCurrentDeviceTypeKeyboard()
+        return IsKeyboardInclusive()
             ? Input.GetVector(
-            GameInputs.KbMoveLeft, GameInputs.KbMoveRight, 
-            GameInputs.KbMoveForward, GameInputs.KbMoveBack)
+                GameInputs.KbMoveLeft, GameInputs.KbMoveRight,
+                GameInputs.KbMoveForward, GameInputs.KbMoveBack)
             : Input.GetVector(
-            GameInputs.JoyMoveLeft, GameInputs.JoyMoveRight, 
-            GameInputs.JoyMoveForward, GameInputs.JoyMoveBack);
+                GameInputs.JoyMoveLeft, GameInputs.JoyMoveRight,
+                GameInputs.JoyMoveForward, GameInputs.JoyMoveBack);
     }
 
     /// <summary>
@@ -89,7 +86,7 @@ public partial class InputComponent : Node, IDisposable
     /// <returns></returns>
     public float GetVerticalInput()
     {
-        return IsCurrentDeviceTypeKeyboard()
+        return IsKeyboardInclusive()
             ? Input.GetAxis(GameInputs.KbDescend, GameInputs.KbAscend) 
             : Input.GetAxis(GameInputs.JoyDescend, GameInputs.JoyAscend);
     }
@@ -100,14 +97,15 @@ public partial class InputComponent : Node, IDisposable
     /// <returns></returns>
     public float GetCameraZoomInput()
     {
-        if (IsCurrentDeviceTypeKeyboard())
+        var deviceHandler = GameRepo.DeviceHandler.Value;
+        var inputType = deviceHandler.CurrentInputType.Value;
+        return inputType switch
         {
-            return DoesCurrentSchemeIncludeMouse()
-                ? Input.GetAxis(GameInputs.MouseCamZoomOut, GameInputs.MouseCamZoomIn)
-                : Input.GetAxis(GameInputs.KbCamZoomOut, GameInputs.KbCamZoomIn);
-        }
-        
-        return Input.GetAxis(GameInputs.JoypadCamZoomOut, GameInputs.JoypadCamZoomIn);
+            InputType.KeyboardAndMouse => Input.GetAxis(GameInputs.MouseCamZoomOut, GameInputs.MouseCamZoomIn),
+            InputType.KeyboardOnly     => Input.GetAxis(GameInputs.KbCamZoomOut, GameInputs.KbCamZoomIn),
+            InputType.Joypad           => Input.GetAxis(GameInputs.JoypadCamZoomOut, GameInputs.JoypadCamZoomIn),
+            _                          => throw new ArgumentOutOfRangeException(nameof(inputType), inputType, null)
+        };
     }
 
     /// <summary>
@@ -117,26 +115,25 @@ public partial class InputComponent : Node, IDisposable
     /// <returns></returns>
     public Vector2 GetCameraRotationInput()
     {
-        // The mouse motion is relative to its previous position on the screen. The origin is the top-left, therefore
-        // moving the cursor up will actually input a negative Y-axis value. To keep it consistent with other input types,
-        // we invert the Y-axis on lastMouseMotion.
-        if (IsCurrentDeviceTypeKeyboard())
-        {
-            return DoesCurrentSchemeIncludeMouse()
-                ? lastMouseMotion * new Vector2(1, -1)
-                : Input.GetVector(
-                    GameInputs.KbCamRotateLeft, GameInputs.KbCamRotateRight, 
-                    GameInputs.KbCamRotateDown, GameInputs.KbCamRotateUp);
-        }
+        // Moving the cursor up returns a negative Y-axis value.
+        // To keep it consistent with the other input types, we invert the Y-axis on lastMouseMotion.
         
-        return Input.GetVector(
-            GameInputs.JoyCamRotateLeft, GameInputs.JoyCamRotateRight,
-            GameInputs.JoyCamRotateDown, GameInputs.JoyCamRotateUp);
+        var deviceHandler = GameRepo.DeviceHandler.Value;
+        var inputType = deviceHandler.CurrentInputType.Value;
+        return inputType switch
+        {
+            InputType.KeyboardAndMouse => lastMouseMotion with { Y = -lastMouseMotion.Y },
+            InputType.KeyboardOnly => Input.GetVector(
+                GameInputs.KbCamRotateLeft, GameInputs.KbCamRotateRight,
+                GameInputs.KbCamRotateDown, GameInputs.KbCamRotateUp),
+            InputType.Joypad => Input.GetVector(
+                GameInputs.JoyCamRotateLeft, GameInputs.JoyCamRotateRight,
+                GameInputs.JoyCamRotateDown, GameInputs.JoyCamRotateUp),
+            _ => throw new ArgumentOutOfRangeException(nameof(inputType), inputType, null)
+        };
     }
 
-    private bool IsCurrentDeviceTypeKeyboard() 
-        => GameRepo.DeviceHandler.Value.CurrentInputType.Value is InputType.KeyboardAndMouse;
-    private bool DoesCurrentSchemeIncludeMouse() 
-        => GameRepo.DeviceHandler.Value.CurrentDeviceScheme.Value is InputDeviceScheme.KeyboardAndMouse;
+    private bool IsKeyboardInclusive() =>
+        GameRepo.DeviceHandler.Value.CurrentInputType.Value.IsKeyboardInclusive();
     
 }
