@@ -8,7 +8,7 @@ public partial class SensitivitySettings : Resource
     private const float DIVISOR = 0.0001f;
 
     [Export(PropertyHint.Range, "1, 10, 1")] 
-    public int Index { get; set; }
+    public int Index { get; private set; }
     
     [Export] private int MinSensitivity { get; set; }
     [Export] private int MaxSensitivity { get; set; }

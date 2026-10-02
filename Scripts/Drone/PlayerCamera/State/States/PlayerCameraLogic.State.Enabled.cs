@@ -46,47 +46,16 @@ public partial class PlayerCameraLogic
                 var rotationInput = inputComponent.GetCameraRotationInput();
                 
                 if (rotationInput.IsZeroApprox()) return;
+
+                var inputType = gameRepo.DeviceHandler.Value.CurrentInputType.Value;
+                var sensitivitySettings = gameRepo.UserSettings.Value.GetSensitivitySettings(inputType);
+                var inputDelta = rotationInput * sensitivitySettings.GetSensitivityMultiplier();
                 
-                var deviceHandler = gameRepo.DeviceHandler.Value;
-                var userSettings = gameRepo.UserSettings.Value;
                 var playerCamera = gameRepo.PlayerPhantomCamera.Value;
                 var cameraRotation = playerCamera.GetThirdPersonRotation();
-
-                // TODO: We need to handle proper XY-Inversion
-                
-                if (IsPlayerUsingMouse(deviceHandler))
-                {
-                    // The rotation input is MouseMotion.Relative
-                    var mouseSensitivity = userSettings.MouseSensitivity.GetSensitivityMultiplier();
-                    var motionRelative = rotationInput * mouseSensitivity;
-                    ComputeCameraRotation(ref cameraRotation, settings, motionRelative);
-                }
-                else if (IsPlayerUsingKeyboard(deviceHandler))
-                {
-                    // The rotation input is from key pressed, therefore always magnitude 1.0
-                    var keyboardSensitivity = userSettings.KeyboardSensitivity.GetSensitivityMultiplier();
-                    var keyboardRelative = rotationInput * keyboardSensitivity;
-                    ComputeCameraRotation(ref cameraRotation, settings, keyboardRelative);
-                }
-                else if (IsPlayerUsingJoypad(deviceHandler))
-                {
-                    // The rotation input is from an analog stick
-                    var analogSensitivity = userSettings.AnalogSensitivity.GetSensitivityMultiplier();
-                    var analogRelative = rotationInput * analogSensitivity;
-                    ComputeCameraRotation(ref cameraRotation, settings, analogRelative);
-                }
-                
+                ComputeCameraRotation(ref cameraRotation, settings, inputDelta);
                 playerCamera.SetThirdPersonRotation(cameraRotation);
             }
-
-            private static bool IsPlayerUsingMouse(InputDeviceHandler deviceHandler) =>
-                deviceHandler.CurrentDeviceScheme.Value is InputDeviceScheme.KeyboardAndMouse;
-
-            private static bool IsPlayerUsingKeyboard(InputDeviceHandler deviceHandler) =>
-                deviceHandler.CurrentDeviceScheme.Value is InputDeviceScheme.Keyboard;
-
-            private static bool IsPlayerUsingJoypad(InputDeviceHandler deviceHandler) =>
-                deviceHandler.CurrentInputType.Value is InputType.Joypad;
             
             private static void ComputeCameraRotation(ref Vector3 cameraRotation, PlayerCameraSettings settings, Vector2 inputDelta)
             {
