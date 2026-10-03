@@ -5,7 +5,7 @@ using Chickensoft.Introspection;
 using Godot;
 
 [Meta(typeof(IAutoNode))]
-public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<PlayerLogic>, IProvide<DroneModel>
+public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDroneRepo>
 {
 	public override void _Notification(int what) => this.Notify(what);
 
@@ -13,29 +13,34 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<Playe
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 	
 	[Node] public DroneFormation Formation { get; private set; }
-	[Node] private DroneModel Model { get; set; }
-
-	PlayerLogic IProvide<PlayerLogic>.Value() => StateMachine;
-	DroneModel IProvide<DroneModel>.Value() => Model;
+	[Node] private Node3D DroneModel { get; set; }
 	
 	public PlayerLogic StateMachine { get; private set; }
 	private PlayerLogic.IBinding Binding { get; set; }
-	
-	private bool isBobbing;
-	private float bobbingTime;
 
+	private DroneRepo DroneRepo { get; set; }
+	IDroneRepo IProvide<IDroneRepo>.Value() => DroneRepo;
+	
 	public void OnResolved()
 	{
+		DroneRepo = new DroneRepo();
+		DroneRepo.SetDroneModel(DroneModel);
+		this.Provide();
+		
 		StateMachine = new PlayerLogic();
 		StateMachine.Set(new PlayerLogic.Data());
 		StateMachine.Set(this);
 		StateMachine.Set(Settings);
 		StateMachine.Set(GameRepo);
-		this.Provide();
 
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
+		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) =>
+		{
+			if (output.IsBobbing) DroneRepo.InvokeHoverBobStarted();
+			else DroneRepo.InvokeHoverBobStopped();
+		});
 		Binding.Handle((in PlayerLogic.Output.MoveDirectionTilt output) => OnMoveDirectionTilt(output.InputDirection, output.Delta));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
 
@@ -67,39 +72,6 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<Playe
 
 	public bool IsMoving() => Velocity.Length() >= Settings.StoppingSpeed;
 
-	public Vector2 GetInputDirection()
-	{
-		return Input.GetVector(GameInputs.KbMoveLeft, GameInputs.KbMoveRight, GameInputs.KbMoveForward, GameInputs.KbMoveBack);
-	}
-	
-	public Vector3 GetInputBasedOnCamera(Camera3D camera)
-	{
-		if (camera is null)
-		{
-			GD.PrintErr("Parameter 'camera' is null. Player drone cannot get input based on camera.");
-			return Vector3.Zero;
-		}
-		
-		var cameraBasis = camera.Basis;
-		var rawInput = Input.GetVector(
-			GameInputs.KbMoveLeft, GameInputs.KbMoveRight, 
-			GameInputs.KbMoveForward, GameInputs.KbMoveBack);
-
-		// This is to ensure that diagonal input isn't stronger than axis aligned input.
-		var input = new Vector3
-		{
-			X = rawInput.X * Mathf.Sqrt(1f - (rawInput.Y * rawInput.Y / 2f)),
-			Z = rawInput.Y * Mathf.Sqrt(1f - (rawInput.X * rawInput.X / 2f))
-		};
-
-		return cameraBasis * input with { Y = 0f };
-	}
-
-	public float GetVerticalInput()
-	{
-		return Input.GetAxis(GameInputs.KbDescend, GameInputs.KbAscend);
-	}
-
 	private static void ToggleMouseCapture() => Input.SetMouseMode(IsMouseCaptured() 
 		? Input.MouseModeEnum.Visible 
 		: Input.MouseModeEnum.Captured);
@@ -111,7 +83,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<Playe
 
 	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
 	{
-		if (inputDirection.IsEqualApprox(Vector2.Zero) && Model.Rotation.IsEqualApprox(Vector3.Zero))
+		if (inputDirection.IsEqualApprox(Vector2.Zero) && DroneModel.Rotation.IsEqualApprox(Vector3.Zero))
 			return;
 
 		var targetRotation = new Vector3
@@ -121,7 +93,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<Playe
 			Z = Mathf.DegToRad(-inputDirection.X * Settings.MaxTiltAngleDegrees)
 		};
 
-		Model.Rotation = Model.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
+		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
 	}
 	
 }

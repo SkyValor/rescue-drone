@@ -15,59 +15,52 @@ public partial class HoverBobComponent : Node
     
     [Export(PropertyHint.ResourceType, "HoverBobSettings")] 
     public HoverBobSettings Settings { get; private set; }
-    
-    [Dependency] private PlayerLogic PlayerLogic => this.DependOn<PlayerLogic>();
-    [Dependency] private DroneModel DroneModel => this.DependOn<DroneModel>();
 
-    private PlayerLogic.IBinding Binding { get; set; }
+    [Dependency] private IDroneRepo DroneRepo => this.DependOn<IDroneRepo>();
+
     private float bobbingTime;
     private bool isBobbing;
     
     public void OnResolved()
     {
-        if (PlayerLogic is null) return;
-
-        Binding = PlayerLogic.Bind();
-        Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) => ToggleBobEffect(output.IsBobbing));
+        DroneRepo.HoverBobStarted += StartHoverBob;
+        DroneRepo.HoverBobStopped += GoBackToOrigin;
     }
 
     public void OnExitTree()
     {
-        Binding?.Dispose();
-    }
-
-    private void ToggleBobEffect(bool isBobbing)
-    {
-        if (this.isBobbing == isBobbing) return;
-        
-        this.isBobbing = isBobbing;
-        Timing.KillCoroutines(COROUTINE_TAG);
-            
-        if (isBobbing) StartHoverBob();
-        else GoBackToOrigin();
+        DroneRepo.HoverBobStarted -= StartHoverBob;
+        DroneRepo.HoverBobStopped -= GoBackToOrigin;
     }
 
     private void StartHoverBob()
     {
-        Timing.RunCoroutine(HoverBobCoroutine().CancelWith(DroneModel), Segment.PhysicsProcess, COROUTINE_TAG);
+        isBobbing = true;
+        Timing.KillCoroutines(COROUTINE_TAG);
+        Timing.RunCoroutine(HoverBobCoroutine().CancelWith(DroneRepo.DroneModel.Value), 
+            Segment.PhysicsProcess, COROUTINE_TAG);
     }
     
     private void GoBackToOrigin()
     {
-        Timing.RunCoroutine(ReturnToOriginCoroutine().CancelWith(DroneModel), Segment.PhysicsProcess, COROUTINE_TAG);
+        isBobbing = false;
+        Timing.KillCoroutines(COROUTINE_TAG);
+        Timing.RunCoroutine(ReturnToOriginCoroutine().CancelWith(DroneRepo.DroneModel.Value), 
+            Segment.PhysicsProcess, COROUTINE_TAG);
     }
 
     private IEnumerator<double> HoverBobCoroutine()
     {
+        var droneModel = DroneRepo.DroneModel.Value;
         bobbingTime = 0f;
         while (isBobbing)
         {
-            var meshPosition = DroneModel.Position;
+            var meshPosition = droneModel.Position;
             bobbingTime += (float) Timing.DeltaTime;
             
             var bobOffset = Mathf.Sin(bobbingTime * Settings.Frequency) * Settings.Amplitude;
             meshPosition.Y = Mathf.Lerp(meshPosition.Y, bobOffset, 0.1f);
-            DroneModel.Position = meshPosition;
+            droneModel.Position = meshPosition;
 
             yield return Timing.WaitForOneFrame;
         }
@@ -75,12 +68,13 @@ public partial class HoverBobComponent : Node
 
     private IEnumerator<double> ReturnToOriginCoroutine()
     {
-        while (DroneModel.Position.IsNotZeroApprox())
+        var droneModel = DroneRepo.DroneModel.Value;
+        while (droneModel.Position.IsNotZeroApprox())
         {
             // Return to local origin smoothly
-            var meshPosition = DroneModel.Position;
+            var meshPosition = droneModel.Position;
             meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0f, 0.1f);
-            DroneModel.Position = meshPosition;
+            droneModel.Position = meshPosition;
             yield return Timing.WaitForOneFrame;
         }
     }
