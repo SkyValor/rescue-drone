@@ -7,7 +7,7 @@ using Chickensoft.Sync.Primitives;
 using Godot;
 
 [Meta(typeof(IAutoOn), typeof(IDependent))]
-public partial class InputComponent : Node, IDisposable
+public partial class InputComponent : Node
 {
     public override void _Notification(int what) => this.Notify(what);
     
@@ -36,11 +36,9 @@ public partial class InputComponent : Node, IDisposable
         OnDeviceTypeChanged(deviceHandler.CurrentInputType.Value);
     }
 
-    public new void Dispose()
+    public void OnExitTree()
     {
-        base.Dispose();
         inputTypeBinding.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     public void OnPhysicsProcess(double delta)

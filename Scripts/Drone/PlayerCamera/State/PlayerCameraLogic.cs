@@ -16,7 +16,7 @@ public partial class PlayerCameraLogic : LogicBlock<PlayerCameraLogic.State>
     {
         public readonly record struct Enable;
         public readonly record struct Disable;
-        public readonly record struct OnPhysicsTick;
+        public readonly record struct OnPhysicsProcessTick;
     }
 
     public static class Output

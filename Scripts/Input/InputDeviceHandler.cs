@@ -76,7 +76,7 @@ public partial class InputDeviceHandler : Node, IDisposable
                 }
                 break;
             default:
-                throw new NotImplementedException($"Input type \"{preferredDevice}\" has no implementation.");
+                throw new ArgumentOutOfRangeException($"Input type \"{preferredDevice}\" has no implementation.");
         }
     }
 

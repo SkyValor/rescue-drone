@@ -5,11 +5,6 @@ using Godot;
 [GlobalClass]
 public partial class PlayerCameraSettings : Resource
 {
-    [Export] public float MouseSensitivity { get; set; } = 0.005f;
-
-    [Export(PropertyHint.Range, "1.0, 20.0, 0.1")] 
-    public float LerpPower { get; private set; } = 5f;
-    
     [Export(PropertyHint.Range, "-90.0, 0.0, 0.1")]
     public float MinVerticalAngle { get; private set; } = -90f;
 
@@ -21,7 +16,4 @@ public partial class PlayerCameraSettings : Resource
     
     [Export(PropertyHint.Range, "1.0, 20.0, 0.1")]
     public float MaxZoom { get; private set; } = 12f;
-
-    [Export(PropertyHint.Range, "0.01, 20.0, 0.01")]
-    public float ZoomLerpPower { get; private set; } = 5f;
 }

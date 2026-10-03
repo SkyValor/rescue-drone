@@ -9,11 +9,11 @@ public partial class PlayerCameraLogic
     public partial record State
     {
         [Meta]
-        public partial record Enabled : State, IGet<Input.OnPhysicsTick>, IGet<Input.Disable>
+        public partial record Enabled : State, IGet<Input.Disable>, IGet<Input.OnPhysicsProcessTick>
         {
             public Transition On(in Input.Disable input) => To<Disabled>();
 
-            public Transition On(in Input.OnPhysicsTick input)
+            public Transition On(in Input.OnPhysicsProcessTick input)
             {
                 var gameRepo = Get<IGameRepo>();
                 var settings = Get<PlayerCameraSettings>();
@@ -24,7 +24,7 @@ public partial class PlayerCameraLogic
                 return ToSelf();
             }
 
-            private void HandleCameraZoomInput(IGameRepo gameRepo, PlayerCameraSettings settings)
+            private void HandleCameraZoomInput(IGameRepo gameRepo, PlayerCameraSettings cameraSettings)
             {
                 var inputComponent = gameRepo.InputComponent.Value;
                 var zoomInput = inputComponent.GetCameraZoomInput();
@@ -33,14 +33,14 @@ public partial class PlayerCameraLogic
                 
                 var playerCamera = gameRepo.PlayerPhantomCamera.Value;
                 var springLength = playerCamera.SpringLength;
-                var minZoom = settings.MinZoom;
-                var maxZoom = settings.MaxZoom;
+                var minZoom = cameraSettings.MinZoom;
+                var maxZoom = cameraSettings.MaxZoom;
                 
                 var targetLength = Mathf.Clamp(springLength + zoomInput, minZoom, maxZoom);
-                    Output(new Output.ZoomComputed(targetLength));
+                Output(new Output.ZoomComputed(targetLength));
             }
 
-            private static void HandleCameraRotationInput(IGameRepo gameRepo, PlayerCameraSettings settings)
+            private void HandleCameraRotationInput(IGameRepo gameRepo, PlayerCameraSettings cameraSettings)
             {
                 var inputComponent = gameRepo.InputComponent.Value;
                 var rotationInput = inputComponent.GetCameraRotationInput();
@@ -56,8 +56,8 @@ public partial class PlayerCameraLogic
                 
                 var playerCamera = gameRepo.PlayerPhantomCamera.Value;
                 var cameraRotation = playerCamera.GetThirdPersonRotation();
-                ComputeCameraRotation(ref cameraRotation, settings, inputDelta);
-                playerCamera.SetThirdPersonRotation(cameraRotation);
+                ComputeCameraRotation(ref cameraRotation, cameraSettings, inputDelta);
+                Output(new Output.RotationComputed(cameraRotation));
             }
 
             private static void HandleCameraInversion(ref Vector2 rotationInput, UserSettings settings)
@@ -66,10 +66,10 @@ public partial class PlayerCameraLogic
                 if (settings.InvertCameraYAxis) rotationInput.Y = -rotationInput.Y;
             }
             
-            private static void ComputeCameraRotation(ref Vector3 cameraRotation, PlayerCameraSettings settings, Vector2 inputDelta)
+            private static void ComputeCameraRotation(ref Vector3 cameraRotation, PlayerCameraSettings cameraSettings, Vector2 inputDelta)
             {
-                var minAngle = settings.MinVerticalAngle;
-                var maxAngle = settings.MaxVerticalAngle;
+                var minAngle = cameraSettings.MinVerticalAngle;
+                var maxAngle = cameraSettings.MaxVerticalAngle;
                     
                 cameraRotation.X -= inputDelta.Y;
                 cameraRotation.X = Mathf.Clamp(cameraRotation.X, Mathf.DegToRad(minAngle), Mathf.DegToRad(maxAngle));

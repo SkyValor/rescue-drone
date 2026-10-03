@@ -34,7 +34,7 @@ public partial class PlayerCamera : Node3D
 
     public void OnPhysicsProcess(double delta)
     {
-        CameraLogic?.Input(new PlayerCameraLogic.Input.OnPhysicsTick());
+        CameraLogic.Input(new PlayerCameraLogic.Input.OnPhysicsProcessTick());
     }
 
     public void OnExitTree()
