@@ -35,6 +35,8 @@ public partial class HoverBobComponent : Node
 
     private void StartHoverBob()
     {
+        if (isBobbing) return;
+        
         isBobbing = true;
         Timing.KillCoroutines(COROUTINE_TAG);
         Timing.RunCoroutine(HoverBobCoroutine().CancelWith(DroneRepo.DroneModel.Value), 
@@ -43,6 +45,8 @@ public partial class HoverBobComponent : Node
     
     private void GoBackToOrigin()
     {
+        if (!isBobbing) return;
+        
         isBobbing = false;
         Timing.KillCoroutines(COROUTINE_TAG);
         Timing.RunCoroutine(ReturnToOriginCoroutine().CancelWith(DroneRepo.DroneModel.Value), 
