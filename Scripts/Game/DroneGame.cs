@@ -20,6 +20,8 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 {
 	public override void _Notification(int what) => this.Notify(what);
 
+	private static readonly string USER_SETTINGS_PATH = "res://Data/user_settings.tres";
+
 	#region Exports
 	[Export] private Vector3 WorldCenter { get; set; } = Vector3.Zero;
 	[Export] private float WorldSize { get; set; } = 50f;
@@ -41,6 +43,9 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	[Node] private ProgressBar LoadingBar { get; set; }
 	[Node] private Label LoadingLabel { get; set; }
 	
+	[Node] private InputDeviceHandler DeviceHandler { get; set; }
+	[Node] private InputComponent InputComponent { get; set; }
+	
 	[Node] private SVOBuilder SVOBuilder { get; set; }
 	[Node] private Camera3D MainCamera { get; set; }
 	
@@ -49,7 +54,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	[Node] private Node3D EnemySpawnPoint { get; set; }
 	#endregion
 	
-	private IGameRepo GameRepo { get; set; }
+	private GameRepo GameRepo { get; set; }
 	IGameRepo IProvide<IGameRepo>.Value() => GameRepo;
 
 	private ShaderMaterial loadingScreenShader;
@@ -57,9 +62,13 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	public void OnReady()
 	{
 		var playerCamera = GetNode<Node3D>("%PlayerCamera").AsPhantomCamera3D();
+		var userSettings = GD.Load<UserSettings>(USER_SETTINGS_PATH);
 		
 		GameRepo = new GameRepo();
+		GameRepo.SetUserSettings(userSettings);
 		GameRepo.SetPlayerPhantomCamera(playerCamera);
+		GameRepo.SetInputComponent(InputComponent);
+		GameRepo.SetDeviceHandler(DeviceHandler);
 		GameRepo.SetMainCamera(MainCamera);
 		this.Provide();
 		

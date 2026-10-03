@@ -4,7 +4,9 @@
 [ext_resource type="PackedScene" uid="uid://d0u2bhddxk4v3" path="res://Scenes/Enemy NPC/enemy_drone_ai.tscn" id="2_3ende"]
 [ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
 [ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/player_drone.tscn" id="2_xyv5c"]
+[ext_resource type="Script" uid="uid://bpswo35ium6ns" path="res://Scripts/Input/InputDeviceHandler.cs" id="4_m21gd"]
 [ext_resource type="PackedScene" uid="uid://b2i80m12vv71l" path="res://Scenes/Player/player_test.tscn" id="5_gpoiv"]
+[ext_resource type="Script" uid="uid://d2b0ewpfp3wo2" path="res://Scripts/Input/InputComponent.cs" id="5_mlx1v"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_xyv5c"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_1gv2x"]
@@ -160,6 +162,14 @@ libraries/ = SubResource("AnimationLibrary_1gv2x")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
 
+[node name="DeviceHandler" type="Node" parent="." unique_id=298400630]
+unique_name_in_owner = true
+script = ExtResource("4_m21gd")
+
+[node name="InputComponent" type="Node" parent="." unique_id=1290527756]
+unique_name_in_owner = true
+script = ExtResource("5_mlx1v")
+
 [node name="SVOBuilder" type="Node3D" parent="." unique_id=818987673]
 unique_name_in_owner = true
 script = ExtResource("2_jaj5y")
@@ -250,7 +260,7 @@ collision_mask = 3
 shape = SubResource("BoxShape3D_tswcn")
 
 [node name="Map" parent="." unique_id=2018743283 instance=ExtResource("14_m21gd")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76, 0, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -75.99966, 0, 60.013252)
 
 [node name="WaypointCircuits" type="Node" parent="." unique_id=392925600]
 unique_name_in_owner = true
@@ -316,6 +326,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 
 [node name="LoadingScreen" type="ColorRect" parent="UI" unique_id=1557388143]
 unique_name_in_owner = true
@@ -326,6 +337,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 color = Color(0, 0, 0, 1)
 
 [node name="LoadingBar" type="ProgressBar" parent="UI" unique_id=1921408001]
@@ -342,6 +354,7 @@ offset_right = 567.0
 offset_bottom = -114.00049
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 1
 value = 15.17
 show_percentage = false
 
@@ -359,6 +372,7 @@ offset_right = 379.0
 offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 1
 text = "Testing 1 2 3"
 label_settings = SubResource("LabelSettings_3ende")
 horizontal_alignment = 1

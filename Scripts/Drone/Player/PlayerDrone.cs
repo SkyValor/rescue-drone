@@ -69,7 +69,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 	public Vector2 GetInputDirection()
 	{
-		return Input.GetVector(GameInputs.MoveLeft, GameInputs.MoveRight, GameInputs.MoveForward, GameInputs.MoveBack);
+		return Input.GetVector(GameInputs.KbMoveLeft, GameInputs.KbMoveRight, GameInputs.KbMoveForward, GameInputs.KbMoveBack);
 	}
 	
 	public Vector3 GetInputBasedOnCamera(Camera3D camera)
@@ -82,8 +82,8 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		
 		var cameraBasis = camera.Basis;
 		var rawInput = Input.GetVector(
-			GameInputs.MoveLeft, GameInputs.MoveRight, 
-			GameInputs.MoveForward, GameInputs.MoveBack);
+			GameInputs.KbMoveLeft, GameInputs.KbMoveRight, 
+			GameInputs.KbMoveForward, GameInputs.KbMoveBack);
 
 		// This is to ensure that diagonal input isn't stronger than axis aligned input.
 		var input = new Vector3
@@ -97,7 +97,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 	public float GetVerticalInput()
 	{
-		return Input.GetAxis(GameInputs.ThrottleDown, GameInputs.ThrottleUp);
+		return Input.GetAxis(GameInputs.KbDescend, GameInputs.KbAscend);
 	}
 
 	private static void ToggleMouseCapture() => Input.SetMouseMode(IsMouseCaptured() 
@@ -112,6 +112,9 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		if (isBobbing)
 			bobbingTime = 0f;
 	}
+	
+	// TODO: Encapsulate the movement tilt effect in its own class TiltComponent.
+	// TODO: Create a data class TiltSettings to hold configurations used by this component.
 
 	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
 	{
@@ -127,6 +130,9 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
 	}
+	
+	// TODO: Encapsulate the hover bob effect in its own class HoverBobComponent.
+	// TODO: Create a data class HoverBobSettings to hold configurations used by this component.
 	
 	private void ApplyBobEffect(float deltaTime)
 	{

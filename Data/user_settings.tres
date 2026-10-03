@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="UserSettings" format=3 uid="uid://cebwd7388cf4a"]
+
+[ext_resource type="Script" uid="uid://kmarmu66bdwo" path="res://Scripts/System/Settings/UserSettings.cs" id="1_cpg58"]
+[ext_resource type="Script" uid="uid://bv4tw7ha82m1a" path="res://Scripts/System/Settings/SensitivitySettings.cs" id="1_u76ut"]
+
+[sub_resource type="Resource" id="Resource_u76ut"]
+script = ExtResource("1_u76ut")
+Index = 7
+MinSensitivity = 75
+MaxSensitivity = 750
+SensitivityStep = 75
+metadata/_custom_type_script = "uid://bv4tw7ha82m1a"
+
+[sub_resource type="Resource" id="Resource_8i3vh"]
+script = ExtResource("1_u76ut")
+Index = 5
+MinSensitivity = 75
+MaxSensitivity = 750
+SensitivityStep = 75
+metadata/_custom_type_script = "uid://bv4tw7ha82m1a"
+
+[sub_resource type="Resource" id="Resource_n4sl3"]
+script = ExtResource("1_u76ut")
+Index = 2
+MinSensitivity = 1
+MaxSensitivity = 51
+SensitivityStep = 5
+metadata/_custom_type_script = "uid://bv4tw7ha82m1a"
+
+[resource]
+script = ExtResource("1_cpg58")
+PreferredInputDevice = 1
+MouseSensitivity = SubResource("Resource_n4sl3")
+KeyboardSensitivity = SubResource("Resource_8i3vh")
+AnalogSensitivity = SubResource("Resource_u76ut")
+InvertCameraYAxis = true
+metadata/_custom_type_script = "uid://kmarmu66bdwo"

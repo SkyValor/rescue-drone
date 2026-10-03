@@ -5,7 +5,7 @@ using Chickensoft.Introspection;
 using Godot;
 using PhantomCamera;
 
-[Meta(typeof(IAutoNode))]
+[Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class PlayerCamera : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
@@ -29,17 +29,13 @@ public partial class PlayerCamera : Node3D
         CameraBinding.Handle((in PlayerCameraLogic.Output.ZoomComputed output) => OnZoomComputed(output.Length));
         
         CameraLogic.Start();
+        SetPhysicsProcess(true);
     }
 
-    public override void _Process(double delta)
+    public void OnPhysicsProcess(double delta)
     {
-        CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
+        CameraLogic.Input(new PlayerCameraLogic.Input.OnPhysicsProcessTick());
     }
-
-    // public void OnProcess(double delta)
-    // {
-    //     CameraLogic.Input(new PlayerCameraLogic.Input.OnProcessTick(delta));
-    // }
 
     public void OnExitTree()
     {
@@ -47,20 +43,15 @@ public partial class PlayerCamera : Node3D
         CameraBinding.Dispose();
     }
 
-    public override void _Input(InputEvent @event)
-    {
-        CameraLogic.Input(new PlayerCameraLogic.Input.OnInputEvent(@event));
-    }
-
     private void OnRotationComputed(Vector3 cameraRotation)
     {
-        var playerCamera = GameRepo.PlayerPhantomCamera.Value;
+        var playerCamera = GameRepo?.PlayerPhantomCamera.Value;
         playerCamera?.SetThirdPersonRotation(cameraRotation);
     }
 
     private void OnZoomComputed(float zoom)
     {
-        var playerCamera = GameRepo.PlayerPhantomCamera.Value;
+        var playerCamera = GameRepo?.PlayerPhantomCamera.Value;
         if (playerCamera is null) return;
         
         playerCamera.SpringLength = zoom;

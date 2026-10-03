@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="KeyboardMouseControlScheme" format=3 uid="uid://dq0bsbwg0autx"]
+
+[ext_resource type="Script" uid="uid://dcemhopur1h36" path="res://Scripts/Input/KeyboardMouseControlScheme.cs" id="1_d8a23"]
+
+[resource]
+script = ExtResource("1_d8a23")
+CameraZoomInButton = 4
+CameraZoomOutButton = 5
