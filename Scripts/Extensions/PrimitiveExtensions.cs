@@ -9,4 +9,6 @@ public static class PrimitiveExtensions
     public static bool IsNotZeroApprox(this float value) => !value.IsZeroApprox();
     
     public static bool IsEqualApprox(this float thisValue, float otherValue) => Mathf.IsEqualApprox(thisValue, otherValue);
+    
+    public static bool IsNotZeroApprox(this Vector3 value) => !value.IsZeroApprox();
 }

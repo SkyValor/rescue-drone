@@ -5,15 +5,18 @@ using Chickensoft.Introspection;
 using Godot;
 
 [Meta(typeof(IAutoNode))]
-public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
+public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<PlayerLogic>, IProvide<DroneModel>
 {
 	public override void _Notification(int what) => this.Notify(what);
 
 	[Export] public PlayerSettings Settings { get; private set; }
-	[Export] public Node3D DroneModel { get; private set; }
-	[Export] public DroneFormation Formation { get; private set; }
-
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
+	
+	[Node] public DroneFormation Formation { get; private set; }
+	[Node] private DroneModel Model { get; set; }
+
+	PlayerLogic IProvide<PlayerLogic>.Value() => StateMachine;
+	DroneModel IProvide<DroneModel>.Value() => Model;
 	
 	public PlayerLogic StateMachine { get; private set; }
 	private PlayerLogic.IBinding Binding { get; set; }
@@ -28,12 +31,12 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 		StateMachine.Set(this);
 		StateMachine.Set(Settings);
 		StateMachine.Set(GameRepo);
+		this.Provide();
 
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
 		Binding.Handle((in PlayerLogic.Output.MoveDirectionTilt output) => OnMoveDirectionTilt(output.InputDirection, output.Delta));
-		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) => ToggleBobEffect(output.IsBobbing));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
 
 		StateMachine.Start();
@@ -54,9 +57,6 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 
 	public override void _PhysicsProcess(double delta)
 	{
-		var deltaTime = (float) delta;
-		ApplyBobEffect(deltaTime);
-		
 		if (StateMachine is null || !StateMachine.IsStarted) return;
 		
 		StateMachine.Input(new PlayerLogic.Input.OnPhysicsTick(delta));
@@ -106,19 +106,12 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 	
 	private static bool IsMouseCaptured() => Input.MouseMode == Input.MouseModeEnum.Captured;
 	
-	private void ToggleBobEffect(bool isBobbing)
-	{
-		this.isBobbing = isBobbing;
-		if (isBobbing)
-			bobbingTime = 0f;
-	}
-	
 	// TODO: Encapsulate the movement tilt effect in its own class TiltComponent.
 	// TODO: Create a data class TiltSettings to hold configurations used by this component.
 
 	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
 	{
-		if (inputDirection.IsEqualApprox(Vector2.Zero) && DroneModel.Rotation.IsEqualApprox(Vector3.Zero))
+		if (inputDirection.IsEqualApprox(Vector2.Zero) && Model.Rotation.IsEqualApprox(Vector3.Zero))
 			return;
 
 		var targetRotation = new Vector3
@@ -128,31 +121,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone
 			Z = Mathf.DegToRad(-inputDirection.X * Settings.MaxTiltAngleDegrees)
 		};
 
-		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
-	}
-	
-	// TODO: Encapsulate the hover bob effect in its own class HoverBobComponent.
-	// TODO: Create a data class HoverBobSettings to hold configurations used by this component.
-	
-	private void ApplyBobEffect(float deltaTime)
-	{
-		var meshPosition = DroneModel.Position;
-		if (isBobbing)
-		{
-			bobbingTime += deltaTime;
-			
-			// Apply a subtle idle bob up and down
-			var bobOffset = Mathf.Sin(bobbingTime * Settings.HoverBobFrequency) * Settings.HoverBobAmplitude;
-			meshPosition.Y = Mathf.Lerp(meshPosition.Y, bobOffset, 0.1f);
-			DroneModel.Position = meshPosition;
-			return;
-		}
-		
-		if (meshPosition.IsZeroApprox()) return;
-		
-		// Return to local origin smoothly
-		meshPosition.Y = Mathf.Lerp(meshPosition.Y, 0.0f, 0.1f);
-		DroneModel.Position = meshPosition;
+		Model.Rotation = Model.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
 	}
 	
 }
