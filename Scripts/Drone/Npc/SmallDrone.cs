@@ -1,71 +1,92 @@
 namespace RescueDrone;
 
 using System.Collections.Generic;
+using Chickensoft.AutoInject;
+using Chickensoft.Introspection;
 using Godot;
 using MEC;
 
-public partial class SmallDrone : CharacterBody3D
+[Meta(typeof(IAutoNode))]
+public partial class SmallDrone : CharacterBody3D, IFlyingDrone, IProvide<IDroneRepo>
 {
+	public override void _Notification(int what) => this.Notify(what);
+	
 	[Export] private float SpringStrength { get; set; } = 12f;		// How strongly it pulls
 	[Export] private float Damping { get; set; } = 8f;				// How much it resists oscillation
 	[Export] private float MaxSpeed { get; set; } = 10f;			// Clamp top speed
+	[Export] private float StoppingSpeed { get; set; } = 0.2f;
 
-	[Export] private float OscillationMagnitude { get; set; } = 0.05f;
-	[Export] private float OscillationHeight { get; set; } = 0.5f;
-	
 	[Export] private float AvoidanceStrength { get; set; } = 20f;
 	[Export] private float AvoidanceDistance { get; set; } = 4f;
+	
+	[Node] private Node3D DroneModel { get; set; }
+	
+	private DroneRepo DroneRepo { get; set; }
+	IDroneRepo IProvide<IDroneRepo>.Value() => DroneRepo;
 
-	private RayCast3D rayForward;
-	private RayCast3D rayLeft;
-	private RayCast3D rayRight;
 	private RayCast3D[] rays;
-
 	private DroneFormation formation;
 	private int formationIndex;
 	private bool isFollowing;
-	private float oscillationModifier;
 	private CoroutineHandle? followCoroutine;
+	private bool droneMovedLastFrame;
 
-	public override void _Ready()
+	public void OnReady()
 	{
-		var raycastNames = new[]
+		DroneRepo = new DroneRepo();
+		DroneRepo.SetFlyingDrone(this);
+		DroneRepo.SetDroneModel(DroneModel);
+		this.Provide();
+
+		// Get the RayCast child nodes
+		var raysList = new List<RayCast3D>();
+		for (int index = 0; index < GetChildCount(); index++)
 		{
-			"RayForward", "RayForwardLeft", "RayForwardRight", 
-			"RayLeft", "RayRight", 
-			"RayBack", "RayBackLeft", "RayBackRight"
-		};
-		rays = new RayCast3D[raycastNames.Length];
-		for (int index = 0; index < raycastNames.Length; index++)
-		{
-			rays[index] = GetNode<RayCast3D>(raycastNames[index]);
+			var ray = GetChildOrNull<RayCast3D>(index);
+			if (ray is null) continue;
+			
+			raysList.Add(ray);
 		}
+		rays = raysList.ToArray();
 	}
 
 	public void SetFormation(DroneFormation formation, int formationIndex)
 	{
 		if (followCoroutine is not null)
-			Timing.KillCoroutines((CoroutineHandle)followCoroutine);
-		
+			Timing.KillCoroutines((CoroutineHandle) followCoroutine);
+
 		this.formation = formation;
 		this.formationIndex = formationIndex;
-		isFollowing = true;
-		oscillationModifier = GD.Randf();
+
+		// Start or stop the hover bob feature depending on our moving state
+		if (Velocity.Length().IsZeroApprox()) DroneRepo.InvokeDroneStoppedMoving();
+		else DroneRepo.InvokeDroneStartedMoving();
+
 		followCoroutine = Timing.RunCoroutine(FollowCoroutine().CancelWith(this), Segment.PhysicsProcess);
+	}
+
+	public void ClearFormation(DroneFormation formation)
+	{
+		if (this.formation is null) return;
+		if (this.formation != formation) return;
+
+		StopFollowing();
 	}
 
 	private IEnumerator<double> FollowCoroutine()
 	{
+		isFollowing = true;
 		while (isFollowing)
 		{
-			yield return Timing.WaitForOneFrame;
+			// We cache this for comparison in the next frame
+			droneMovedLastFrame = IsMoving();
 			
+			yield return Timing.WaitForOneFrame;
+
 			var deltaTime = (float)Timing.DeltaTime;
 			
 			// Calculate desired world position with offset and subtle vertical motion
 			var targetPosition = formation.GetSlotPosition(formationIndex);
-			var timePassed = Time.GetTicksMsec() / 1000f;
-			targetPosition.Y += Mathf.Sin(timePassed + oscillationModifier * OscillationMagnitude * deltaTime) * OscillationHeight;
 			var direction = targetPosition - GlobalTransform.Origin;
 		
 			var springForce = direction * SpringStrength;
@@ -80,7 +101,24 @@ public partial class SmallDrone : CharacterBody3D
 
 			MoveAndSlide();
 			RotateSmoothly(deltaTime);
+			UpdateHoverBob();
 		}
+	}
+
+	private void StopFollowing()
+	{
+		isFollowing = false;
+		if (followCoroutine is not null) 
+			Timing.KillCoroutines((CoroutineHandle) followCoroutine);
+	}
+
+	private bool IsMoving() => Velocity.Length() >= StoppingSpeed;
+
+	private void UpdateHoverBob()
+	{
+		var droneIsMoving = IsMoving();
+		if (droneMovedLastFrame && !droneIsMoving) DroneRepo.InvokeDroneStoppedMoving();
+		if (!droneMovedLastFrame && droneIsMoving) DroneRepo.InvokeDroneStartedMoving();
 	}
 
 	private Vector3 GetAvoidanceForce()
