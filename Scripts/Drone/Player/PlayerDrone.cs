@@ -24,6 +24,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDron
 	public void OnResolved()
 	{
 		DroneRepo = new DroneRepo();
+		DroneRepo.SetFlyingDrone(this);
 		DroneRepo.SetDroneModel(DroneModel);
 		this.Provide();
 		
@@ -36,14 +37,12 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDron
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
-		Binding.Handle((in PlayerLogic.Output.ToggleBobEffect output) =>
-		{
-			if (output.IsBobbing) DroneRepo.InvokeHoverBobStarted();
-			else DroneRepo.InvokeHoverBobStopped();
-		});
 		Binding.Handle((in PlayerLogic.Output.MoveDirectionTilt output) => OnMoveDirectionTilt(output.InputDirection, output.Delta));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
 
+		Binding.When((PlayerLogic.State.Idle _) => DroneRepo.InvokeDroneStoppedMoving());
+		Binding.When((PlayerLogic.State.Moving _) => DroneRepo.InvokeDroneStartedMoving());
+		
 		StateMachine.Start();
 	}
 

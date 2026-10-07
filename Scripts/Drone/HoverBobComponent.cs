@@ -23,14 +23,14 @@ public partial class HoverBobComponent : Node
     
     public void OnResolved()
     {
-        DroneRepo.HoverBobStarted += StartHoverBob;
-        DroneRepo.HoverBobStopped += GoBackToOrigin;
+        DroneRepo.DroneStoppedMoving += StartHoverBob;
+        DroneRepo.DroneStartedMoving += GoBackToOrigin;
     }
 
     public void OnExitTree()
     {
-        DroneRepo.HoverBobStarted -= StartHoverBob;
-        DroneRepo.HoverBobStopped -= GoBackToOrigin;
+        DroneRepo.DroneStoppedMoving -= StartHoverBob;
+        DroneRepo.DroneStartedMoving -= GoBackToOrigin;
     }
 
     private void StartHoverBob()

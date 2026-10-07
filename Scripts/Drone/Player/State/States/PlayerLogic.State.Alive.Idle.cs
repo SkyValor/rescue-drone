@@ -1,7 +1,6 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.Introspection;
-using Chickensoft.LogicBlocks;
 
 public partial class PlayerLogic
 {
@@ -10,12 +9,6 @@ public partial class PlayerLogic
         [Meta]
         public partial record Idle : Alive, IGet<Input.AfterMove>, IGet<Input.StartedMoving>
         {
-            public Idle()
-            {
-                this.OnEnter(() => Output(new Output.ToggleBobEffect(IsBobbing: true)));
-                this.OnExit(() => Output(new Output.ToggleBobEffect(IsBobbing: false)));
-            }
-
             public Transition On(in Input.AfterMove input)
             {
                 var settings = Get<PlayerSettings>();

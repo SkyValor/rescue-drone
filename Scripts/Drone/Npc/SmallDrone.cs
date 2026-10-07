@@ -7,7 +7,7 @@ using Godot;
 using MEC;
 
 [Meta(typeof(IAutoNode))]
-public partial class SmallDrone : CharacterBody3D, IProvide<IDroneRepo>
+public partial class SmallDrone : CharacterBody3D, IFlyingDrone, IProvide<IDroneRepo>
 {
 	public override void _Notification(int what) => this.Notify(what);
 	
@@ -24,11 +24,7 @@ public partial class SmallDrone : CharacterBody3D, IProvide<IDroneRepo>
 	private DroneRepo DroneRepo { get; set; }
 	IDroneRepo IProvide<IDroneRepo>.Value() => DroneRepo;
 
-	private RayCast3D rayForward;
-	private RayCast3D rayLeft;
-	private RayCast3D rayRight;
 	private RayCast3D[] rays;
-
 	private DroneFormation formation;
 	private int formationIndex;
 	private bool isFollowing;
@@ -38,39 +34,48 @@ public partial class SmallDrone : CharacterBody3D, IProvide<IDroneRepo>
 	public void OnReady()
 	{
 		DroneRepo = new DroneRepo();
+		DroneRepo.SetFlyingDrone(this);
 		DroneRepo.SetDroneModel(DroneModel);
 		this.Provide();
-		
-		var raycastNames = new[]
+
+		// Get the RayCast child nodes
+		var raysList = new List<RayCast3D>();
+		for (int index = 0; index < GetChildCount(); index++)
 		{
-			"RayForward", "RayForwardLeft", "RayForwardRight", 
-			"RayLeft", "RayRight", 
-			"RayBack", "RayBackLeft", "RayBackRight"
-		};
-		rays = new RayCast3D[raycastNames.Length];
-		for (int index = 0; index < raycastNames.Length; index++)
-		{
-			rays[index] = GetNode<RayCast3D>(raycastNames[index]);
+			var ray = GetChildOrNull<RayCast3D>(index);
+			if (ray is null) continue;
+			
+			raysList.Add(ray);
 		}
+		rays = raysList.ToArray();
 	}
 
 	public void SetFormation(DroneFormation formation, int formationIndex)
 	{
 		if (followCoroutine is not null)
-			Timing.KillCoroutines((CoroutineHandle)followCoroutine);
-		
-		// Start or stop the hover bob feature depending on our moving state
-		if (Velocity.Length().IsZeroApprox()) DroneRepo.InvokeHoverBobStarted();
-		else DroneRepo.InvokeHoverBobStopped();
-		
+			Timing.KillCoroutines((CoroutineHandle) followCoroutine);
+
 		this.formation = formation;
 		this.formationIndex = formationIndex;
-		isFollowing = true;
+
+		// Start or stop the hover bob feature depending on our moving state
+		if (Velocity.Length().IsZeroApprox()) DroneRepo.InvokeDroneStoppedMoving();
+		else DroneRepo.InvokeDroneStartedMoving();
+
 		followCoroutine = Timing.RunCoroutine(FollowCoroutine().CancelWith(this), Segment.PhysicsProcess);
+	}
+
+	public void ClearFormation(DroneFormation formation)
+	{
+		if (this.formation is null) return;
+		if (this.formation != formation) return;
+
+		StopFollowing();
 	}
 
 	private IEnumerator<double> FollowCoroutine()
 	{
+		isFollowing = true;
 		while (isFollowing)
 		{
 			// We cache this for comparison in the next frame
@@ -100,13 +105,20 @@ public partial class SmallDrone : CharacterBody3D, IProvide<IDroneRepo>
 		}
 	}
 
+	private void StopFollowing()
+	{
+		isFollowing = false;
+		if (followCoroutine is not null) 
+			Timing.KillCoroutines((CoroutineHandle) followCoroutine);
+	}
+
 	private bool IsMoving() => Velocity.Length() >= StoppingSpeed;
 
 	private void UpdateHoverBob()
 	{
 		var droneIsMoving = IsMoving();
-		if (droneMovedLastFrame && !droneIsMoving) DroneRepo.InvokeHoverBobStarted();
-		if (!droneMovedLastFrame && droneIsMoving) DroneRepo.InvokeHoverBobStopped();
+		if (droneMovedLastFrame && !droneIsMoving) DroneRepo.InvokeDroneStoppedMoving();
+		if (!droneMovedLastFrame && droneIsMoving) DroneRepo.InvokeDroneStartedMoving();
 	}
 
 	private Vector3 GetAvoidanceForce()
