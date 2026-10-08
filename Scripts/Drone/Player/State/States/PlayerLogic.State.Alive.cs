@@ -22,16 +22,13 @@ public partial class PlayerLogic
 
             public Transition On(in Input.OnPhysicsTick input)
             {
+                var inputComponent = Get<InputComponent>();
                 var settings = Get<PlayerSettings>();
                 var gameRepo = Get<IGameRepo>();
                 var player = Get<PlayerDrone>();
 
                 var deltaTime = (float) input.Delta;
-                var inputComponent = gameRepo.InputComponent.Value;
-                
-                // Get the user's horizontal movement input and output it to fuel the tilting feature
                 var horizontalInputDirection = inputComponent.GetDirectionalInput();
-                Output(new Output.MoveDirectionTilt(horizontalInputDirection, input.Delta));
 
                 // Get this input direction based on the player drone's nose
                 var playerCamera = gameRepo.MainCamera.Value;

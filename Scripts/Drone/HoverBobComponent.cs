@@ -29,6 +29,8 @@ public partial class HoverBobComponent : Node
 
     public void OnExitTree()
     {
+        if (DroneRepo is null) return;
+        
         DroneRepo.DroneStoppedMoving -= StartHoverBob;
         DroneRepo.DroneStartedMoving -= GoBackToOrigin;
     }
