@@ -6,14 +6,15 @@ using Godot;
 using PhantomCamera;
 
 [Meta(typeof(IAutoOn), typeof(IDependent))]
-public partial class PlayerCamera : Node3D
+public partial class PlayerCamera : Node
 {
     public override void _Notification(int what) => this.Notify(what);
 
     [Export(PropertyHint.ResourceType, "PlayerCameraSettings")]
     public PlayerCameraSettings Settings { get; private set; }
 
-    [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>(() => null);
+    [Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
+    [Dependency] private IDroneRepo DroneRepo => this.DependOn<IDroneRepo>();
     
     public PlayerCameraLogic CameraLogic { get; private set; }
     public PlayerCameraLogic.IBinding CameraBinding { get; private set; }
@@ -21,6 +22,7 @@ public partial class PlayerCamera : Node3D
     public void OnResolved()
     {
         CameraLogic = new PlayerCameraLogic();
+        CameraLogic.Set(DroneRepo.InputComponent.Value);
         CameraLogic.Set(GameRepo);
         CameraLogic.Set(Settings);
 
@@ -34,7 +36,7 @@ public partial class PlayerCamera : Node3D
 
     public void OnPhysicsProcess(double delta)
     {
-        CameraLogic.Input(new PlayerCameraLogic.Input.OnPhysicsProcessTick());
+        CameraLogic.Input(new PlayerCameraLogic.Input.OnPhysicsTick());
     }
 
     public void OnExitTree()

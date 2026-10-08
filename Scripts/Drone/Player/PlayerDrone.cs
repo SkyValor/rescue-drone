@@ -13,6 +13,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDron
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 	
 	[Node] public DroneFormation Formation { get; private set; }
+	[Node] private InputComponent InputComponent { get; set; }
 	[Node] private Node3D DroneModel { get; set; }
 	
 	public PlayerLogic StateMachine { get; private set; }
@@ -26,6 +27,7 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDron
 		DroneRepo = new DroneRepo();
 		DroneRepo.SetFlyingDrone(this);
 		DroneRepo.SetDroneModel(DroneModel);
+		DroneRepo.SetInputComponent(InputComponent);
 		this.Provide();
 		
 		StateMachine = new PlayerLogic();
@@ -33,11 +35,11 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDron
 		StateMachine.Set(this);
 		StateMachine.Set(Settings);
 		StateMachine.Set(GameRepo);
+		StateMachine.Set(InputComponent);
 
 		Binding = StateMachine.Bind();
 		Binding.Handle((in PlayerLogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		Binding.Handle((in PlayerLogic.Output.RotationComputed output) => GlobalRotation = output.GlobalRotation);
-		Binding.Handle((in PlayerLogic.Output.MoveDirectionTilt output) => OnMoveDirectionTilt(output.InputDirection, output.Delta));
 		Binding.Handle((in PlayerLogic.Output.ToggleMouseCapture _) => ToggleMouseCapture());
 
 		Binding.When((PlayerLogic.State.Idle _) => DroneRepo.InvokeDroneStoppedMoving());
@@ -76,23 +78,5 @@ public partial class PlayerDrone : CharacterBody3D, IFlyingDrone, IProvide<IDron
 		: Input.MouseModeEnum.Captured);
 	
 	private static bool IsMouseCaptured() => Input.MouseMode == Input.MouseModeEnum.Captured;
-	
-	// TODO: Encapsulate the movement tilt effect in its own class TiltComponent.
-	// TODO: Create a data class TiltSettings to hold configurations used by this component.
-
-	private void OnMoveDirectionTilt(Vector2 inputDirection, double delta)
-	{
-		if (inputDirection.IsEqualApprox(Vector2.Zero) && DroneModel.Rotation.IsEqualApprox(Vector3.Zero))
-			return;
-
-		var targetRotation = new Vector3
-		{
-			X = Mathf.DegToRad(inputDirection.Y * Settings.MaxTiltAngleDegrees),
-			Y = 0f,
-			Z = Mathf.DegToRad(-inputDirection.X * Settings.MaxTiltAngleDegrees)
-		};
-
-		DroneModel.Rotation = DroneModel.Rotation.MoveToward(targetRotation, Settings.TiltLerpSpeed * (float) delta);
-	}
 	
 }

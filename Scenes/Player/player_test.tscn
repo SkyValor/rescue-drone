@@ -8,6 +8,9 @@
 [ext_resource type="Script" uid="uid://dswfxj6pu71fe" path="res://Scripts/Drone/DroneFormation.cs" id="6_7cjgh"]
 [ext_resource type="Script" uid="uid://c7bg4bod7ohff" path="res://Scripts/Drone/HoverBobComponent.cs" id="8_1ppfh"]
 [ext_resource type="Script" uid="uid://cbxfhxlo0bo0r" path="res://Scripts/Drone/HoverBobSettings.cs" id="9_ceg1u"]
+[ext_resource type="Script" uid="uid://chywtfecfmxqa" path="res://Scripts/Drone/TiltByInputComponent.cs" id="9_pm8st"]
+[ext_resource type="Script" uid="uid://cihp66ji43wf8" path="res://Scripts/Drone/TiltByInputSettings.cs" id="10_pm8st"]
+[ext_resource type="Script" uid="uid://d2b0ewpfp3wo2" path="res://Scripts/Input/InputComponent.cs" id="11_eifh0"]
 
 [sub_resource type="Resource" id="Resource_omdfs"]
 script = ExtResource("2_7cjgh")
@@ -17,7 +20,6 @@ Acceleration = 12.75
 Deceleration = 8.25
 VerticalAcceleration = 7.25
 VerticalDeceleration = 5.55
-TiltLerpSpeed = 1.75
 metadata/_custom_type_script = "uid://dgf4yl411cog0"
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_623wg"]
@@ -36,6 +38,11 @@ metadata/_custom_type_script = "uid://4t2dyl3int3t"
 [sub_resource type="Resource" id="Resource_pm8st"]
 script = ExtResource("9_ceg1u")
 metadata/_custom_type_script = "uid://cbxfhxlo0bo0r"
+
+[sub_resource type="Resource" id="Resource_eifh0"]
+script = ExtResource("10_pm8st")
+TiltLerpSpeed = 1.75
+metadata/_custom_type_script = "uid://cihp66ji43wf8"
 
 [node name="PlayerTest" type="CharacterBody3D" unique_id=29709242]
 collision_mask = 24
@@ -67,10 +74,18 @@ spring_length = 6.0
 
 [node name="SpringPosition" type="Node3D" parent="SpringArmPivot/SpringArm" unique_id=1875747718]
 
-[node name="PhantomCameraController" type="Node3D" parent="." unique_id=446823110]
+[node name="PlayerCameraComponent" type="Node" parent="." unique_id=2017493537]
 script = ExtResource("3_pkpl1")
 Settings = SubResource("Resource_muiep")
 
 [node name="HoverBobComponent" type="Node" parent="." unique_id=1392928977]
 script = ExtResource("8_1ppfh")
 Settings = SubResource("Resource_pm8st")
+
+[node name="TiltByInputComponent" type="Node" parent="." unique_id=1835456638]
+script = ExtResource("9_pm8st")
+Settings = SubResource("Resource_eifh0")
+
+[node name="InputComponent" type="Node" parent="." unique_id=1090091327]
+unique_name_in_owner = true
+script = ExtResource("11_eifh0")

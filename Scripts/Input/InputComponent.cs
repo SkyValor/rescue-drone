@@ -97,9 +97,21 @@ public partial class InputComponent : Node
     {
         var deviceHandler = GameRepo.DeviceHandler.Value;
         var inputType = deviceHandler.CurrentInputType.Value;
+
+        if (inputType is InputType.KeyboardAndMouse)
+        {
+            var mouseInput = Input.GetAxis(GameInputs.MouseCamZoomOut, GameInputs.MouseCamZoomIn);
+            if (mouseInput.IsNotZeroApprox()) return mouseInput;
+            
+            // Sometimes mouse sends pressed and released in the same frame.
+            // If input is zero, we try to fetch the input directly from the released actions
+            var zoomIn = Input.IsActionJustReleased(GameInputs.MouseCamZoomIn) ? 1 : 0;
+            var zoomOut = Input.IsActionJustReleased(GameInputs.MouseCamZoomOut) ? 1 : 0;
+            return zoomOut - zoomIn;
+        }
+        
         return inputType switch
         {
-            InputType.KeyboardAndMouse => Input.GetAxis(GameInputs.MouseCamZoomOut, GameInputs.MouseCamZoomIn),
             InputType.KeyboardOnly     => Input.GetAxis(GameInputs.KbCamZoomOut, GameInputs.KbCamZoomIn),
             InputType.Joypad           => Input.GetAxis(GameInputs.JoypadCamZoomOut, GameInputs.JoypadCamZoomIn),
             _                          => throw new ArgumentOutOfRangeException(nameof(inputType), inputType, null)

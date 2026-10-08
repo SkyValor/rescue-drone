@@ -9,11 +9,11 @@ public partial class PlayerCameraLogic
     public partial record State
     {
         [Meta]
-        public partial record Enabled : State, IGet<Input.Disable>, IGet<Input.OnPhysicsProcessTick>
+        public partial record Enabled : State, IGet<Input.Disable>, IGet<Input.OnPhysicsTick>
         {
             public Transition On(in Input.Disable input) => To<Disabled>();
 
-            public Transition On(in Input.OnPhysicsProcessTick input)
+            public Transition On(in Input.OnPhysicsTick input)
             {
                 var gameRepo = Get<IGameRepo>();
                 var settings = Get<PlayerCameraSettings>();
@@ -26,9 +26,9 @@ public partial class PlayerCameraLogic
 
             private void HandleCameraZoomInput(IGameRepo gameRepo, PlayerCameraSettings cameraSettings)
             {
-                var inputComponent = gameRepo.InputComponent.Value;
+                var inputComponent = Get<InputComponent>();
                 var zoomInput = inputComponent.GetCameraZoomInput();
-
+                
                 if (zoomInput.IsZeroApprox()) return;
                 
                 var playerCamera = gameRepo.PlayerPhantomCamera.Value;
@@ -42,7 +42,7 @@ public partial class PlayerCameraLogic
 
             private void HandleCameraRotationInput(IGameRepo gameRepo, PlayerCameraSettings cameraSettings)
             {
-                var inputComponent = gameRepo.InputComponent.Value;
+                var inputComponent = Get<InputComponent>();
                 var rotationInput = inputComponent.GetCameraRotationInput();
                 
                 if (rotationInput.IsZeroApprox()) return;
