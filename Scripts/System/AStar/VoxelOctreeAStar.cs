@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Godot;
 using Godot.Collections;
+using MEC;
 
 public interface IPathfindSVO
 {
@@ -26,12 +27,14 @@ public class VoxelOctreeAStar : IPathfindSVO
 {
     private readonly SparseVoxelOctree Tree;
     private readonly AStar3D AStar;
-
+    
     public VoxelOctreeAStar(SparseVoxelOctree tree)
     {
         Tree = tree;
         AStar = new AStar3D();
+
         AddEmptyLeavesAsPoints();
+        ConnectAdjacentPoints();
     }
 
     private void AddEmptyLeavesAsPoints()
@@ -39,16 +42,39 @@ public class VoxelOctreeAStar : IPathfindSVO
         foreach (var currentLeaf in Tree.EmptyLeaves)
             AStar.AddPoint(currentLeaf.Id, currentLeaf.Position);
     }
+
+    private void ConnectAdjacentPoints()
+    {
+        var offsetDirections = new[] { Vector3.Right, Vector3.Left, Vector3.Up, Vector3.Down, Vector3.Back, Vector3.Forward };
+        foreach (var currentLeaf in Tree.EmptyLeaves)
+        {
+            foreach (var offset in offsetDirections)
+            {
+                var neighborPosition =
+                    currentLeaf.Position +
+                    offset * currentLeaf.Size * 0.5f +
+                    offset * 0.01f;
+                var neighborLeaf = Tree.GetLeafAtPosition(neighborPosition);
+                if (neighborLeaf is null || !neighborLeaf.IsEmpty || AStar.ArePointsConnected(currentLeaf.Id, neighborLeaf.Id)) 
+                    continue;
+                
+                AStar.ConnectPoints(currentLeaf.Id, neighborLeaf.Id);
+            }
+        }
+    }
     
-    public Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclision = null)
+    public Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null)
     {
         var origin = Tree.GetClosestEmptyLeaf(start);
         var target = Tree.GetClosestEmptyLeaf(end);
 
         if (origin is null || target is null) return [];
+
+        DebugConsole.Print(AStar.GetPointPosition(origin.Id).ToString());
+        DebugConsole.Print(AStar.GetPointPosition(target.Id).ToString());
         
         var rawPath = AStar.GetPointPath(origin.Id, target.Id);
-        return SmoothPath(rawPath, world, droneRadius, exclision);
+        return SmoothPath(rawPath, world, droneRadius, exclusion);
     }
     
     /// <summary>

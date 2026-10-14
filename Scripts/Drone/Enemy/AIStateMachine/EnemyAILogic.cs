@@ -1,5 +1,6 @@
 ﻿namespace RescueDrone;
 
+using System;
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 using Godot;
@@ -10,7 +11,13 @@ public interface IEnemyAILogic : ILogicBlock<EnemyAILogic.State>;
 public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogic
 {
     public override Transition GetInitialState() => To<State.Disabled>();
-    
+
+    protected override void HandleError(Exception e)
+    {
+        base.HandleError(e);
+        throw e;
+    }
+
     public static class Input
     {
         public readonly record struct ReturnToIdle;

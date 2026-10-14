@@ -6,6 +6,10 @@ public class VoxelNode
 {
     public readonly int Id;
     private static int nextId;
+
+    private static readonly Color RootWhite = Colors.White;
+    private static readonly Color EmptyLeafGreen = Colors.Green;
+    private static readonly Color OccupiedLeafRed = Colors.Red;
     
     public VoxelNode Parent { get; }
     public Vector3 Position { get; }
@@ -32,10 +36,10 @@ public class VoxelNode
     {
         var size = new Vector3(Size, Size, Size);
         
-        if (Parent is null) DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, Colors.White, true);
+        if (Parent is null) DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, RootWhite, true);
         if (IsLeaf)
         {
-            var color = IsEmpty ? Colors.Green : Colors.Red;
+            var color = IsEmpty ? EmptyLeafGreen : OccupiedLeafRed;
             DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, color, true);
         }
 

@@ -9,7 +9,7 @@ public partial class EnemyAILogic
     public partial record State
     {
         /// <summary>
-        /// The enemy drones attempts to get the next waypoint from the current position in the circuit.
+        /// The enemy drone attempts to get the next waypoint from the current position in the circuit.
         /// To do so, the drone generates a pathway towards it and slowly flies along it.
         ///
         /// When reaching the target waypoint, it changes the state to <see cref="State.Scanning"/>.
@@ -19,6 +19,7 @@ public partial class EnemyAILogic
         {
             public ToNextWaypoint()
             {
+                OnAttach(() => GD.Print("=> Enter state ToNextWaypoint."));
                 this.OnEnter(() =>
                 {
                     TryGettingNextWaypoint();
@@ -44,6 +45,7 @@ public partial class EnemyAILogic
                 }
                     
                 data.CurrentWaypoint = data.CurrentWaypoint.Connections.PickRandom();
+                GD.Print($"Moving to waypoint named {data.CurrentWaypoint.Name}");
             }
 
             private void GeneratePathToWaypoint()

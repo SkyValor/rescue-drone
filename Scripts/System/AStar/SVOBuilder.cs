@@ -74,7 +74,7 @@ public partial class SVOBuilder : Node3D
         
         var query = new PhysicsShapeQueryParameters3D();
         query.Transform = new Transform3D(Basis.Identity, position);
-        query.CollisionMask = (1 << 4 - 1) | (1 << 8 - 1);
+        query.CollisionMask = (1 << 4 - 1) | (1 << 8 - 1); // 4:WorldGeometry ; 8:WorldBoundaries
         query.Shape = box;
         
         var spaceState = GetWorld3D().DirectSpaceState;

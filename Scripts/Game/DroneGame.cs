@@ -1,6 +1,7 @@
 namespace RescueDrone;
 
 using System.Collections.Generic;
+using System.Linq;
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Godot;
@@ -62,10 +63,12 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	{
 		var playerCamera = GetNode<Node3D>("%PlayerCamera").AsPhantomCamera3D();
 		var userSettings = GD.Load<UserSettings>(USER_SETTINGS_PATH);
+		var circuits = GetWaypointCircuits();
 		
 		GameRepo = new GameRepo();
 		GameRepo.SetUserSettings(userSettings);
 		GameRepo.SetPlayerPhantomCamera(playerCamera);
+		GameRepo.SetWaypointCircuits(circuits);
 		GameRepo.SetDeviceHandler(DeviceHandler);
 		GameRepo.SetMainCamera(MainCamera);
 		this.Provide();
@@ -95,7 +98,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	//     SVOBuilder.StartAsyncGeneration(WorldCenter, WorldSize, MinNodeSize, GetWorld3D());
 	//     this.Provide();
 	// }
-
+	
 	public void OnProcess(double delta)
 	{
 		var currentProgress = SVOBuilder.Progress;
@@ -109,6 +112,13 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		// Timing.RunCoroutine(DrawVoxelOctree());
 		
 		OnLevelReady();
+	}
+	
+	private WaypointCircuit[] GetWaypointCircuits()
+	{
+		var circuitNodes = WaypointCircuits.GetChildren();
+		var circuits = circuitNodes.Select(node => node as WaypointCircuit);
+		return circuits.ToArray();
 	}
 
 	private void OnLevelReady()

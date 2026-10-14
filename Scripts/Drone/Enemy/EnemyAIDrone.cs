@@ -17,7 +17,6 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 	[Export(PropertyHint.ResourceType, "EnemyDroneSettings")]
 	public EnemyDroneSettings Settings { get; private set; } = new();
 
-	[Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>(() => null); // TODO: Temporary solution; remove later
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 
 	[Node] private CollisionShape3D Collider { get; set; }
@@ -29,11 +28,10 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 	#endregion
 
 	private AutoValue<SparseVoxelOctree>.Binding octreeBind;
-	// private IPathfindSVO pathfinder;
 	
 	public float DroneRadius => Collider.Shape is not SphereShape3D sphereShape ? 0f : sphereShape.Radius;
 
-	public void OnReady()
+	public void OnEnterTree()
 	{
 		SetPhysicsProcess(false);
 	}
@@ -77,6 +75,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 		AIStateMachine.Set(new EnemyAILogic.Data());
 		AIStateMachine.Set(GetWorld3D());
 		AIStateMachine.Set(pathfinder);
+		AIStateMachine.Set(GameRepo);
 		AIStateMachine.Set(Settings);
 		AIStateMachine.Set(Sight);
 		AIStateMachine.Set(this);
@@ -87,6 +86,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		
 		AIStateMachine.Start();
+		SetPhysicsProcess(true);
 	}
 	
 }
