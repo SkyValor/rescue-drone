@@ -12,6 +12,7 @@ public partial class EnemyAILogic
         {
             public Scanning()
             {
+                OnAttach(() => DebugConsole.Print("=> Enter state Scanning"));
                 this.OnEnter(() => OnEnterScan(Get<EnemyDroneSettings>().PatrolScanSettings));
             }
 

@@ -39,12 +39,20 @@ public partial class EnemyAILogic
             
             // Get the desired speed at the next point in this pathway and change the current speed
             // depending on the distance to said point.
+
+            var path = data.SVOPath;
+            var pathIndex = data.CurrentPathIndex;
+            var headingToFinalTarget = pathIndex == path.Length - 1;
             
             var currentSpeed = enemy.Velocity.Length();
-            var desiredSpeed = CalculateCurveSpeed(data, settings, enemy.GlobalPosition, maxSpeed);
+            var desiredSpeed = headingToFinalTarget 
+                ? CalculateFinalTargetSpeed(path, enemy, settings, maxSpeed)
+                : CalculateCurveSpeed(path, pathIndex, settings, enemy.GlobalPosition, maxSpeed);
             var speedBleedingFactor = currentSpeed < desiredSpeed ? settings.Acceleration : settings.Deceleration;
             data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
 
+            DebugConsole.Print("Current: " + currentSpeed + ", Desired: " + desiredSpeed);
+            
             var toTarget = targetPosition - enemy.GlobalPosition;
             var direction = toTarget.Normalized();
             SmoothlyRotate(enemy, direction, settings.TurnSpeed, deltaTime);
@@ -95,23 +103,47 @@ public partial class EnemyAILogic
         }
 
         /// <summary>
+        /// Calculate the target speed based on the distance to the final target of this pathway.
+        /// The distance required to come to a complete stop from velocity <c>v</c> with deceleration <c>a</c> is: <c>d = v^2 / 2a</c>
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="enemy"></param>
+        /// <param name="settings"></param>
+        /// <param name="maxSpeed"></param>
+        /// <returns></returns>
+        private static float CalculateFinalTargetSpeed(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings, float maxSpeed)
+        {
+            var finalTarget = path[^1];
+            var distanceToFinalTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
+                
+            var currentSpeed = enemy.Velocity.Length();
+            var requiredBreakingDistance = (currentSpeed * currentSpeed) / (2f * settings.Deceleration) * 1.2f;
+            var arrivalZone = Mathf.Max(requiredBreakingDistance, settings.CheckpointRadius * 2f);
+
+            if (distanceToFinalTarget <= arrivalZone)
+            {
+                // Smoothly scale speed down from MaxSpeed to zero as distance approaches zero
+                var arrivalFactor = Mathf.Clamp(distanceToFinalTarget / arrivalZone, 0f, 1f);
+                var easeOutFactor = Mathf.SmoothStep(0f, 1f, arrivalFactor);
+                return maxSpeed * easeOutFactor;
+            }
+
+            return maxSpeed;
+        }
+
+        /// <summary>
         /// Pinpoint the current location of the enemy drone inside the point pathway. If we are approaching a curve,
         /// then adjust the target speed accordingly. The target speed decreases from a combination of distance to said curve
         /// and how tight said curve is. If we are still not near the next curve, returns <c>maxSpeed</c> instead.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="path"></param>
+        /// <param name="pathIndex"></param>
         /// <param name="settings"></param>
         /// <param name="currentPosition">current global position</param>
         /// <param name="maxSpeed">the maximum speed the drone can reach right now</param>
         /// <returns></returns>
-        private static float CalculateCurveSpeed(Data data, EnemyDroneSettings settings, Vector3 currentPosition, float maxSpeed)
+        private static float CalculateCurveSpeed(Vector3[] path, int pathIndex, EnemyDroneSettings settings, Vector3 currentPosition, float maxSpeed)
         {
-            var path = data.SVOPath;
-            var pathIndex = data.CurrentPathIndex;
-            
-            if (path is null || pathIndex == 0 || pathIndex == path.Length - 1)
-                return maxSpeed;
-            
             var pointA = path[pathIndex - 1];
             var pointB = path[pathIndex];
             var pointC = path[pathIndex + 1];

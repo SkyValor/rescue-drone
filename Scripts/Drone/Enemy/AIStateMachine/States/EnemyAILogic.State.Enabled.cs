@@ -1,12 +1,15 @@
 ﻿namespace RescueDrone;
 
+using System;
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Godot;
 
 public partial class EnemyAILogic
 {
     public partial record State
     {
+        // TODO: Update this information to include base methods for multiple child states.
         /// <summary>
         /// A superstate that continuously attempts to detect the player drone. In case of detection,
         /// an event is listened and internal data is updated. Child states will use that information.
@@ -35,6 +38,54 @@ public partial class EnemyAILogic
                 data.PlayerDetectedThisFrame = true;
                 data.LastPlayerPosition = playerDrone.GlobalPosition;
                 Input(new Input.PlayerDetected());
+            }
+
+            protected static bool ReachedFinalTarget(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings)
+            {
+                var finalTarget = path[^1];
+                var distanceToTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
+                return distanceToTarget <= settings.CheckpointRadius && enemy.Velocity.Length() <= settings.StoppingSpeed;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="delta"></param>
+            /// <param name="onFinalTargetReached"></param>
+            protected void OnMovingAlongPath(double delta, Action onFinalTargetReached)
+            {
+                var data = Get<Data>();
+                var enemy = Get<EnemyAIDrone>();
+                var settings = Get<EnemyDroneSettings>();
+                
+                var targetPosition = data.SVOPath[data.CurrentPathIndex];
+
+                // If we are headed towards the final target of this path
+                if (data.CurrentPathIndex == data.SVOPath.Length - 1)
+                {
+                    var finalTarget = data.SVOPath[^1];
+                    var distanceToTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
+                    
+                    // If we are withing stopping range and velocity is near zero, lock in the stop
+                    if (distanceToTarget <= settings.CheckpointRadius && enemy.Velocity.Length() <= settings.StoppingSpeed)
+                    {
+                        // We have reached the circuit. Move to another waypoint before scanning.
+                        data.SVOPath = null;
+                        Output(new Output.VelocityComputed(Vector3.Zero));
+                        onFinalTargetReached?.Invoke();
+                    }
+                }
+                
+                else if (enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
+                {
+                    // We are close enough to consider reaching this point and can now move
+                    // to the following point. We do this early to anticipate the curve and have a more
+                    // realistic behavior.
+                    data.CurrentPathIndex++;
+                    return;
+                }
+                
+                ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) delta);
             }
             
             #region Scan functions

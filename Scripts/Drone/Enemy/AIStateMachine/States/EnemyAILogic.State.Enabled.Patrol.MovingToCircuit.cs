@@ -22,7 +22,7 @@ public partial class EnemyAILogic
         {
             public MovingToCircuit()
             {
-                OnAttach(() => GD.Print("=> Enter state MovingToCircuit."));
+                OnAttach(() => DebugConsole.Print("=> Enter state MovingToCircuit"));
                 this.OnEnter(() =>
                 {
                     var enemy = Get<EnemyAIDrone>();
@@ -58,34 +58,11 @@ public partial class EnemyAILogic
             {
                 base.On(input);
 
-                var data = Get<Data>();
-                var enemy = Get<EnemyAIDrone>();
-                var settings = Get<EnemyDroneSettings>();
-                
-                var targetPosition = data.SVOPath[data.CurrentPathIndex];
-                var isLastPoint = data.CurrentPathIndex == data.SVOPath.Length - 1;
-                if (isLastPoint && enemy.GlobalPosition.IsEqualApprox(targetPosition))
-                {
-                    // We have reached the circuit. Move to another waypoint before scanning.
-                    GD.Print("Circuit reached...");
-                    Input(new Input.MoveToWaypoint());
-                    return ToSelf();
-                }
-
-                if (!isLastPoint && enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
-                {
-                    // We are close enough to consider reaching this point and can now move
-                    // to the following point. We do this early to anticipate the curve and have a more
-                    // realistic behavior.
-                    data.CurrentPathIndex++;
-                    return ToSelf();
-                }
-                
-                ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) input.Delta);
+                OnMovingAlongPath(input.Delta, onFinalTargetReached: () => Input(new Input.MoveToWaypoint()));
                 return ToSelf();
             }
 
-            public Transition On(in Input.MoveToWaypoint input) => To<ToNextWaypoint>();
+            public Transition On(in Input.MoveToWaypoint input) => To<ToPatrolWaypoint>();
 
             private void FindPathToClosestWaypoint(EnemyAIDrone enemy, Data data)
             {

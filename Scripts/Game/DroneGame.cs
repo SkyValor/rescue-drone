@@ -128,7 +128,6 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		
 		// LoadPlayerAndEnemy();
 		
-		GD.Print("SVO Ready. Player can now start flying!");
 		LoadingLabel.Text = "SVO ready. Player can now start flying!";
 
 		var setup = CreateTween();
@@ -181,8 +180,6 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 
 	private void OnLoadingScreenFadeOutCompleted()
 	{
-		GD.Print("Loading screen fade out animation completed. Level can start!");
-		
 		GameRepo.InvokeLevelIntroStarted();
 		GameRepo.InvokeLevelStart();
 		GameRepo.SetPlayerInControl(true);

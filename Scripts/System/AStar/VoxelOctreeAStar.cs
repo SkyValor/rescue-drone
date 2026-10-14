@@ -70,9 +70,6 @@ public class VoxelOctreeAStar : IPathfindSVO
 
         if (origin is null || target is null) return [];
 
-        DebugConsole.Print(AStar.GetPointPosition(origin.Id).ToString());
-        DebugConsole.Print(AStar.GetPointPosition(target.Id).ToString());
-        
         var rawPath = AStar.GetPointPath(origin.Id, target.Id);
         return SmoothPath(rawPath, world, droneRadius, exclusion);
     }

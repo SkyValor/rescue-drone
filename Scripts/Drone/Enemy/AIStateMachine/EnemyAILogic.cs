@@ -12,11 +12,11 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
 {
     public override Transition GetInitialState() => To<State.Disabled>();
 
-    protected override void HandleError(Exception e)
-    {
-        base.HandleError(e);
-        throw e;
-    }
+    // protected override void HandleError(Exception e)
+    // {
+    //     base.HandleError(e);
+    //     throw e;
+    // }
 
     public static class Input
     {

@@ -32,7 +32,6 @@ public partial class InputDeviceHandler : Node, IDisposable
 
     public void OnReady()
     {
-        GD.Print("Guessed device: " + InputHelper.GuessDeviceName());
         InputHelper.DeviceChanged += OnDeviceChanged;
     }
 
@@ -44,19 +43,16 @@ public partial class InputDeviceHandler : Node, IDisposable
     public void OnResolved()
     {
         // Get the user settings and check which can be the initial input device
-        GD.Print("InputDeviceHandler setting initial input device.");
         var userSettings = GameRepo.UserSettings.Value;
         var preferredDevice = userSettings.PreferredInputDevice;
 
         switch (preferredDevice)
         {
             case InputType.KeyboardAndMouse:
-                GD.Print("=> Setting current device to keyboard and mouse...");
                 inputType.Value = InputType.KeyboardAndMouse;
                 deviceScheme.Value = InputDeviceScheme.KeyboardAndMouse;
                 break;
             case InputType.KeyboardOnly:
-                GD.Print("=> Setting current device to keyboard only...");
                 inputType.Value = InputType.KeyboardOnly;
                 deviceScheme.Value = InputDeviceScheme.Keyboard;
                 break;
@@ -64,13 +60,11 @@ public partial class InputDeviceHandler : Node, IDisposable
                 var connectedJoypads = Input.GetConnectedJoypads();
                 if (connectedJoypads.Count == 0)
                 {
-                    GD.Print("=> No joypads connected. Setting current device to keyboard and mouse...");
                     inputType.Value = InputType.KeyboardAndMouse;
                     deviceScheme.Value =  InputDeviceScheme.KeyboardAndMouse;
                 }
                 else
                 {
-                    GD.Print("=> Setting current device to joypad...");
                     inputType.Value = InputType.Joypad;
                     deviceScheme.Value = userSettings.PreferredInputDeviceScheme;
                 }

@@ -2,7 +2,6 @@ namespace RescueDrone;
 
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
-using Chickensoft.LogicBlocks;
 using Chickensoft.Sync.Primitives;
 using Godot;
 
@@ -23,8 +22,8 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 	[Node] private SightSensor Sight { get; set; }
 	
 	#region AI State Machine
-	public EnemyAILogic AIStateMachine { get; private set; }
-	private LogicBlock<EnemyAILogic.State>.IBinding AIStateBinding { get; set; }
+	private EnemyAILogic AIStateMachine { get; set; }
+	private EnemyAILogic.IBinding AIStateBinding { get; set; }
 	#endregion
 
 	private AutoValue<SparseVoxelOctree>.Binding octreeBind;

@@ -60,6 +60,12 @@ public partial class EnemyDroneSettings : Resource
     public float TurnSpeed = 20;
 
     /// <summary>
+    /// If the drone's speed is less than this value, the drone is considered stopped.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.1, 10, 0.01")]
+    public float StoppingSpeed = 1f;
+
+    /// <summary>
     /// Distance from the target at which the drone starts lowering speed. For example, the distance
     /// before reaching a curve in which the drone begins to decelerate.
     /// </summary>

@@ -9,17 +9,17 @@ public partial class EnemyAILogic
     public partial record State
     {
         /// <summary>
-        /// The enemy drone attempts to get the next waypoint from the current position in the circuit.
+        /// The enemy drone attempts to get the next patrol point from the current position in the circuit.
         /// To do so, the drone generates a pathway towards it and slowly flies along it.
         ///
-        /// When reaching the target waypoint, it changes the state to <see cref="State.Scanning"/>.
+        /// When reaching the target patrol point, it changes the state to <see cref="State.Scanning"/>.
         /// </summary>
         [Meta]
-        public partial record ToNextWaypoint : Patrol
+        public partial record ToPatrolWaypoint : Patrol, IGet<Input.StartScanning>
         {
-            public ToNextWaypoint()
+            public ToPatrolWaypoint()
             {
-                OnAttach(() => GD.Print("=> Enter state ToNextWaypoint."));
+                OnAttach(() => DebugConsole.Print("=> Enter state ToNextWaypoint"));
                 this.OnEnter(() =>
                 {
                     TryGettingNextWaypoint();
@@ -71,11 +71,12 @@ public partial class EnemyAILogic
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-                
-                ComputeMovementToWaypoint(input.Delta);
+
+                OnMovingAlongPath(input.Delta, onFinalTargetReached: () => Input(new Input.StartScanning()));
                 return ToSelf();
             }
-            
+
+            public Transition On(in Input.StartScanning input) => To<Scanning>();
         }
     }
 }

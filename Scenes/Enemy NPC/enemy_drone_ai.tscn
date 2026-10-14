@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_31ski"]
 script = ExtResource("2_v1mr3")
+StoppingSpeed = 0.2
 IdleWaitTime = 3.15
 metadata/_custom_type_script = "uid://dmtctnnx3xkpl"
 
