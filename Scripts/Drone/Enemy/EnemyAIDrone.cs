@@ -54,6 +54,18 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 		AIStateBinding.Dispose();
 	}
 
+	public void OnProcess(double delta)
+	{
+		var data = AIStateMachine.Get<EnemyAILogic.Data>();
+		var enemy = AIStateMachine.Get<EnemyAIDrone>();
+		var enemyPosition = enemy.GlobalPosition;
+		var enemyFrontDirection = -enemy.Basis.Z;
+		var scanDirection = data.ScanDirection;
+                
+		DebugDraw3D.DrawLine(enemyPosition, enemyPosition + enemyFrontDirection, Colors.Red);
+		DebugDraw3D.DrawLine(enemyPosition, enemyPosition + scanDirection, Colors.Green);
+	}
+
 	public void OnPhysicsProcess(double delta)
 	{
 		AIStateMachine.Input(new EnemyAILogic.Input.PhysicsTick(delta));
@@ -85,6 +97,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		
 		AIStateMachine.Start();
+		SetProcess(true);
 		SetPhysicsProcess(true);
 	}
 	

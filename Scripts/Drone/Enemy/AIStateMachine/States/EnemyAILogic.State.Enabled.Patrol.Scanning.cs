@@ -8,12 +8,13 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record Scanning : Patrol, IGet<Input.Moved>
+        public partial record Scanning : Patrol, IGet<Input.Moved>, IGet<Input.ScanningComplete>
         {
             public Scanning()
             {
                 OnAttach(() => DebugConsole.Print("=> Enter state Scanning"));
                 this.OnEnter(() => OnEnterScan(Get<EnemyDroneSettings>().PatrolScanSettings));
+                this.OnExit(() => Get<Data>().IsScanning = false);
             }
 
             public override Transition On(in Input.PhysicsTick input)
@@ -23,6 +24,9 @@ public partial class EnemyAILogic
             }
 
             public Transition On(in Input.Moved input) => OnMovedScan();
+
+            public Transition On(in Input.ScanningComplete input) => To<ToPatrolWaypoint>();
         }
+        
     }
 }

@@ -9,10 +9,11 @@ public partial class EnemyAILogic
 {
     public partial record State
     {
-        // TODO: Update this information to include base methods for multiple child states.
         /// <summary>
-        /// A superstate that continuously attempts to detect the player drone. In case of detection,
-        /// an event is listened and internal data is updated. Child states will use that information.
+        /// A superstate that represents the drone being enabled and alive. It continuously attempts to detect the player drone.
+        /// In case of detection, an event is listened and internal data is updated. Child states will use that information.
+        ///
+        /// It also holds shared methods that are used by more than one child state with common behavior.
         /// </summary>
         [Meta]
         public abstract partial record Enabled : State, IGet<Input.PhysicsTick>
@@ -40,13 +41,6 @@ public partial class EnemyAILogic
                 Input(new Input.PlayerDetected());
             }
 
-            protected static bool ReachedFinalTarget(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings)
-            {
-                var finalTarget = path[^1];
-                var distanceToTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
-                return distanceToTarget <= settings.CheckpointRadius && enemy.Velocity.Length() <= settings.StoppingSpeed;
-            }
-
             /// <summary>
             /// 
             /// </summary>
@@ -57,8 +51,22 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
                 var settings = Get<EnemyDroneSettings>();
+
+                var path = data.SVOPath;
+                var pathIndex = data.CurrentPathIndex;
+
+                if (path is null || path.Length == 0)
+                {
+                    DebugConsole.PrintError("Path is null or empty.");
+                    return;
+                }
+                if (pathIndex >= path.Length)
+                {
+                    DebugConsole.PrintError("Path index is out of range.");
+                    return;
+                }
                 
-                var targetPosition = data.SVOPath[data.CurrentPathIndex];
+                var targetPosition = path[pathIndex];
 
                 // If we are headed towards the final target of this path
                 if (data.CurrentPathIndex == data.SVOPath.Length - 1)
@@ -73,6 +81,7 @@ public partial class EnemyAILogic
                         data.SVOPath = null;
                         Output(new Output.VelocityComputed(Vector3.Zero));
                         onFinalTargetReached?.Invoke();
+                        return;
                     }
                 }
                 
@@ -95,7 +104,7 @@ public partial class EnemyAILogic
             /// resets the parameters to default.
             /// </summary>
             /// <param name="scanSettings"></param>
-            protected void OnEnterScan(EnemyDroneSettings.ScanSettings scanSettings)
+            protected void OnEnterScan(ScanSettings scanSettings)
             {
                 var data = Get<Data>();
                 data.ScanDirection = GetRandomLookingDirection(scanSettings);
@@ -109,12 +118,12 @@ public partial class EnemyAILogic
             /// the drone holds still for as long as specified in the <c>scanSettings</c>.
             ///
             /// If there is at least another scan rotation to be had, it computes a new scan direction and allows
-            /// the process to begin anew; otherwise it changes the state to <see cref="State.MovingToCircuit"/>.
+            /// the process to begin anew; otherwise it sends the input <see cref="Input.ScanningComplete"/>.
             /// </summary>
             /// <param name="input"></param>
             /// <param name="scanSettings"></param>
             /// <returns></returns>
-            protected Transition OnPhysicsTickScan(Input.PhysicsTick input, EnemyDroneSettings.ScanSettings scanSettings)
+            protected Transition OnPhysicsTickScan(Input.PhysicsTick input, ScanSettings scanSettings)
             {
                 var data = Get<Data>();
                 var settings = Get<EnemyDroneSettings>();
@@ -133,7 +142,8 @@ public partial class EnemyAILogic
                     }
                     else
                     {
-                        return To<MovingToCircuit>();
+                        Input(new Input.ScanningComplete());
+                        return ToSelf();
                     }
                 }
 

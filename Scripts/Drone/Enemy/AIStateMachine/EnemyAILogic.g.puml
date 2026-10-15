@@ -36,6 +36,7 @@ RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Retrea
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
 RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDroneTooFar
 RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
+RescueDrone_EnemyAILogic_State_Scanning --> RescueDrone_EnemyAILogic_State_ToPatrolWaypoint : ScanningComplete
 RescueDrone_EnemyAILogic_State_Search --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDetected
 RescueDrone_EnemyAILogic_State_Stay --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDroneTooFar
 RescueDrone_EnemyAILogic_State_Stay --> RescueDrone_EnemyAILogic_State_Retreat : PlayerDroneTooClose

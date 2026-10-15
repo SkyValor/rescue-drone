@@ -35,14 +35,14 @@ public partial class EnemyAILogic
                         var circuit = GetClosestFreeCircuit(enemy.GlobalPosition, circuits);
                         if (circuit is null)
                         {
-                            GD.Print("There are no free circuits for the enemy drone to patrol.");
+                            DebugConsole.PrintError("There are no free circuits for the enemy drone to patrol.");
                             Input(new Input.ReturnToIdle());
                             return;
                         }
 
                         circuit.SetPatrolling(enemy);
                         data.CurrentCircuit = circuit;
-                        GD.Print($"Moving to circuit named {circuit.Name}");
+                        DebugConsole.Print($"Moving to circuit named {circuit.Name}");
                     }
 
                     // Set the closest waypoint of this circuit to be the starting point in patrol state
@@ -58,7 +58,11 @@ public partial class EnemyAILogic
             {
                 base.On(input);
 
-                OnMovingAlongPath(input.Delta, onFinalTargetReached: () => Input(new Input.MoveToWaypoint()));
+                OnMovingAlongPath(input.Delta, onFinalTargetReached: () =>
+                {
+                    DebugConsole.Print("Reached end of path.");
+                    Input(new Input.MoveToWaypoint());
+                });
                 return ToSelf();
             }
 

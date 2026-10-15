@@ -19,9 +19,10 @@ public partial class EnemyAILogic
         {
             public ToPatrolWaypoint()
             {
-                OnAttach(() => DebugConsole.Print("=> Enter state ToNextWaypoint"));
+                OnAttach(() => DebugConsole.Print("=> OnAttach Enter state ToNextWaypoint"));
                 this.OnEnter(() =>
                 {
+                    DebugConsole.Print("=> OnEnter state ToNextWaypoint");
                     TryGettingNextWaypoint();
                     GeneratePathToWaypoint();
                 });
@@ -33,19 +34,19 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 if (data.CurrentWaypoint is null)
                 {
-                    GD.PrintErr("Waypoint is set as null in data. Fallback to Idle state.");
+                    DebugConsole.PrintError("Waypoint is set as null in data. Fallback to Idle state.");
                     Input(new Input.ReturnToIdle());
                     return;
                 }
                 if (data.CurrentWaypoint.Connections.Count == 0)
                 {
-                    GD.PrintErr("Waypoint does not have connections. Fallback to Idle state.");
+                    DebugConsole.PrintError("Waypoint does not have connections. Fallback to Idle state.");
                     Input(new Input.ReturnToIdle());
                     return;
                 }
                     
                 data.CurrentWaypoint = data.CurrentWaypoint.Connections.PickRandom();
-                GD.Print($"Moving to waypoint named {data.CurrentWaypoint.Name}");
+                DebugConsole.Print($"Moving to waypoint named {data.CurrentWaypoint.Name}");
             }
 
             private void GeneratePathToWaypoint()

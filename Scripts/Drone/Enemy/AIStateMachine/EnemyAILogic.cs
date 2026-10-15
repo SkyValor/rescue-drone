@@ -12,11 +12,12 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
 {
     public override Transition GetInitialState() => To<State.Disabled>();
 
-    // protected override void HandleError(Exception e)
-    // {
-    //     base.HandleError(e);
-    //     throw e;
-    // }
+    protected override void HandleError(Exception e)
+    {
+        base.HandleError(e);
+        DebugConsole.PrintError("Error in state: " + Value);
+        throw e;
+    }
 
     public static class Input
     {
@@ -30,6 +31,7 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
         public readonly record struct MoveToWaypoint;
         public readonly record struct StartScanning;
         public readonly record struct StartAlertScanning;
+        public readonly record struct ScanningComplete;
 
         public readonly record struct PlayerDetected;
         public readonly record struct PlayerLost;

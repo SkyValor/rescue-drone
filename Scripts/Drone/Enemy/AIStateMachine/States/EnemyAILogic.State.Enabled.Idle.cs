@@ -20,7 +20,7 @@ public partial class EnemyAILogic
             {
                 OnAttach(() =>
                 {
-                    GD.Print("=> Enter state Idle.");
+                    DebugConsole.Print("=> Enter state Idle.");
                     timeElapsed = 0f;
                 });
             }

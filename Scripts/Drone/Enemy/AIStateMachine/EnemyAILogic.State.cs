@@ -51,8 +51,6 @@ public partial class EnemyAILogic
             var speedBleedingFactor = currentSpeed < desiredSpeed ? settings.Acceleration : settings.Deceleration;
             data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
 
-            DebugConsole.Print("Current: " + currentSpeed + ", Desired: " + desiredSpeed);
-            
             var toTarget = targetPosition - enemy.GlobalPosition;
             var direction = toTarget.Normalized();
             SmoothlyRotate(enemy, direction, settings.TurnSpeed, deltaTime);
@@ -185,7 +183,7 @@ public partial class EnemyAILogic
             return Mathf.Lerp(startingSpeed, maxSpeed, t);
         }
 
-        private static Vector3 GetRandomLookingDirection(EnemyDroneSettings.ScanSettings settings)
+        private static Vector3 GetRandomLookingDirection(ScanSettings settings)
         {
             var random = new RandomNumberGenerator();
             
