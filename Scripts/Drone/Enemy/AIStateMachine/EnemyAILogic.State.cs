@@ -182,6 +182,10 @@ public partial class EnemyAILogic
             var t = Mathf.Clamp(distanceToDestination / breakingDistance, 0f, 1f);
             return Mathf.Lerp(startingSpeed, maxSpeed, t);
         }
+        
+        // TODO: Change the settings to have AngleX and AngleY to include the whole area of effect.
+        
+        // TODO: Have Data include a property for InitialDirection, and every ScanDirection generated is applied to it
 
         private static Vector3 GetRandomLookingDirection(ScanSettings settings)
         {

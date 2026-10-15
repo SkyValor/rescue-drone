@@ -2,7 +2,6 @@
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
-using Godot;
 
 public partial class EnemyAILogic
 {
@@ -19,10 +18,9 @@ public partial class EnemyAILogic
         {
             public ToPatrolWaypoint()
             {
-                OnAttach(() => DebugConsole.Print("=> OnAttach Enter state ToNextWaypoint"));
+                OnAttach(() => DebugConsole.Print("=> Enter state ToNextWaypoint"));
                 this.OnEnter(() =>
                 {
-                    DebugConsole.Print("=> OnEnter state ToNextWaypoint");
                     TryGettingNextWaypoint();
                     GeneratePathToWaypoint();
                 });
@@ -59,7 +57,7 @@ public partial class EnemyAILogic
                 var path = GeneratePathway(origin, target);
                 if (path.Length == 0)
                 {
-                    GD.PrintErr("Pathfinder did not find a path to the next waypoint. Fallback to Idle state.");
+                    DebugConsole.PrintError("Pathfinder did not find a path to the next waypoint. Fallback to Idle state.");
                     Input(new Input.ReturnToIdle());
                 }
                 else

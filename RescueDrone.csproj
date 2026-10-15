@@ -21,4 +21,8 @@
     <ItemGroup>
       <Folder Include="Scripts\Drone\Npc\" />
     </ItemGroup>
+    <ItemGroup>
+      <Content Include="Scripts\Utils\cone_aoe_visualizer.gd" />
+      <Content Include="Scripts\Utils\custom.gd" />
+    </ItemGroup>
 </Project>
