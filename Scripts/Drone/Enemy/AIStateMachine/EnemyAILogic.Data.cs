@@ -48,9 +48,19 @@ public partial class EnemyAILogic
         public bool PlayerDetectedThisFrame { get; set; }
         
         /// <summary>
+        /// The target number of scans the drone will perform during scanning phase.
+        /// </summary>
+        public int TargetNumberOfScans { get; set; }
+        
+        /// <summary>
         /// How many times has the enemy drone performed the scanning feature.
         /// </summary>
         public int CurrentScanCount { get; set; }
+        
+        /// <summary>
+        /// The target duration the drone will be holding the scanning phase for.
+        /// </summary>
+        public float ScanDuration { get; set; }
         
         /// <summary>
         /// Time elapsed since the start of this instance of scan.
@@ -62,6 +72,9 @@ public partial class EnemyAILogic
         /// </summary>
         public Vector3 ScanDirection { get; set; }
         
+        /// <summary>
+        /// Whether the drone is currently holding a gaze during scanning phase.
+        /// </summary>
         public bool IsScanning { get; set; }
     }
 }

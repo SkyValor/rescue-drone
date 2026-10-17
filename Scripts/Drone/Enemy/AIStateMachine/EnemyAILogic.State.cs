@@ -183,31 +183,5 @@ public partial class EnemyAILogic
             return Mathf.Lerp(startingSpeed, maxSpeed, t);
         }
         
-        // TODO: Change the settings to have AngleX and AngleY to include the whole area of effect.
-        
-        // TODO: Have Data include a property for InitialDirection, and every ScanDirection generated is applied to it
-
-        private static Vector3 GetRandomLookingDirection(ScanSettings settings)
-        {
-            var random = new RandomNumberGenerator();
-            
-            // Generate a random horizontal angle (Yaw)
-            var rotationX = Mathf.DegToRad(random.RandfRange(-settings.AngleInX, settings.AngleInX));
-                    
-            // Generate a random vertical angle (Pitch)
-            var rotationY = Mathf.DegToRad(random.RandfRange(-settings.AngleInY, settings.AngleInY));
-            return ConvertSphericalAngleTo3DForward(rotationX, rotationY);
-        }
-
-        private static Vector3 ConvertSphericalAngleTo3DForward(float rotationX, float rotationY)
-        {
-            // Convert these spherical angles into a 3D forward direction vector
-            return new Vector3
-            {
-                X = Mathf.Sin(rotationX) * Mathf.Cos(rotationY),
-                Y = Mathf.Sin(rotationY),
-                Z = Mathf.Cos(rotationX) * Mathf.Cos(rotationY)
-            }.Normalized();
-        }
     }
 }

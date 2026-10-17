@@ -48,7 +48,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 			StartAIStateMachine(octree);
 		}
 	}
-
+	
 	public void OnExitTree()
 	{
 		AIStateBinding.Dispose();

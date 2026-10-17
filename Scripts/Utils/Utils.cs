@@ -7,6 +7,16 @@ using Godot;
 
 public static class Utils
 {
+    public static bool IsVectorApprox(Vector3 a, Vector3 b, float tolerance)
+    {
+        return 
+            Mathf.Abs(a.X - b.X) < tolerance &&
+            Mathf.Abs(a.Y - b.Y) < tolerance &&
+            Mathf.Abs(a.Z - b.Z) < tolerance;
+    }
+
+    public static bool IsFloatApprox(float a, float b, float tolerance) => Math.Abs(a - b) < tolerance;
+    
     public static T GetChildNode<T>(Node fromNode) where T : Node
     {
         var type = typeof(T);

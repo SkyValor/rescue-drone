@@ -8,14 +8,25 @@
 
 [sub_resource type="Resource" id="Resource_dn2e1"]
 script = ExtResource("2_31ski")
+MinNumberOfScans = 2
+MaxNumberOfScans = 4
+Duration = 2.25
+MaxDuration = 2.5500000000000003
+AngleInX = 90.0
+AngleInY = 30.0
+RotationSpeed = 2.5
 metadata/_custom_type_script = "uid://c31enkx87j30n"
 
 [sub_resource type="Resource" id="Resource_n7gd0"]
 script = ExtResource("2_31ski")
-NumberOfScans = 6
+MinNumberOfScans = 3
+MaxNumberOfScans = 6
 Duration = 0.7999999999999999
-AngleInX = 90.0
-AngleInY = 30.0
+MinDuration = 0.44999999999999996
+MaxDuration = 1.2000000000000002
+AngleInX = 180.0
+AngleInY = 60.0
+RotationSpeed = 1.0
 metadata/_custom_type_script = "uid://c31enkx87j30n"
 
 [sub_resource type="Resource" id="Resource_31ski"]

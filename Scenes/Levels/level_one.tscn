@@ -300,7 +300,7 @@ metadata/_edit_group_ = true
 script = ExtResource("62_s3ju3")
 
 [node name="PatrolPoint5" type="Node3D" parent="WaypointCircuits/WaypointCircuit3" unique_id=611895020 node_paths=PackedStringArray("Connections")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.879344, 14.141485, 103.75287)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -14.879344, 14.141485, 103.75287)
 script = ExtResource("62_qsocj")
 Connections = [NodePath("../PatrolPoint6")]
 metadata/_edit_group_ = true

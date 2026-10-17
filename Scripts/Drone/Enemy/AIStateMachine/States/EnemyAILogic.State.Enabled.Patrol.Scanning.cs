@@ -2,6 +2,7 @@
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Godot;
 
 public partial class EnemyAILogic
 {
@@ -20,6 +21,18 @@ public partial class EnemyAILogic
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
+                
+                var data = Get<Data>();
+                var enemy = Get<EnemyAIDrone>();
+                var scanDirection = data.ScanDirection;
+                var enemyPosition = enemy.GlobalPosition;
+                var enemyLookDir = -enemy.Basis.Z;
+                var waypointLookDir = -data.CurrentWaypoint.Basis.Z;
+                
+                DebugDraw3D.DrawLine(enemyPosition, enemyPosition + waypointLookDir * 2f, Colors.Goldenrod);
+                DebugDraw3D.DrawLine(enemyPosition, enemyPosition + enemyLookDir * 2f, Colors.Maroon);
+                DebugDraw3D.DrawLine(enemyPosition, enemyPosition + scanDirection * 2f, Colors.Blue);
+                
                 return OnPhysicsTickScan(input, Get<EnemyDroneSettings>().PatrolScanSettings);
             }
 
