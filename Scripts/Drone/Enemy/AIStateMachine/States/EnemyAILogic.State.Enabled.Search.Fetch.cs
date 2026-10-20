@@ -1,14 +1,14 @@
 ﻿namespace RescueDrone;
 
+using System;
 using Chickensoft.Introspection;
-using Godot;
 
 public partial class EnemyAILogic
 {
     public partial record State
     {
         [Meta]
-        public partial record Fetch : Search
+        public partial record Fetch : Search, IGet<Input.ReturnToIdle>
         {
             public Fetch()
             {
@@ -21,12 +21,12 @@ public partial class EnemyAILogic
                 var enemy = Get<EnemyAIDrone>();
 
                 var origin = enemy.GlobalPosition;
-                var target = data.LastPlayerPosition;
+                var target = data.LastKnownPlayerPosition;
 
                 var path = GeneratePathway(origin, target);
                 if (path.Length == 0)
                 {
-                    GD.PrintErr("Pathfinder did not find a path to player drone's last position. Fallback to idle state.");
+                    DebugConsole.PrintError("Error in Fetch: Pathfinder did not find a path to player drone's last position. Fallback to idle state.");
                     Input(new Input.ReturnToIdle());
                 }
                 else
@@ -39,7 +39,6 @@ public partial class EnemyAILogic
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-                
                 ComputeMovementFetching(input.Delta);
                 return ToSelf();
             }
@@ -49,20 +48,29 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
                 var settings = Get<EnemyDroneSettings>();
-                var targetPosition = data.SVOPath[data.CurrentPathIndex];
 
-                if (enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
+                try
                 {
-                    if (data.CurrentPathIndex == data.SVOPath.Length - 1)
-                        Input(new Input.StartAlertScanning());
-                    else
-                        data.CurrentPathIndex++;
+                    var targetPosition = data.SVOPath[data.CurrentPathIndex];
+                    if (enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
+                    {
+                        if (data.CurrentPathIndex == data.SVOPath.Length - 1)
+                            Input(new Input.StartAlertScanning());
+                        else
+                            data.CurrentPathIndex++;
 
-                    return;
+                        return;
+                    }
+                    ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) delta);
                 }
-                
-                ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) delta);
+                catch (Exception ex)
+                {
+                    DebugConsole.PrintError("Error in try/catch Fetch: " + ex.Message);
+                    Input(new Input.ReturnToIdle());
+                }
             }
+
+            public Transition On(in Input.ReturnToIdle input) => To<Idle>();
         }
     }
 }

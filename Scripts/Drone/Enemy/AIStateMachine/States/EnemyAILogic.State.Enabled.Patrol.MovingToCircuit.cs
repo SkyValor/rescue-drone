@@ -22,7 +22,6 @@ public partial class EnemyAILogic
         {
             public MovingToCircuit()
             {
-                OnAttach(() => DebugConsole.Print("=> Enter state MovingToCircuit"));
                 this.OnEnter(() =>
                 {
                     var enemy = Get<EnemyAIDrone>();

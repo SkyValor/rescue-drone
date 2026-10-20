@@ -39,7 +39,7 @@ project/assembly_name="RescueDrone"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/input_helper/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/uv_tools/plugin.cfg")
+enabled=PackedStringArray("res://addons/input_helper/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/tattomoosa.vision_cone_3d/plugin.cfg", "res://addons/uv_tools/plugin.cfg")
 
 [input]
 

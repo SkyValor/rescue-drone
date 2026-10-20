@@ -14,7 +14,7 @@ state "EnemyAILogic State" as RescueDrone_EnemyAILogic_State {
       state "ToPatrolWaypoint" as RescueDrone_EnemyAILogic_State_ToPatrolWaypoint
     }
     state "Search" as RescueDrone_EnemyAILogic_State_Search {
-      state "AlertLookout" as RescueDrone_EnemyAILogic_State_AlertLookout
+      state "AlertScanning" as RescueDrone_EnemyAILogic_State_AlertScanning
       state "Fetch" as RescueDrone_EnemyAILogic_State_Fetch
     }
   }
@@ -24,13 +24,13 @@ RescueDrone_EnemyAILogic_State_Chase --> RescueDrone_EnemyAILogic_State_Chase : 
 RescueDrone_EnemyAILogic_State_Chase --> RescueDrone_EnemyAILogic_State_Fetch : PlayerLost
 RescueDrone_EnemyAILogic_State_Disabled --> RescueDrone_EnemyAILogic_State_Idle : Enable
 RescueDrone_EnemyAILogic_State_Enabled --> RescueDrone_EnemyAILogic_State_Enabled : PhysicsTick
-RescueDrone_EnemyAILogic_State_Fetch --> RescueDrone_EnemyAILogic_State_Fetch : PhysicsTick
+RescueDrone_EnemyAILogic_State_Fetch --> RescueDrone_EnemyAILogic_State_Idle : ReturnToIdle
 RescueDrone_EnemyAILogic_State_Idle --> RescueDrone_EnemyAILogic_State_Chase : PlayerDetected
 RescueDrone_EnemyAILogic_State_Idle --> RescueDrone_EnemyAILogic_State_Idle : PhysicsTick
 RescueDrone_EnemyAILogic_State_Idle --> RescueDrone_EnemyAILogic_State_MovingToCircuit : PhysicsTick
 RescueDrone_EnemyAILogic_State_MovingToCircuit --> RescueDrone_EnemyAILogic_State_Idle : ReturnToIdle
-RescueDrone_EnemyAILogic_State_MovingToCircuit --> RescueDrone_EnemyAILogic_State_MovingToCircuit : PhysicsTick
 RescueDrone_EnemyAILogic_State_MovingToCircuit --> RescueDrone_EnemyAILogic_State_ToPatrolWaypoint : MoveToWaypoint
+RescueDrone_EnemyAILogic_State_Patrol --> RescueDrone_EnemyAILogic_State_Patrol : PhysicsTick
 RescueDrone_EnemyAILogic_State_Patrol --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDetected
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Retreat : PlayerDroneTooClose
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
@@ -38,10 +38,10 @@ RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Pursui
 RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
 RescueDrone_EnemyAILogic_State_Scanning --> RescueDrone_EnemyAILogic_State_ToPatrolWaypoint : ScanningComplete
 RescueDrone_EnemyAILogic_State_Search --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDetected
+RescueDrone_EnemyAILogic_State_Search --> RescueDrone_EnemyAILogic_State_Search : PhysicsTick
 RescueDrone_EnemyAILogic_State_Stay --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDroneTooFar
 RescueDrone_EnemyAILogic_State_Stay --> RescueDrone_EnemyAILogic_State_Retreat : PlayerDroneTooClose
 RescueDrone_EnemyAILogic_State_ToPatrolWaypoint --> RescueDrone_EnemyAILogic_State_Scanning : StartScanning
-RescueDrone_EnemyAILogic_State_ToPatrolWaypoint --> RescueDrone_EnemyAILogic_State_ToPatrolWaypoint : PhysicsTick
 
 RescueDrone_EnemyAILogic_State : ComputeMovementAlongPath() → VelocityComputed
 RescueDrone_EnemyAILogic_State : ComputeMovementWithoutRotation() → VelocityComputed

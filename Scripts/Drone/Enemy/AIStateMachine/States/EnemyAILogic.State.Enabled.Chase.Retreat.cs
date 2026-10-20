@@ -18,6 +18,16 @@ public partial class EnemyAILogic
         [Meta]
         public partial record Retreat : Chase, IGet<Input.PlayerDroneTooFar>, IGet<Input.PlayerDroneCloseEnough>
         {
+            private float[] yawOffsets =
+            [
+                Mathf.DegToRad(0),
+                Mathf.DegToRad(30), Mathf.DegToRad(-30),
+                Mathf.DegToRad(60), Mathf.DegToRad(-60),
+                Mathf.DegToRad(90), Mathf.DegToRad(-90)
+            ];
+
+            private float[] pitchOffsets = [ Mathf.DegToRad(0), Mathf.DegToRad(30), Mathf.DegToRad(-30)];
+            
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
@@ -57,11 +67,6 @@ public partial class EnemyAILogic
             {
                 var voxelOctree = Get<IGameRepo>().SVO.Value;
                 var idealAwayDirection = (enemy.GlobalPosition - playerPosition).Normalized();
-
-                // Testing straight back, then 30º left/right, 60º left/right, 90º left/right, and upwards
-                var yawOffsets = new[] { 0f, 0.52f, -0.52f, 1.04f, -1.04f, 1.57f, -1.57f };
-                var pitchOffsets = new[] { 0f, 0.4f, -0.4f }; // Slight vertical variance
-
                 var bestDirection = Vector3.Zero;
                 var bestScore = -1f;
 
@@ -119,13 +124,11 @@ public partial class EnemyAILogic
 
                 // Double check with a quick physics sphere cast to avoid static geometry
                 var enemy = Get<EnemyAIDrone>();
-                var sphere = new SphereShape3D();
-                sphere.Radius = enemy.DroneRadius;
-
                 var query = new PhysicsShapeQueryParameters3D
                 {
                     Transform = new Transform3D(Basis.Identity, start),
                     Motion = end - start,
+                    Shape = new SphereShape3D { Radius = enemy.DroneRadius },
                     Exclude = [enemy.GetRid()]
                 };
 

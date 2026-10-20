@@ -200,7 +200,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 109.184
 script = ExtResource("6_2w0vd")
 priority = 10
 follow_mode = 6
-follow_target = NodePath("../PlayerTest")
+follow_target = NodePath("../PlayerDrone")
 tween_resource = SubResource("Resource_m21gd")
 inactive_update_mode = 1
 follow_distance = 6.0
@@ -213,11 +213,15 @@ align_position_with_view = Callable()
 align_rotation_with_view = Callable()
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
-[node name="PlayerTest" parent="." unique_id=29709242 instance=ExtResource("5_gpoiv")]
+[node name="PlayerDrone" parent="." unique_id=29709242 instance=ExtResource("5_gpoiv")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.70391, 13.539989, 103.18449)
 
 [node name="EnemyDrone" parent="." unique_id=1527454022 instance=ExtResource("2_3ende")]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.228667, 15.564768, 62.84432)
+collision_layer = 2
+collision_mask = 153
 StartInPatrol = true
 StayInPatrol = true
 

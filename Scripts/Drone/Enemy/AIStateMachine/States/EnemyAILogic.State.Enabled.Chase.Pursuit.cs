@@ -27,26 +27,25 @@ public partial class EnemyAILogic
                 var player = Get<IGameRepo>().PlayerDrone.Value;
                 var settings = Get<EnemyDroneSettings>();
                 
+                // We cache that ideal target position only after it being somewhat distant from the
+                // last registered position, by a threshold to recalculate the SVO path.
+                
                 var idealTarget = CalculatePursuitTarget(enemy, player, settings);
                 if (idealTarget.DistanceTo(data.LastRepathPosition) <= settings.RepathThreshold) 
                     return ToSelf();
-                
-                // We register that ideal position only after it being somewhat distant from the
-                // last registered position, by a threshold to recalculate the SVO path.
-                
-                data.LastRepathPosition = idealTarget;
-
+            
                 var path = GeneratePathway(enemy.GlobalPosition, idealTarget);
                 if (path.Length <= 0) return ToSelf(); // If length is zero, we don't have a valid path
                 
                 data.SVOPath = path;
                 data.CurrentPathIndex = 1; // We skip 0 because that is where we are
+                data.LastRepathPosition = idealTarget;
                 return ToSelf();
             }
-            
+
             /// <summary>
             /// From this drone's perspective, calculate the ideal target position to move to in order to be
-            /// between a range of distance to the player.
+            /// in an acceptable range of distance to the player.
             /// </summary>
             /// <param name="enemy"></param>
             /// <param name="player"></param>

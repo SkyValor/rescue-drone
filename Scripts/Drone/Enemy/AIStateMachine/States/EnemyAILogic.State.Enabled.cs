@@ -2,7 +2,6 @@
 
 using System;
 using Chickensoft.Introspection;
-using Chickensoft.LogicBlocks;
 using Godot;
 
 public partial class EnemyAILogic
@@ -16,33 +15,25 @@ public partial class EnemyAILogic
         /// It also holds shared methods that are used by multiple child state with common behavior.
         /// </summary>
         [Meta]
-        public abstract partial record Enabled : State, IGet<Input.PhysicsTick>
+        public partial record Enabled : State, IGet<Input.PhysicsTick>
         {
             private const float SCAN_DIRECTION_MAX_DOT_PRODUCT = 0.7f;
-
+            private readonly Color DebugPlayerSighted = new(Colors.Blue, 0.4f);
+            private readonly Color DebugPlayerHidden = new(Colors.Red, 0.4f);
+            
             private RandomNumberGenerator random;
 
-            protected Enabled()
-            {
-                this.OnEnter(() => Get<SightSensor>().DroneOnSight += OnPlayerDetected);
-                this.OnExit(() => Get<SightSensor>().DroneOnSight -= OnPlayerDetected);
-            }
-            
-            public virtual Transition On(in Input.PhysicsTick input)
-            {
-                Get<Data>().PlayerDetectedThisFrame = false;
-                Get<SightSensor>().DetectDrones(); // It will fire an event if the player is detected
-                return ToSelf();
-            }
+            public virtual Transition On(in Input.PhysicsTick input) => ToSelf();
 
-            private void OnPlayerDetected(IFlyingDrone player)
+            protected void DrawPlayerDetectionLine(bool isDetected)
             {
-                if (player is not PlayerDrone playerDrone) return;
+                var player = Get<IGameRepo>().PlayerDrone.Value;
+                if (player is null) return;
 
-                var data = Get<Data>();
-                data.PlayerDetectedThisFrame = true;
-                data.LastPlayerPosition = playerDrone.GlobalPosition;
-                Input(new Input.PlayerDetected());
+                DebugDraw3D.DrawLine(
+                    a: Get<EnemyAIDrone>().GlobalPosition,
+                    b: player.GlobalPosition,
+                    color: isDetected ? DebugPlayerSighted : DebugPlayerHidden);
             }
 
             /// <summary>
@@ -60,6 +51,8 @@ public partial class EnemyAILogic
                 var pathIndex = data.CurrentPathIndex;
                 
                 // TODO: None of these guard clauses are solving the issue. It will repeat next frame.
+                // Create an Input.FixPath and have states that generate a path respond to that input.
+                // Maybe have a threshold maximum number of retries before doing something else (like fall-backing to Idle state).
                 
                 if (path is null || path.Length == 0)
                 {

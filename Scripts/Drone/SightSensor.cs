@@ -5,12 +5,17 @@ using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Godot;
 
+/// <summary>
+/// Performs regular checks to detect drones that are within vision range and distance, by
+/// casting rays against the environment. A drone is considered detected when it can be seen
+/// withing parameters and the ray casts do not hit environment objects before reaching it.
+/// </summary>
 [Meta(typeof(IAutoOn), typeof(IDependent))]
 public partial class SightSensor : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
     
-    public event Action<IFlyingDrone> DroneOnSight;
+    public event Action<IFlyingDrone> DroneSighted;
     
     public enum DroneWatchType { Player, Enemy }
 
@@ -20,7 +25,7 @@ public partial class SightSensor : Node3D
 
     [Dependency] public IGameRepo GameRepo => this.DependOn<IGameRepo>();
     [Node] private RayCast3D VisionRaycast { get; set; }
-    
+
     public void OnReady()
     {
         if (VisionRaycast is not null) return;
@@ -38,7 +43,7 @@ public partial class SightSensor : Node3D
             if (playerDrone is null) return;
             
             if (TargetInSight(playerDrone)) 
-                DroneOnSight?.Invoke(playerDrone);
+                DroneSighted?.Invoke(playerDrone);
         }
         else if (WatchType is DroneWatchType.Enemy)
         {
@@ -48,7 +53,7 @@ public partial class SightSensor : Node3D
             foreach (var enemyDrone in enemyDrones)
             {
                 if (TargetInSight(enemyDrone)) 
-                    DroneOnSight?.Invoke(enemyDrone);
+                    DroneSighted?.Invoke(enemyDrone);
             }
         }
     }

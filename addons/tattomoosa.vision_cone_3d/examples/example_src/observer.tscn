@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://brqivkckug8uc"]
+[gd_scene format=3 uid="uid://brqivkckug8uc"]
 
 [ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="1_t4wly"]
 
@@ -14,21 +14,21 @@ height = 0.75
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cf0b5"]
 
-[node name="Observer" type="CharacterBody3D"]
+[node name="Observer" type="CharacterBody3D" unique_id=1291259397]
 metadata/_edit_group_ = true
 
-[node name="VisionCone3D" type="Area3D" parent="." node_paths=PackedStringArray("vision_test_ignore_bodies")]
+[node name="VisionCone3D" type="Area3D" parent="." unique_id=1512165034 node_paths=PackedStringArray("vision_test_ignore_bodies")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.41062, -0.023833)
 script = ExtResource("1_t4wly")
 debug_draw = true
 vision_test_ignore_bodies = [NodePath("..")]
 
-[node name="Body" type="MeshInstance3D" parent="."]
+[node name="Body" type="MeshInstance3D" parent="." unique_id=1232606574]
 mesh = SubResource("CapsuleMesh_td2ym")
 
-[node name="Face" type="MeshInstance3D" parent="Body"]
+[node name="Face" type="MeshInstance3D" parent="Body" unique_id=2126827233]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0.386695, -0.364832)
 mesh = SubResource("CapsuleMesh_5i4ah")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1794564100]
 shape = SubResource("CapsuleShape3D_cf0b5")

@@ -13,12 +13,14 @@ public interface IDroneRepo : IDisposable
     IAutoValue<IFlyingDrone> FlyingDrone { get; }
     IAutoValue<Node3D> DroneModel { get; }
     IAutoValue<InputComponent> InputComponent { get; }
+    IAutoValue<Node> VisionCone { get; }
     
     void InvokeInputReceived(Vector2 tiltDirection);
     
     void SetFlyingDrone(IFlyingDrone drone);
     void SetDroneModel(Node3D model);
     void SetInputComponent(InputComponent inputComponent);
+    void SetVisionCone(Node visionCone);
 }
 
 public class DroneRepo : IDroneRepo
@@ -35,6 +37,9 @@ public class DroneRepo : IDroneRepo
     
     public IAutoValue<InputComponent> InputComponent => input;
     private readonly AutoValue<InputComponent> input = new(null);
+    
+    public IAutoValue<Node> VisionCone => visionCone;
+    private readonly AutoValue<Node> visionCone = new(null);
 
     public void InvokeDroneStartedMoving() => DroneStartedMoving?.Invoke();
     public void InvokeDroneStoppedMoving() => DroneStoppedMoving?.Invoke();
@@ -43,6 +48,7 @@ public class DroneRepo : IDroneRepo
     public void SetFlyingDrone(IFlyingDrone drone) => flyingDrone.Value = drone;
     public void SetDroneModel(Node3D model) => droneModel.Value = model;
     public void SetInputComponent(InputComponent inputComponent) => input.Value = inputComponent;
+    public void SetVisionCone(Node vision) => visionCone.Value = vision;
 
     private bool disposingValue;
     
@@ -56,6 +62,7 @@ public class DroneRepo : IDroneRepo
             flyingDrone.Dispose();
             droneModel.Dispose();
             input.Dispose();
+            visionCone.Dispose();
         }
         
         disposingValue = true;

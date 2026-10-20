@@ -32,26 +32,12 @@ public partial class EnemyAILogic
                     data.CurrentWaypoint = null;
                 });
             }
-            
-            protected void ComputeMovementToWaypoint(double delta)
-            {
-                var data = Get<Data>();
-                var enemy = Get<EnemyAIDrone>();
-                var settings = Get<EnemyDroneSettings>();
-                var targetPosition = data.SVOPath[data.CurrentPathIndex];
-                
-                if (enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
-                {
-                    if (data.CurrentPathIndex == data.SVOPath.Length - 1)
-                        Input(new Input.StartScanning());
-                    else
-                        data.CurrentPathIndex++;
-                    
-                    return;
-                }
 
-                var patrolMaxSpeed = settings.MaxSpeed * settings.MaxSpeedPercentageAtPatrol;
-                ComputeMovementAlongPath(enemy, targetPosition, patrolMaxSpeed, (float) delta);
+            public override Transition On(in Input.PhysicsTick input)
+            {
+                base.On(input);
+                DrawPlayerDetectionLine(false);
+                return ToSelf();
             }
 
             public Transition On(in Input.PlayerDetected input) => To<Pursuit>();

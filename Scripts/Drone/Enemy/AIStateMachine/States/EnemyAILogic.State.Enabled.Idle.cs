@@ -1,7 +1,6 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.Introspection;
-using Godot;
 
 public partial class EnemyAILogic
 {
@@ -18,11 +17,7 @@ public partial class EnemyAILogic
 
             public Idle()
             {
-                OnAttach(() =>
-                {
-                    DebugConsole.Print("=> Enter state Idle.");
-                    timeElapsed = 0f;
-                });
+                OnAttach(() => timeElapsed = 0f);
             }
 
             public override Transition On(in Input.PhysicsTick input)

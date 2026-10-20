@@ -6,7 +6,7 @@ using Chickensoft.Sync.Primitives;
 using Godot;
 
 [Meta(typeof(IAutoNode))]
-public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
+public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDroneRepo>
 {
 	public override void _Notification(int what) => this.Notify(what);
 	
@@ -20,11 +20,15 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 
 	[Node] private CollisionShape3D Collider { get; set; }
 	[Node] private SightSensor Sight { get; set; }
+	[Node] private SightSensorCone3D SightSensor { get; set; }
 	
 	#region AI State Machine
 	private EnemyAILogic AIStateMachine { get; set; }
 	private EnemyAILogic.IBinding AIStateBinding { get; set; }
 	#endregion
+	
+	private DroneRepo DroneRepo { get; set; }
+	IDroneRepo IProvide<IDroneRepo>.Value() => DroneRepo;
 
 	private AutoValue<SparseVoxelOctree>.Binding octreeBind;
 	
@@ -73,10 +77,10 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 		AIStateMachine = new EnemyAILogic();
 		AIStateMachine.Set(new EnemyAILogic.Data());
 		AIStateMachine.Set(GetWorld3D());
+		AIStateMachine.Set(SightSensor);
 		AIStateMachine.Set(pathfinder);
 		AIStateMachine.Set(GameRepo);
 		AIStateMachine.Set(Settings);
-		AIStateMachine.Set(Sight);
 		AIStateMachine.Set(this);
 		
 		AIStateBinding = AIStateMachine.Bind();
@@ -87,5 +91,5 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone
 		AIStateMachine.Start();
 		SetPhysicsProcess(true);
 	}
-	
+
 }

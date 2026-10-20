@@ -12,6 +12,41 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
 {
     public override Transition GetInitialState() => To<State.Disabled>();
 
+    public override void OnStart()
+    {
+        var sightSensor = Get<SightSensorCone3D>();
+        sightSensor.BodySighted += OnBodySighted;
+        sightSensor.BodyHidden += OnBodyHidden;
+    }
+    
+    public override void OnStop()
+    {
+        var sightSensor = Get<SightSensorCone3D>();
+        sightSensor.BodySighted -= OnBodySighted;
+        sightSensor.BodyHidden -= OnBodyHidden;
+    }
+
+    private void OnBodySighted(Node3D body)
+    {
+        if (body is not PlayerDrone playerDrone || Value is State.Disabled) return;
+
+        var data = Get<Data>();
+        
+        // We set the Data.LastRepathPosition here to avoid having
+        // a default value the first time it's needed
+        
+        data.LastKnownPlayerPosition = playerDrone.GlobalPosition;
+        data.LastRepathPosition = playerDrone.GlobalPosition;
+        Input(new Input.PlayerDetected());
+    }
+    
+    private void OnBodyHidden(Node3D body)
+    {
+        if (body is not PlayerDrone || Value is State.Disabled) return;
+    
+        Input(new Input.PlayerLost());
+    }
+
     protected override void HandleError(Exception e)
     {
         base.HandleError(e);

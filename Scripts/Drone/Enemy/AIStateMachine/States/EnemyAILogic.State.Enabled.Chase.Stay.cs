@@ -15,13 +15,18 @@ public partial class EnemyAILogic
         [Meta]
         public partial record Stay : Chase, IGet<Input.PlayerDroneTooClose>, IGet<Input.PlayerDroneTooFar>
         {
+            public Stay()
+            {
+                OnAttach(() => DebugConsole.Print("OnAttach state Stay"));
+            }
+            
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
                 
                 var enemy = Get<EnemyAIDrone>();
                 var settings = Get<EnemyDroneSettings>();
-                var playerPosition = Get<Data>().LastPlayerPosition;
+                var playerPosition = Get<Data>().LastKnownPlayerPosition;
                 SmoothlyRotate(enemy, playerPosition, settings.TurnSpeed, (float) input.Delta);
                 return ToSelf();
             }

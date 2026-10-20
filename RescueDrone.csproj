@@ -19,6 +19,9 @@
         <PackageReference Include="Chickensoft.GodotNodeInterfaces" Version="3.0.3" />
     </ItemGroup>
     <ItemGroup>
+        <Folder Include="addons\src\" />
+    </ItemGroup>
+    <ItemGroup>
       <Folder Include="Scripts\Drone\Npc\" />
     </ItemGroup>
     <ItemGroup>

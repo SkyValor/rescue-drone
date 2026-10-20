@@ -18,7 +18,6 @@ public partial class EnemyAILogic
         {
             public ToPatrolWaypoint()
             {
-                OnAttach(() => DebugConsole.Print("=> Enter state ToNextWaypoint"));
                 this.OnEnter(() =>
                 {
                     TryGettingNextWaypoint();

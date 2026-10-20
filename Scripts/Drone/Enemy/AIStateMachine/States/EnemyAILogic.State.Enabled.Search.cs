@@ -1,6 +1,7 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.Introspection;
+using Godot;
 
 public partial class EnemyAILogic
 {
@@ -9,6 +10,19 @@ public partial class EnemyAILogic
         [Meta]
         public abstract partial record Search : Enabled, IGet<Input.PlayerDetected>
         {
+            public override Transition On(in Input.PhysicsTick input)
+            {
+                base.On(input);
+                DrawPlayerDetectionLine(false);
+                
+                DebugDraw3D.DrawLine(
+                    a: Get<EnemyAIDrone>().GlobalPosition,
+                    b: Get<Data>().LastKnownPlayerPosition,
+                    color: Colors.Goldenrod);
+                
+                return ToSelf();
+            }
+            
             public Transition On(in Input.PlayerDetected input) => To<Pursuit>();
         }
     }

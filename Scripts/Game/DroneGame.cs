@@ -64,6 +64,9 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		var playerCamera = GetNode<Node3D>("%PlayerCamera").AsPhantomCamera3D();
 		var userSettings = GD.Load<UserSettings>(USER_SETTINGS_PATH);
 		var circuits = GetWaypointCircuits();
+
+		var playerDrone = GetNode<PlayerDrone>("PlayerDrone");
+		var enemyDrone = GetNode<EnemyAIDrone>("EnemyDrone");
 		
 		GameRepo = new GameRepo();
 		GameRepo.SetUserSettings(userSettings);
@@ -71,6 +74,8 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		GameRepo.SetWaypointCircuits(circuits);
 		GameRepo.SetDeviceHandler(DeviceHandler);
 		GameRepo.SetMainCamera(MainCamera);
+		GameRepo.SetPlayer(playerDrone);
+		GameRepo.SetEnemyDrones([enemyDrone]);
 		this.Provide();
 		
 		loadingScreenShader = LoadingScreen.Material as ShaderMaterial;

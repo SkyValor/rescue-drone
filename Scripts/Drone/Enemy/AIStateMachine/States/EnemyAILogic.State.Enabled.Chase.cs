@@ -14,18 +14,18 @@ public partial class EnemyAILogic
         /// When the player drone is not detected, the state is changed to <see cref="State.Fetch"/>. 
         /// </summary>
         [Meta]
-        public partial record Chase : Enabled, IGet<Input.PlayerLost>
+        public abstract partial record Chase : Enabled, IGet<Input.PlayerLost>
         {
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-
-                var data = Get<Data>();
-                if (data.PlayerDetectedThisFrame)
+                
+                DrawPlayerDetectionLine(true);
+                if (Get<IGameRepo>().PlayerDrone.Value is not null)
                     CheckDistanceToPlayer();
                 else
                     Input(new Input.PlayerLost());
-
+            
                 return ToSelf();
             }
             
@@ -35,7 +35,7 @@ public partial class EnemyAILogic
                 var enemy = Get<EnemyAIDrone>();
                 var settings = Get<EnemyDroneSettings>();
                     
-                var distanceToPlayer = enemy.GlobalPosition.DistanceTo(data.LastPlayerPosition);
+                var distanceToPlayer = enemy.GlobalPosition.DistanceTo(data.LastKnownPlayerPosition);
                 if (distanceToPlayer < settings.MinDistance)
                     Input(new Input.PlayerDroneTooClose());
                 else if (distanceToPlayer > settings.MaxDistance)

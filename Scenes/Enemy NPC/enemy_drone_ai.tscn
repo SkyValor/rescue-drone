@@ -5,12 +5,13 @@
 [ext_resource type="Script" uid="uid://c31enkx87j30n" path="res://Scripts/Drone/Enemy/ScanSettings.cs" id="2_31ski"]
 [ext_resource type="Script" uid="uid://dmtctnnx3xkpl" path="res://Scripts/Drone/Enemy/EnemyDroneSettings.cs" id="2_v1mr3"]
 [ext_resource type="Script" uid="uid://ong37f20bev3" path="res://Scripts/Drone/SightSensor.cs" id="3_a665x"]
+[ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="5_n7gd0"]
+[ext_resource type="Script" uid="uid://pkcnj3856f2l" path="res://Scripts/Drone/SightSensorCone3D.cs" id="6_n7gd0"]
 
 [sub_resource type="Resource" id="Resource_dn2e1"]
 script = ExtResource("2_31ski")
 MinNumberOfScans = 2
 MaxNumberOfScans = 4
-Duration = 2.25
 MaxDuration = 2.5500000000000003
 AngleInX = 90.0
 AngleInY = 30.0
@@ -21,8 +22,7 @@ metadata/_custom_type_script = "uid://c31enkx87j30n"
 script = ExtResource("2_31ski")
 MinNumberOfScans = 3
 MaxNumberOfScans = 6
-Duration = 0.7999999999999999
-MinDuration = 0.44999999999999996
+MinDuration = 0.45
 MaxDuration = 1.2000000000000002
 AngleInX = 180.0
 AngleInY = 60.0
@@ -51,6 +51,25 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19891256, 0)
 shape = SubResource("SphereShape3D_qfwpt")
+
+[node name="SightSensor" type="Node3D" parent="." unique_id=604428653]
+unique_name_in_owner = true
+script = ExtResource("6_n7gd0")
+Range = 25.21
+Angle = 46.435
+
+[node name="VisionCone3D" type="Area3D" parent="SightSensor" unique_id=1131965175 node_paths=PackedStringArray("vision_test_ignore_bodies")]
+collision_layer = 0
+monitorable = false
+script = ExtResource("5_n7gd0")
+range = 25.21
+angle = 46.435
+debug_draw = true
+vision_test_ignore_bodies = [NodePath("../..")]
+vision_test_max_body_count = 5
+collision_layer_ = 0
+collision_environment_mask = 136
+metadata/_custom_type_script = "uid://cmgcelj1qxg8o"
 
 [node name="Sight" type="Node3D" parent="." unique_id=662366123]
 unique_name_in_owner = true

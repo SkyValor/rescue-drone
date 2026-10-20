@@ -2,8 +2,6 @@
 
 using Godot;
 
-// TODO: Have Duration be a range instead
-
 [GlobalClass]
 public partial class ScanSettings : Resource
 {
@@ -18,12 +16,6 @@ public partial class ScanSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "1, 20, 1")]
     public int MaxNumberOfScans = 10;
-        
-    /// <summary>
-    /// Seconds to hold a gaze when scanning for the player.
-    /// </summary>
-    [Export(PropertyHint.Range, "0.1, 10.0, 0.1")]
-    public float Duration = 3f;
 
     /// <summary>
     /// Minimum duration time for the drone to hold during scanning phase.

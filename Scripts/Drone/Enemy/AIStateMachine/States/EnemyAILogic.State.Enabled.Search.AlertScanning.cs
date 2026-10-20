@@ -8,9 +8,9 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record AlertLookout : Search, IGet<Input.Moved>
+        public partial record AlertScanning : Search, IGet<Input.Moved>
         {
-            public AlertLookout()
+            public AlertScanning()
             {
                 this.OnEnter(() => OnEnterScan(Get<EnemyDroneSettings>().SearchScanSettings));
             }
