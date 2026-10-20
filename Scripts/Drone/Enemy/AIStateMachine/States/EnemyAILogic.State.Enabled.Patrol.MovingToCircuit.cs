@@ -20,6 +20,15 @@ public partial class EnemyAILogic
         [Meta]
         public partial record MovingToCircuit : Patrol, IGet<Input.ReturnToIdle>, IGet<Input.MoveToWaypoint>
         {
+            #region Error messages
+            private const string Prefix = "Error in state MovingToCircuit. ";
+            private const string ToIdle = " Fallback to Idle state.";
+            private const string NoFreeCircuits = Prefix + " There are no free circuits for the enemy drone to patrol." + ToIdle;
+            #endregion
+
+            private const string MovingToCircuitMsg = "Moving to circuit '{0}'";
+            private const string MissingWaypoints = "Circuit '{0}' is missing waypoints.";
+            
             public MovingToCircuit()
             {
                 this.OnEnter(() =>
@@ -34,14 +43,14 @@ public partial class EnemyAILogic
                         var circuit = GetClosestFreeCircuit(enemy.GlobalPosition, circuits);
                         if (circuit is null)
                         {
-                            DebugConsole.PrintError("There are no free circuits for the enemy drone to patrol.");
+                            DebugConsole.PrintError(NoFreeCircuits);
                             Input(new Input.ReturnToIdle());
                             return;
                         }
 
                         circuit.SetPatrolling(enemy);
                         data.CurrentCircuit = circuit;
-                        DebugConsole.Print($"Moving to circuit named {circuit.Name}");
+                        DebugConsole.Print(string.Format(MovingToCircuitMsg, circuit.Name));
                     }
 
                     // Set the closest waypoint of this circuit to be the starting point in patrol state
@@ -56,12 +65,7 @@ public partial class EnemyAILogic
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-
-                OnMovingAlongPath(input.Delta, onFinalTargetReached: () =>
-                {
-                    DebugConsole.Print("Reached end of path.");
-                    Input(new Input.MoveToWaypoint());
-                });
+                OnMovingAlongPath(input.Delta, onFinalTargetReached: () => Input(new Input.MoveToWaypoint()));
                 return ToSelf();
             }
 
@@ -85,7 +89,7 @@ public partial class EnemyAILogic
                 }
             }
 
-            private static WaypointCircuit GetClosestFreeCircuit(Vector3 selfPosition, WaypointCircuit[] circuits)
+            private static WaypointCircuit GetClosestFreeCircuit(Vector3 enemyPosition, WaypointCircuit[] circuits)
             {
                 WaypointCircuit closestCircuit = null;
                 var shortestDistance = float.MaxValue;
@@ -93,8 +97,14 @@ public partial class EnemyAILogic
                 {
                     if (!currentCircuit.IsFreeToPatrol()) continue;
 
-                    var closestWaypoint = currentCircuit.GetClosestWaypoint(selfPosition);
-                    var currentDistance = closestWaypoint.GlobalPosition.DistanceTo(selfPosition);
+                    var closestWaypoint = currentCircuit.GetClosestWaypoint(enemyPosition);
+                    if (closestWaypoint is null)
+                    {
+                        DebugConsole.PrintWarning(string.Format(MissingWaypoints, currentCircuit.Name));
+                        continue;
+                    }
+                    
+                    var currentDistance = closestWaypoint.GlobalPosition.DistanceTo(enemyPosition);
                     if (currentDistance > shortestDistance) continue;
 
                     shortestDistance = currentDistance;

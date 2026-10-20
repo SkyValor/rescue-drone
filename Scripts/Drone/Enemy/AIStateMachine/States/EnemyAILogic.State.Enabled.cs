@@ -35,12 +35,7 @@ public partial class EnemyAILogic
                     b: player.GlobalPosition,
                     color: isDetected ? DebugPlayerSighted : DebugPlayerHidden);
             }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="delta"></param>
-            /// <param name="onFinalTargetReached"></param>
+            
             protected void OnMovingAlongPath(double delta, Action onFinalTargetReached)
             {
                 var data = Get<Data>();
@@ -74,11 +69,11 @@ public partial class EnemyAILogic
                     var finalTarget = data.SVOPath[^1];
                     var distanceToTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
 
-                    // If we are withing stopping range and velocity is near zero, lock in the stop
-                    if (distanceToTarget <= settings.CheckpointRadius &&
-                        enemy.Velocity.Length() <= settings.StoppingSpeed)
+                    // If we are within stopping range and velocity is near zero...
+                    if (distanceToTarget <= settings.CheckpointRadius && enemy.Velocity.Length() <= settings.StoppingSpeed)
                     {
-                        // We have reached the circuit. Move to another waypoint before scanning.
+                        DebugConsole.Print("Reached end of path.");
+                        
                         data.SVOPath = null;
                         Output(new Output.VelocityComputed(Vector3.Zero));
                         onFinalTargetReached?.Invoke();

@@ -44,7 +44,7 @@ public partial class WaypointCircuit : Node, IWaypointCircuit
     {
         if (droneInCircuit is not null && droneInCircuit != drone)
         {
-            GD.PrintErr("Another drone is already patrolling this circuit.");
+            DebugConsole.PrintError("Another drone is already patrolling this circuit.");
             return;
         }
         
@@ -59,7 +59,7 @@ public partial class WaypointCircuit : Node, IWaypointCircuit
     {
         if (Waypoints is null || Waypoints.Length == 0)
         {
-            GD.PrintErr("There are no waypoints in circuit.");
+            DebugConsole.PrintError("There are no waypoints in circuit.");
             return null;
         }
         

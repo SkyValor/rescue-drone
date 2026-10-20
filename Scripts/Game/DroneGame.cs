@@ -21,7 +21,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 {
 	public override void _Notification(int what) => this.Notify(what);
 
-	private static readonly string USER_SETTINGS_PATH = "res://Data/user_settings.tres";
+	private const string USER_SETTINGS_PATH = "res://Data/user_settings.tres";
 
 	#region Exports
 	[Export] private Vector3 WorldCenter { get; set; } = Vector3.Zero;

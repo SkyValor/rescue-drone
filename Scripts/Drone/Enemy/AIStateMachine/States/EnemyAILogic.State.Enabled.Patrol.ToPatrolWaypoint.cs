@@ -16,6 +16,18 @@ public partial class EnemyAILogic
         [Meta]
         public partial record ToPatrolWaypoint : Patrol, IGet<Input.StartScanning>
         {
+            #region Error messages
+            private const string Prefix = "Error in state ToPatrolWaypoint. ";
+            private const string ToIdle = " Fallback to Idle state.";
+            private const string MissingCircuitInData = Prefix + "Data has no waypoint nor circuit." + ToIdle;
+            private const string MissingNearestWaypoint = Prefix + "Current circuit cannot return the nearest waypoint." + ToIdle;
+            private const string DistanceTooGreat = Prefix + "Distance to nearest waypoint is greater than 2.0. Sticking to that target.";
+            private const string MissingConnections = Prefix + "Waypoint does not have connections." + ToIdle;
+            private const string NoPathToWaypoint = Prefix + "Pathfinder did not find a path to the next waypoint." + ToIdle;
+            #endregion
+
+            private const string MovingToWaypoint = "Moving to waypoint '{0}'";
+
             public ToPatrolWaypoint()
             {
                 this.OnEnter(() =>
@@ -24,39 +36,61 @@ public partial class EnemyAILogic
                     GeneratePathToWaypoint();
                 });
             }
-
+            
             private void TryGettingNextWaypoint()
             {
-                // Get the next waypoint to travel to
                 var data = Get<Data>();
                 if (data.CurrentWaypoint is null)
                 {
-                    DebugConsole.PrintError("Waypoint is set as null in data. Fallback to Idle state.");
-                    Input(new Input.ReturnToIdle());
-                    return;
+                    if (data.CurrentCircuit is null)
+                    {
+                        DebugConsole.PrintError(MissingCircuitInData);
+                        Input(new Input.ReturnToIdle());
+                        return;
+                    }
+
+                    var enemyPosition = Get<EnemyAIDrone>().GlobalPosition;
+                    var nearestWaypoint = data.CurrentCircuit.GetClosestWaypoint(enemyPosition);
+                    if (nearestWaypoint is null)
+                    {
+                        DebugConsole.PrintError(MissingNearestWaypoint);
+                        Input(new Input.ReturnToIdle());
+                        return;
+                    }
+
+                    data.CurrentWaypoint = nearestWaypoint;
+                    
+                    var distance = enemyPosition.DistanceTo(nearestWaypoint.GlobalPosition);
+                    if (distance > 2f)
+                    {
+                        // TODO: This might be a limitation from the SVO. The waypoint and closest voxel are more than 2.0 units apart.
+                        DebugConsole.PrintError(DistanceTooGreat);
+                        // We return here. Instead of getting a new waypoint,
+                        // the state will continue until we are at the current target.
+                        return;
+                    }
                 }
                 if (data.CurrentWaypoint.Connections.Count == 0)
                 {
-                    DebugConsole.PrintError("Waypoint does not have connections. Fallback to Idle state.");
+                    DebugConsole.PrintError(MissingConnections);
                     Input(new Input.ReturnToIdle());
                     return;
                 }
                     
                 data.CurrentWaypoint = data.CurrentWaypoint.Connections.PickRandom();
-                DebugConsole.Print($"Moving to waypoint named {data.CurrentWaypoint.Name}");
+                DebugConsole.Print(string.Format(MovingToWaypoint, data.CurrentWaypoint.Name));
             }
 
             private void GeneratePathToWaypoint()
             {
                 var data = Get<Data>();
-                var enemy = Get<EnemyAIDrone>();
-                var origin = enemy.GlobalPosition;
+                var origin = Get<EnemyAIDrone>().GlobalPosition;
                 var target = data.CurrentWaypoint.GlobalPosition;
 
                 var path = GeneratePathway(origin, target);
                 if (path.Length == 0)
                 {
-                    DebugConsole.PrintError("Pathfinder did not find a path to the next waypoint. Fallback to Idle state.");
+                    DebugConsole.PrintError(NoPathToWaypoint);
                     Input(new Input.ReturnToIdle());
                 }
                 else
@@ -69,7 +103,6 @@ public partial class EnemyAILogic
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-
                 OnMovingAlongPath(input.Delta, onFinalTargetReached: () => Input(new Input.StartScanning()));
                 return ToSelf();
             }
