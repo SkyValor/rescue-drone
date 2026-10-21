@@ -21,16 +21,49 @@ public partial class EnemyAILogic
         /// The first is useful to avoid cases in which the player drone is way too close to the enemy and hinder its sight sensor and weapons.
         /// </summary>
         [Meta]
-        public partial record Pursuit : Chase, IGet<Input.PlayerDroneTooClose>, IGet<Input.PlayerDroneCloseEnough>
+        public partial record Pursuit : Chase, IGet<Input.PlayerDroneTooClose>, IGet<Input.PlayerDroneCloseEnough>,
+            IGet<Input.Moved>
         {
+            public Pursuit()
+            {
+                OnAttach(() => DebugConsole.Print("OnAttach state Pursuit"));
+                OnDetach(() => DebugConsole.Print("OnDetach state Pursuit"));
+            }
+            
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
                 
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
-                var player = Get<IGameRepo>().PlayerDrone.Value;
+                var player = data.DetectedPlayer;
                 var settings = Get<EnemyDroneSettings>();
+
+                var playerPosition = player.GlobalPosition;
+                if (playerPosition.DistanceTo(data.LastRepathPosition) >= settings.RepathThreshold)
+                {
+                    // The player has moved away a significant distance
+                    var idealTarget = CalculatePursuitTarget(enemy, player, settings);
+                    var path = GeneratePathway(enemy.GlobalPosition, idealTarget);
+                    if (path.Length <= 0)
+                    {
+                        DebugConsole.Print("Pursuit. Generated path is too short: " + path.Length);
+                        return ToSelf();
+                    }
+
+                    data.SVOPath = path;
+                    data.CurrentPathIndex = 0;
+                    data.LastRepathPosition = idealTarget;
+                }
+                
+                // Move the enemy drone towards the ideal target, but keep the looking direction towards player
+                OnMovingAlongPath((float) input.Delta, () => Input(new Input.PlayerDroneCloseEnough()));
+                
+                
+                ComputeMovementAlongPath(enemy, settings.MaxSpeed, (float) input.Delta);
+                
+                
+                
                 
                 // We cache that ideal target position only after it being somewhat distant from the
                 // last registered position, by a threshold to recalculate the SVO path.
@@ -38,12 +71,16 @@ public partial class EnemyAILogic
                 var idealTarget = CalculatePursuitTarget(enemy, player, settings);
                 if (idealTarget.DistanceTo(data.LastRepathPosition) <= settings.RepathThreshold) 
                     return ToSelf();
+                
+                DebugDraw3D.DrawLine(enemy.GlobalPosition, idealTarget, Colors.AntiqueWhite);
             
                 var path = GeneratePathway(enemy.GlobalPosition, idealTarget);
                 if (path.Length <= 0) return ToSelf(); // If length is zero, we don't have a valid path
                 
+                DebugConsole.Print("Pursuit; SVO path recalculated.");
+                
                 data.SVOPath = path;
-                data.CurrentPathIndex = 1; // We skip 0 because that is where we are
+                data.CurrentPathIndex = 0;
                 data.LastRepathPosition = idealTarget;
                 return ToSelf();
             }
@@ -63,6 +100,23 @@ public partial class EnemyAILogic
                 var distance = toPlayer.Length();
                 var targetDistance = Mathf.Clamp(distance, settings.MinDistance, settings.MaxDistance);
                 return playerPosition - toPlayer.Normalized() * targetDistance;
+            }
+
+            public Transition On(in Input.Moved input)
+            {
+                // Check if the enemy drone is at the end of the path
+                var data = Get<Data>();
+                var stoppingSpeed = Get<EnemyDroneSettings>().StoppingSpeed;
+                var enemyVelocity = Get<EnemyAIDrone>().Velocity;
+                var isEndOfPath = data.CurrentPathIndex == data.SVOPath.Length - 1;
+                
+                if (isEndOfPath && enemyVelocity.Length() <= stoppingSpeed)
+                {
+                    Output(new Output.VelocityComputed(Vector3.Zero));
+                    return To<Stay>();
+                }
+
+                return ToSelf();
             }
 
             public Transition On(in Input.PlayerDroneTooClose input) => To<Retreat>();

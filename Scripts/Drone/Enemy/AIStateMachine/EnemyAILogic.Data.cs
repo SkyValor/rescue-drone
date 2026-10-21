@@ -30,16 +30,18 @@ public partial class EnemyAILogic
         /// </summary>
         public Waypoint CurrentWaypoint { get; set; }
         
+        public PlayerDrone DetectedPlayer { get; set; }
+        
         /// <summary>
         /// The player drone's position (in global space) when the drone recalculated the SVO
         /// pathway most recently.
         /// </summary>
         public Vector3 LastRepathPosition { get; set; }
         
-        /// <summary>
-        /// The most recent player position (in global space) that was detected by the sight sensor.
-        /// </summary>
-        public Vector3 LastKnownPlayerPosition { get; set; }
+        // /// <summary>
+        // /// The most recent player position (in global space) that was detected by the sight sensor.
+        // /// </summary>
+        // public Vector3 LastKnownPlayerPosition { get; set; }
         
         /// <summary>
         /// The target number of scans the drone will perform during scanning phase.

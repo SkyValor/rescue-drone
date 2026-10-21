@@ -21,7 +21,7 @@ public partial class EnemyAILogic
                 var enemy = Get<EnemyAIDrone>();
 
                 var origin = enemy.GlobalPosition;
-                var target = data.LastKnownPlayerPosition;
+                var target = data.DetectedPlayer.GlobalPosition;
 
                 var path = GeneratePathway(origin, target);
                 if (path.Length == 0)

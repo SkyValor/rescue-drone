@@ -45,7 +45,7 @@ TiltLerpSpeed = 1.75
 metadata/_custom_type_script = "uid://cihp66ji43wf8"
 
 [node name="PlayerTest" type="CharacterBody3D" unique_id=29709242]
-collision_mask = 24
+collision_mask = 152
 script = ExtResource("1_muiep")
 Settings = SubResource("Resource_omdfs")
 

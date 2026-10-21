@@ -1,6 +1,7 @@
 ﻿namespace RescueDrone;
 
 using System;
+using System.Linq;
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Godot;
@@ -51,6 +52,12 @@ public partial class SightSensorCone3D : Node3D
 
         VisionCone.Connect("body_sighted", Callable.From<Node3D>(OnBodySighted));
         VisionCone.Connect("body_hidden", Callable.From<Node3D>(OnBodyHidden));
+    }
+
+    public Node3D[] GetVisibleBodies()
+    {
+        var visibleBodies = VisionCone.Call(GET_VISIBLE_BODIES).AsGodotArray<Node3D>();
+        return visibleBodies.ToArray();
     }
 
     private Node GetCone()

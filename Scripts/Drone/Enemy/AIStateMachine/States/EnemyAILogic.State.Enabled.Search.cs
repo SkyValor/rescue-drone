@@ -17,7 +17,7 @@ public partial class EnemyAILogic
                 
                 DebugDraw3D.DrawLine(
                     a: Get<EnemyAIDrone>().GlobalPosition,
-                    b: Get<Data>().LastKnownPlayerPosition,
+                    b: Get<Data>().DetectedPlayer.GlobalPosition,
                     color: Colors.Goldenrod);
                 
                 return ToSelf();

@@ -18,7 +18,13 @@ public partial class EnemyAILogic
         [Meta]
         public partial record Retreat : Chase, IGet<Input.PlayerDroneTooFar>, IGet<Input.PlayerDroneCloseEnough>
         {
-            private float[] yawOffsets =
+            public Retreat()
+            {
+                OnAttach(() => DebugConsole.Print("OnAttach state Stay"));
+                OnDetach(() => DebugConsole.Print("OnDetach state Stay"));
+            }
+            
+            private readonly float[] YawOffsets =
             [
                 Mathf.DegToRad(0),
                 Mathf.DegToRad(30), Mathf.DegToRad(-30),
@@ -26,7 +32,7 @@ public partial class EnemyAILogic
                 Mathf.DegToRad(90), Mathf.DegToRad(-90)
             ];
 
-            private float[] pitchOffsets = [ Mathf.DegToRad(0), Mathf.DegToRad(30), Mathf.DegToRad(-30)];
+            private readonly float[] PitchOffsets = [ Mathf.DegToRad(0), Mathf.DegToRad(30), Mathf.DegToRad(-30)];
             
             public override Transition On(in Input.PhysicsTick input)
             {
@@ -70,9 +76,9 @@ public partial class EnemyAILogic
                 var bestDirection = Vector3.Zero;
                 var bestScore = -1f;
 
-                foreach (var pitch in pitchOffsets)
+                foreach (var pitch in PitchOffsets)
                 {
-                    foreach (var yaw in yawOffsets)
+                    foreach (var yaw in YawOffsets)
                     {
                         // Rotate the ideal direction by the current candidate angles
                         var candidateDirection = idealAwayDirection

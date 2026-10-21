@@ -1,6 +1,8 @@
 ﻿namespace RescueDrone;
 
 using Chickensoft.Introspection;
+using Chickensoft.LogicBlocks;
+using Godot;
 
 public partial class EnemyAILogic
 {
@@ -18,6 +20,8 @@ public partial class EnemyAILogic
             public Stay()
             {
                 OnAttach(() => DebugConsole.Print("OnAttach state Stay"));
+                OnDetach(() => DebugConsole.Print("OnDetach state Stay"));
+                this.OnEnter(() => Output(new Output.VelocityComputed(Vector3.Zero)));
             }
             
             public override Transition On(in Input.PhysicsTick input)
@@ -26,7 +30,7 @@ public partial class EnemyAILogic
                 
                 var enemy = Get<EnemyAIDrone>();
                 var settings = Get<EnemyDroneSettings>();
-                var playerPosition = Get<Data>().LastKnownPlayerPosition;
+                var playerPosition = Get<Data>().DetectedPlayer.GlobalPosition;
                 SmoothlyRotate(enemy, playerPosition, settings.TurnSpeed, (float) input.Delta);
                 return ToSelf();
             }

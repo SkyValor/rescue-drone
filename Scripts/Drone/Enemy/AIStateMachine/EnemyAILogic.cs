@@ -11,6 +11,9 @@ public interface IEnemyAILogic : ILogicBlock<EnemyAILogic.State>;
 public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogic
 {
     public override Transition GetInitialState() => To<State.Disabled>();
+    
+    [Meta]
+    public partial record State : StateLogic<State>;
 
     public override void OnStart()
     {
@@ -34,8 +37,9 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
         
         // We set the Data.LastRepathPosition here to avoid having
         // a default value the first time it's needed
-        
-        data.LastKnownPlayerPosition = playerDrone.GlobalPosition;
+
+        data.DetectedPlayer = playerDrone;
+        // data.LastKnownPlayerPosition = playerDrone.GlobalPosition;
         data.LastRepathPosition = playerDrone.GlobalPosition;
         Input(new Input.PlayerDetected());
     }

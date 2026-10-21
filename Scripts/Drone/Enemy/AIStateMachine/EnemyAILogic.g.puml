@@ -32,6 +32,8 @@ RescueDrone_EnemyAILogic_State_MovingToCircuit --> RescueDrone_EnemyAILogic_Stat
 RescueDrone_EnemyAILogic_State_MovingToCircuit --> RescueDrone_EnemyAILogic_State_ToPatrolWaypoint : MoveToWaypoint
 RescueDrone_EnemyAILogic_State_Patrol --> RescueDrone_EnemyAILogic_State_Patrol : PhysicsTick
 RescueDrone_EnemyAILogic_State_Patrol --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDetected
+RescueDrone_EnemyAILogic_State_Patrol --> RescueDrone_EnemyAILogic_State_Retreat : PlayerDetected
+RescueDrone_EnemyAILogic_State_Patrol --> RescueDrone_EnemyAILogic_State_Stay : PlayerDetected
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Retreat : PlayerDroneTooClose
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
 RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDroneTooFar
@@ -47,6 +49,7 @@ RescueDrone_EnemyAILogic_State : ComputeMovementAlongPath() → VelocityComputed
 RescueDrone_EnemyAILogic_State : ComputeMovementWithoutRotation() → VelocityComputed
 RescueDrone_EnemyAILogic_State : SmoothlyRotate() → RotationComputed
 RescueDrone_EnemyAILogic_State_Enabled : OnMovingAlongPath() → VelocityComputed
+RescueDrone_EnemyAILogic_State_Stay : OnEnter → VelocityComputed
 
 [*] --> RescueDrone_EnemyAILogic_State_Disabled
 @enduml

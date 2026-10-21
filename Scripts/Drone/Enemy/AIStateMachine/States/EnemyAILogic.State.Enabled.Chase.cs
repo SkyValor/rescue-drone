@@ -20,8 +20,8 @@ public partial class EnemyAILogic
             {
                 base.On(input);
                 
-                DrawPlayerDetectionLine(true);
-                if (Get<IGameRepo>().PlayerDrone.Value is not null)
+                // DrawPlayerDetectionLine(true);
+                if (Get<Data>().DetectedPlayer is not null)
                 {
                     var distanceToPlayer = CheckDistanceToPlayer();
                     if (distanceToPlayer < 0) Input(new Input.PlayerDroneTooClose());
