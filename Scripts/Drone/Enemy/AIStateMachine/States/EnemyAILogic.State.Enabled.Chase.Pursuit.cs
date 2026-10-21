@@ -3,6 +3,11 @@
 using Chickensoft.Introspection;
 using Godot;
 
+// TODO: Have a sphere hitbox around the enemy drone for a second sensor.
+// When the player is being detected, allow this second hitbox to also continuously detect it.
+// This avoids the bottleneck of the player getting too close and reaching outside of the sight sensor cone of detection.
+// It's also standard for enemies to be aware of their close surroundings, especially when alerted.
+
 public partial class EnemyAILogic
 {
     public partial record State

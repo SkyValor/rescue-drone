@@ -26,13 +26,13 @@ public partial class EnemyAILogic
         }
         
         /// <summary>
-        /// 
+        /// Calculate the target speed and rotation for this physics frame, based on current position in the SVO path
+        /// and current speed. The results will be sent via <c>Output</c>.
         /// </summary>
         /// <param name="enemy"></param>
-        /// <param name="targetPosition"></param>
         /// <param name="maxSpeed"></param>
         /// <param name="deltaTime"></param>
-        private void ComputeMovementAlongPath(EnemyAIDrone enemy, Vector3 targetPosition, float maxSpeed, float deltaTime)
+        private void ComputeMovementAlongPath(EnemyAIDrone enemy, float maxSpeed, float deltaTime)
         {
             var data = Get<Data>();
             var settings = Get<EnemyDroneSettings>();
@@ -51,6 +51,7 @@ public partial class EnemyAILogic
             var speedBleedingFactor = currentSpeed < desiredSpeed ? settings.Acceleration : settings.Deceleration;
             data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
 
+            var targetPosition = path[pathIndex];
             var toTarget = targetPosition - enemy.GlobalPosition;
             var direction = toTarget.Normalized();
             SmoothlyRotate(enemy, direction, settings.TurnSpeed, deltaTime);

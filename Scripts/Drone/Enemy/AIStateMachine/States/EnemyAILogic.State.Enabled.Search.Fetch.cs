@@ -61,7 +61,7 @@ public partial class EnemyAILogic
 
                         return;
                     }
-                    ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) delta);
+                    ComputeMovementAlongPath(enemy, settings.MaxSpeed, (float) delta);
                 }
                 catch (Exception ex)
                 {

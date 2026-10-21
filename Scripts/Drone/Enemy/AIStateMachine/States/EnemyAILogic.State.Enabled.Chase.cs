@@ -22,26 +22,15 @@ public partial class EnemyAILogic
                 
                 DrawPlayerDetectionLine(true);
                 if (Get<IGameRepo>().PlayerDrone.Value is not null)
-                    CheckDistanceToPlayer();
-                else
-                    Input(new Input.PlayerLost());
+                {
+                    var distanceToPlayer = CheckDistanceToPlayer();
+                    if (distanceToPlayer < 0) Input(new Input.PlayerDroneTooClose());
+                    else if (distanceToPlayer > 0) Input(new Input.PlayerDroneTooFar());
+                    else Input(new Input.PlayerDroneCloseEnough());
+                }
+                else Input(new Input.PlayerLost());
             
                 return ToSelf();
-            }
-            
-            private void CheckDistanceToPlayer()
-            {
-                var data = Get<Data>();
-                var enemy = Get<EnemyAIDrone>();
-                var settings = Get<EnemyDroneSettings>();
-                    
-                var distanceToPlayer = enemy.GlobalPosition.DistanceTo(data.LastKnownPlayerPosition);
-                if (distanceToPlayer < settings.MinDistance)
-                    Input(new Input.PlayerDroneTooClose());
-                else if (distanceToPlayer > settings.MaxDistance)
-                    Input(new Input.PlayerDroneTooFar());
-                else
-                    Input(new Input.PlayerDroneCloseEnough());
             }
             
             public Transition On(in Input.PlayerLost input) => To<Fetch>();

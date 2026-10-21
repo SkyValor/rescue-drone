@@ -21,6 +21,10 @@ public partial class EnemyAILogic
             private readonly Color DebugPlayerSighted = new(Colors.Blue, 0.4f);
             private readonly Color DebugPlayerHidden = new(Colors.Red, 0.4f);
             
+            private const string PathIsNullOrEmpty = "Path is null or empty.";
+            private const string PathIndexOutOfRange = "Path index is out of range.";
+            private const string ReachedEndOfPath = "Reached the end of the path.";
+            
             private RandomNumberGenerator random;
 
             public virtual Transition On(in Input.PhysicsTick input) => ToSelf();
@@ -51,17 +55,15 @@ public partial class EnemyAILogic
                 
                 if (path is null || path.Length == 0)
                 {
-                    DebugConsole.PrintError("Path is null or empty.");
+                    DebugConsole.PrintError(PathIsNullOrEmpty);
                     return;
                 }
 
                 if (pathIndex >= path.Length)
                 {
-                    DebugConsole.PrintError("Path index is out of range.");
+                    DebugConsole.PrintError(PathIndexOutOfRange);
                     return;
                 }
-
-                var targetPosition = path[pathIndex];
 
                 // If we are headed towards the final target of this path
                 if (data.CurrentPathIndex == data.SVOPath.Length - 1)
@@ -72,7 +74,7 @@ public partial class EnemyAILogic
                     // If we are within stopping range and velocity is near zero...
                     if (distanceToTarget <= settings.CheckpointRadius && enemy.Velocity.Length() <= settings.StoppingSpeed)
                     {
-                        DebugConsole.Print("Reached end of path.");
+                        DebugConsole.Print(ReachedEndOfPath);
                         
                         data.SVOPath = null;
                         Output(new Output.VelocityComputed(Vector3.Zero));
@@ -81,7 +83,7 @@ public partial class EnemyAILogic
                     }
                 }
 
-                else if (enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
+                else if (enemy.GlobalPosition.DistanceTo(path[pathIndex]) < settings.CheckpointRadius)
                 {
                     // We are close enough to consider reaching this point and can now move
                     // to the following point. We do this early to anticipate the curve and have a more
@@ -90,7 +92,23 @@ public partial class EnemyAILogic
                     return;
                 }
 
-                ComputeMovementAlongPath(enemy, targetPosition, settings.MaxSpeed, (float) delta);
+                ComputeMovementAlongPath(enemy, settings.MaxSpeed, (float) delta);
+            }
+
+            /// <summary>
+            /// Check the current distance to the player drone's last known position (in global space). The returned value
+            /// is a number indicating whether the enemy drone is too close (-1), too far away (1) or close enough (0).
+            /// </summary>
+            /// <returns></returns>
+            protected int CheckDistanceToPlayer()
+            {
+                var settings = Get<EnemyDroneSettings>();
+                var enemyPosition = Get<EnemyAIDrone>().GlobalPosition;
+                var playerKnownPosition = Get<Data>().LastKnownPlayerPosition;
+
+                var distanceToPlayer = enemyPosition.DistanceTo(playerKnownPosition);
+                if (distanceToPlayer < settings.MinDistance) return -1;
+                return distanceToPlayer > settings.MaxDistance ? 1 : 0;
             }
 
             #region Scan functions
