@@ -20,8 +20,7 @@ public partial class EnemyAILogic
         {
             public Retreat()
             {
-                OnAttach(() => DebugConsole.Print("OnAttach state Stay"));
-                OnDetach(() => DebugConsole.Print("OnDetach state Stay"));
+                OnAttach(() => DebugConsole.Print("OnAttach state Retreat"));
             }
             
             private readonly float[] YawOffsets =
@@ -33,25 +32,43 @@ public partial class EnemyAILogic
             ];
 
             private readonly float[] PitchOffsets = [ Mathf.DegToRad(0), Mathf.DegToRad(30), Mathf.DegToRad(-30)];
-            
+
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-                
-                var enemy = Get<EnemyAIDrone>();
-                var player = Get<IGameRepo>().PlayerDrone.Value;
-                var settings = Get<EnemyDroneSettings>();
-                var deltaTime = (float) input.Delta;
-                var world = Get<World3D>();
 
-                var toPlayer = player.GlobalPosition - enemy.GlobalPosition;
-                var retreatDirection = FindSafeRetreatDirection(enemy, player.GlobalPosition, world, deltaTime); // TODO: deltaTime when requesting retreatDistance !!!
+                var world = Get<World3D>();
+                var enemy = Get<EnemyAIDrone>();
+                var player = Get<Data>().DetectedPlayer;
+                var settings = Get<EnemyDroneSettings>();
+
+                var deltaTime = (float) input.Delta;
+                var enemyPosition = enemy.GlobalPosition;
+                var playerPosition = player.GlobalPosition;
+                var retreatDistance = 1f + deltaTime;
+
+                var retreatDirection = FindSafeRetreatDirection(enemy, playerPosition, world, retreatDistance);
                 if (retreatDirection == Vector3.Zero) return ToSelf();
                 
+                var distanceToPlayer = enemyPosition.DistanceTo(playerPosition);
+                var distanceToSweetSpot = (settings.MinDistance + settings.MaxDistance) * 0.5f;
+                var maxErrorRange = (settings.MaxDistance - settings.MinDistance) * 0.5f;
+
+                // Intensity factor: 0.0 when right at the sweet spot, 1.0 when hitting Min or Max bounds
+                var errorAmount = Mathf.Abs(distanceToPlayer - distanceToSweetSpot);
+                var intensity = Mathf.Clamp(errorAmount / maxErrorRange, 0f, 1f);
+
+                // Set the max speed for Retreat to 75% of MaxSpeed
+                var targetSpeed = Mathf.Lerp(settings.MaxSpeed * 0.25f, settings.MaxSpeed * 0.75f, intensity);
+
                 // Smoothly rotate to face the player while strafing/retreating away.
-                var desiredSpeed = settings.MaxSpeed * 0.6f;
-                SmoothlyRotate(enemy, toPlayer.Normalized(), settings.TurnSpeed, deltaTime);
-                ComputeMovementWithoutRotation(enemy, retreatDirection, desiredSpeed, deltaTime);
+                // var desiredSpeed = settings.MaxSpeed * 0.6f;
+                var toPlayer = playerPosition - enemyPosition;
+                toPlayer = toPlayer with { Y = 0f };
+
+                OnMovingAlongPath(input.Delta, targetSpeed, false);
+                SmoothlyRotate(enemy, toPlayer, settings.TurnSpeed, deltaTime);
+
                 return ToSelf();
             }
 
@@ -124,7 +141,7 @@ public partial class EnemyAILogic
             private bool IsRetreatPathClear(Vector3 start, Vector3 end, World3D world, SparseVoxelOctree svo)
             {
                 // Check if the end result is a valid empty leaf
-                var targetLeaf = svo.GetLeafAtPosition(end);
+                var targetLeaf = svo.GetNodeAtPosition(end);
                 if (targetLeaf is null || !targetLeaf.IsEmpty)
                     return false;
 

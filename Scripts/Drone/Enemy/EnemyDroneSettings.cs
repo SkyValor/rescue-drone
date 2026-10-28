@@ -83,6 +83,8 @@ public partial class EnemyDroneSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0.1, 50, 0.1")]
     public float RepathThreshold = 2f;
+
+    public float PreferredHeightOffset = 2f;
     
     /// <summary>
     /// Number of directions to look for at each waypoint stop.

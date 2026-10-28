@@ -1,4 +1,6 @@
 ﻿namespace RescueDrone;
 
-public interface IFlyingDrone;
+using Chickensoft.GodotNodeInterfaces;
+
+public interface IFlyingDrone : ICharacterBody3D;
 

@@ -35,6 +35,8 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	
 	[Export] private Vector3 FollowCameraOffset { get; set; }
 	[Export] private Vector3 FollowCameraRotation { get; set; }
+	
+	[Export] private bool DynamicGeneration { get; set; }
 	#endregion
 	
 	// [Dependency] private IAppRepo AppRepo => this.DependOn<IAppRepo>();
@@ -46,7 +48,8 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	
 	[Node] private InputDeviceHandler DeviceHandler { get; set; }
 	
-	[Node] private SVOBuilder SVOBuilder { get; set; }
+	// [Node] private SVOBuilder SVOBuilder { get; set; }
+	[Node] private SparseVoxelOctree SparseVoxelOctree { get; set; }
 	[Node] private Camera3D MainCamera { get; set; }
 	
 	[Node] private Node WaypointCircuits { get; set; }
@@ -78,23 +81,33 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		GameRepo.SetEnemyDrones([enemyDrone]);
 		this.Provide();
 		
-		loadingScreenShader = LoadingScreen.Material as ShaderMaterial;
-		if (loadingScreenShader is null)
-		{
-			GD.PrintErr("Loading screen is missing shader material.");
-		}
-		else
-		{
-			loadingScreenShader.SetShaderParameter("progress", 0f);
-		}
-
-		LoadingBar.Visible = true;
-		LoadingBar.Value = 0f;
-		LoadingLabel.Visible = true;
-		LoadingLabel.Text = "Generating Sparse Voxel Octree...";
+		SparseVoxelOctree.EarlyGenerationFinished += OnOctreeGenerationFinished;
+		if (DynamicGeneration) SparseVoxelOctree.GenerateOctree();
+		else SparseVoxelOctree.GenerateOctreeInDepth();
 		
-		SVOBuilder.StartAsyncGeneration(WorldCenter, WorldSize, MinNodeSize);
-		SetProcess(true);
+		// loadingScreenShader = LoadingScreen.Material as ShaderMaterial;
+		// if (loadingScreenShader is null)
+		// {
+		// 	GD.PrintErr("Loading screen is missing shader material.");
+		// }
+		// else
+		// {
+		// 	loadingScreenShader.SetShaderParameter("progress", 0f);
+		// }
+		//
+		// LoadingBar.Visible = true;
+		// LoadingBar.Value = 0f;
+		// LoadingLabel.Visible = true;
+		// LoadingLabel.Text = "Generating Sparse Voxel Octree...";
+		
+		// SVOBuilder.StartAsyncGeneration(WorldCenter, WorldSize, MinNodeSize);
+		// SetProcess(true);
+	}
+
+	private void OnOctreeGenerationFinished()
+	{
+		GameRepo.SetSVO(SparseVoxelOctree);
+		OnLoadingScreenFadeOutCompleted();
 	}
 
 	// public void OnResolved()
@@ -104,20 +117,20 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	//     this.Provide();
 	// }
 	
-	public void OnProcess(double delta)
-	{
-		var currentProgress = SVOBuilder.Progress;
-		LoadingBar.Value = currentProgress * 100f;
-
-		if (!SVOBuilder.IsDone) return;
-		
-		SetProcess(false);
-		GameRepo.SetSVO(SVOBuilder.Tree);
-		
-		// Timing.RunCoroutine(DrawVoxelOctree());
-		
-		OnLevelReady();
-	}
+	// public void OnProcess(double delta)
+	// {
+	// 	var currentProgress = SVOBuilder.Progress;
+	// 	LoadingBar.Value = currentProgress * 100f;
+	//
+	// 	if (!SVOBuilder.IsDone) return;
+	// 	
+	// 	SetProcess(false);
+	// 	GameRepo.SetSVO(SVOBuilder.Tree);
+	// 	
+	// 	// Timing.RunCoroutine(DrawVoxelOctree());
+	// 	
+	// 	OnLevelReady();
+	// }
 	
 	private WaypointCircuit[] GetWaypointCircuits()
 	{
@@ -146,14 +159,14 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		// LoadPlayerAndEnemy();
 	}
 
-	private IEnumerator<double> DrawVoxelOctree()
-	{
-		while (true)
-		{
-			SVOBuilder.Tree.DrawVoxelOctree();
-			yield return Timing.WaitForOneFrame;
-		}
-	}
+	// private IEnumerator<double> DrawVoxelOctree()
+	// {
+	// 	while (true)
+	// 	{
+	// 		SVOBuilder.Tree.DrawVoxelOctree();
+	// 		yield return Timing.WaitForOneFrame;
+	// 	}
+	// }
 
 	private void LoadPlayerAndEnemy()
 	{

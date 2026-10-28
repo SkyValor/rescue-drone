@@ -8,6 +8,8 @@ public partial class EnemyAILogic
 {
     public partial record State
     {
+        protected enum PlayerDistanceType { CloseEnough = 0, TooFar = 1, TooClose = -1 }
+        
         /// <summary>
         /// A superstate that represents the drone being enabled and alive.
         /// It holds shared methods that are used by multiple child states with common behavior.
@@ -25,6 +27,72 @@ public partial class EnemyAILogic
             
             private RandomNumberGenerator random;
 
+            public Enabled()
+            {
+                OnAttach(() =>
+                {
+                    var sightSensor = Get<SightSensorCone3D>();
+                    sightSensor.DroneSighted += OnDroneSighted;
+                    sightSensor.DroneHidden += OnDroneHidden;
+                    
+                    var proximitySensor = Get<ProximitySensor>();
+                    proximitySensor.DroneInProximity += OnDroneVicinityIn;
+                    proximitySensor.DroneOutProximity += OnDroneVicinityOut;
+                });
+                OnDetach(() =>
+                {
+                    var sightSensor = Get<SightSensorCone3D>();
+                    sightSensor.DroneSighted -= OnDroneSighted;
+                    sightSensor.DroneHidden -= OnDroneHidden;
+                    
+                    var proximitySensor = Get<ProximitySensor>();
+                    proximitySensor.DroneInProximity -= OnDroneVicinityIn;
+                    proximitySensor.DroneOutProximity -= OnDroneVicinityOut;
+                });
+            }
+
+            #region Subscribed events
+
+            private void OnDroneSighted(IFlyingDrone drone)
+            {
+                if (drone is not PlayerDrone player) return;
+                Input(new Input.PlayerDetected(player));
+            }
+
+            private void OnDroneHidden(IFlyingDrone drone)
+            {
+                if (drone is not PlayerDrone player) return;
+                
+                // The player exited our field of vision.
+                // Unless it is in our surroundings, it's lost to us.
+
+                var inVicinity = Get<ProximitySensor>().DronesInProximity.Contains(player);
+                if (inVicinity) return;
+                
+                Input(new Input.PlayerLost());
+            }
+
+            private void OnDroneVicinityIn(IFlyingDrone drone)
+            {
+                if (drone is not PlayerDrone player) return;
+                Input(new Input.PlayerDetected(player));
+            }
+
+            private void OnDroneVicinityOut(IFlyingDrone drone)
+            {
+                if (drone is not PlayerDrone player) return;
+                
+                // The player exited our surroundings.
+                // Unless it is in our field of vision, it's lost to us.
+
+                var onSight = Get<SightSensorCone3D>().DronesOnSight.Contains(player);
+                if (onSight) return;
+
+                Input(new Input.PlayerLost());
+            }
+            
+            #endregion
+            
             public virtual Transition On(in Input.PhysicsTick input) => ToSelf();
 
             /// <summary>
@@ -42,26 +110,69 @@ public partial class EnemyAILogic
                     b: player.GlobalPosition,
                     color: isDetected ? DebugPlayerSighted : DebugPlayerHidden);
             }
-            
+
             /// <summary>
-            /// Check the current distance to the player drone's last known position (in global space). The returned value
-            /// is a number indicating whether the enemy drone is too close (-1), too far away (1) or close enough (0).
+            /// Check the current distance to the player drone's last known position (in global space).
             /// </summary>
             /// <returns></returns>
-            protected int CheckDistanceToPlayer()
+            protected PlayerDistanceType CheckDistanceToPlayer(Vector3 playerPosition)
             {
                 var settings = Get<EnemyDroneSettings>();
                 var enemyPosition = Get<EnemyAIDrone>().GlobalPosition;
-                var playerKnownPosition = Get<Data>().DetectedPlayer.GlobalPosition;
+                
+                var sweetSpot = (settings.MinDistance + settings.MaxDistance) * 0.5f;
+                var distance = enemyPosition.DistanceTo(playerPosition);
 
-                var distanceToPlayer = enemyPosition.DistanceTo(playerKnownPosition);
-                if (distanceToPlayer < settings.MinDistance) return -1;
-                return distanceToPlayer > settings.MaxDistance ? 1 : 0;
+                var errorAmount = distance - sweetSpot;
+                return errorAmount switch
+                {
+                    > 1f     => PlayerDistanceType.TooFar,
+                    < -0.75f => PlayerDistanceType.TooClose,
+                    _        => PlayerDistanceType.CloseEnough
+                };
             }
-            
+
+            /// <summary>
+            /// Return a <see cref="Transition"/> to change the state into one of <see cref="State.Chase"/>
+            /// child states. The returned state will be chosen based on the current distance
+            /// to the player drone.
+            ///
+            /// This method should only be called when the player drone is firstly detected during
+            /// a state in which it's not being tracked.
+            /// </summary>
+            /// <param name="playerPosition"></param>
+            /// <returns></returns>
+            /// <exception cref="ArgumentOutOfRangeException"></exception>
+            protected Transition ToChaseBasedOnDistance(Vector3 playerPosition)
+            {
+                var distanceType = CheckDistanceToPlayer(playerPosition);
+                return distanceType switch
+                {
+                    PlayerDistanceType.CloseEnough => To<Stay>(),
+                    PlayerDistanceType.TooClose    => To<Retreat>(),
+                    PlayerDistanceType.TooFar      => To<Pursuit>(),
+                    _                              => throw new ArgumentOutOfRangeException()
+                };
+            }
+
             #region Traversal methods
-            
-            protected void OnMovingAlongPath(double delta, Action onFinalTargetReached)
+
+            /// <summary>
+            /// Get the state machine's current pathfinding instance and request to generate
+            /// a point pathway from origin to target.
+            /// </summary>
+            /// <param name="originPosition"></param>
+            /// <param name="targetPosition"></param>
+            /// <returns></returns>
+            protected Vector3[] GeneratePathway(Vector3 originPosition, Vector3 targetPosition)
+            {
+                var world = Get<World3D>();
+                var enemy = Get<EnemyAIDrone>();
+                var pathfinder = Get<IPathfindSVO>();
+                return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
+            }
+
+            protected void OnMovingAlongPath(double delta, float targetSpeed, bool includeRotation = true, Action onFinalTargetReached = null)
             {
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
@@ -113,33 +224,23 @@ public partial class EnemyAILogic
                     return;
                 }
 
-                ComputeMovementAlongPath(enemy, settings.MaxSpeed, (float) delta);
-            }
-            
-            /// <summary>
-            /// Get the state machine's current pathfinding instance and request to generate
-            /// a point pathway from origin to target.
-            /// </summary>
-            /// <param name="originPosition"></param>
-            /// <param name="targetPosition"></param>
-            /// <returns></returns>
-            private Vector3[] GeneratePathway(Vector3 originPosition, Vector3 targetPosition)
-            {
-                var world = Get<World3D>();
-                var enemy = Get<EnemyAIDrone>();
-                var pathfinder = Get<IPathfindSVO>();
-                return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius,
-                    [enemy.GetRid()]);
+                ComputeMovementAlongPath(enemy, includeRotation, targetSpeed, (float) delta);
             }
 
             /// <summary>
-            /// Calculate the target speed and rotation for this physics frame, based on current position in the SVO path
-            /// and current speed. The results will be sent via <c>Output</c>.
+            /// Calculate the velocity that the enemy drone needs to have on this physics frame in order to reach the destination.
+            /// This method assumes the drone is following a path and will continue to fly through it.
+            ///
+            /// The enemy drone slows down when nearing curves in the path. The distance to slow down and how much it slows down
+            /// both depend on the tightness of the curve. The enemy drone also slows down until a complete stop when nearing
+            /// the end of the path.
             /// </summary>
             /// <param name="enemy"></param>
-            /// <param name="maxSpeed"></param>
+            /// <param name="includeRotation"></param>
+            /// <param name="targetSpeed"></param>
             /// <param name="deltaTime"></param>
-            private void ComputeMovementAlongPath(EnemyAIDrone enemy, float maxSpeed, float deltaTime)
+            private void ComputeMovementAlongPath(EnemyAIDrone enemy, bool includeRotation, float targetSpeed,
+                float deltaTime)
             {
                 var data = Get<Data>();
                 var settings = Get<EnemyDroneSettings>();
@@ -153,16 +254,17 @@ public partial class EnemyAILogic
 
                 var currentSpeed = enemy.Velocity.Length();
                 var desiredSpeed = headingToFinalTarget
-                    ? CalculateFinalTargetSpeed(path, enemy, settings, maxSpeed)
-                    : CalculateCurveSpeed(path, pathIndex, settings, enemy.GlobalPosition, maxSpeed);
+                    ? CalculateFinalTargetSpeed(path, enemy, settings, targetSpeed)
+                    : CalculateCurveSpeed(path, pathIndex, settings, enemy.GlobalPosition, targetSpeed);
                 var speedBleedingFactor = currentSpeed < desiredSpeed ? settings.Acceleration : settings.Deceleration;
-                data.CurrentTargetSpeed =
-                    Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
+                data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
 
                 var targetPosition = path[pathIndex];
                 var toTarget = targetPosition - enemy.GlobalPosition;
                 var direction = toTarget.Normalized();
-                SmoothlyRotate(enemy, direction, settings.TurnSpeed, deltaTime);
+
+                if (includeRotation)
+                    SmoothlyRotate(enemy, toTarget with { Y = 0f }, settings.TurnSpeed, deltaTime);
 
                 // Smoothly alter the current velocity towards the target speed and direction,
                 // and output the result.
@@ -177,19 +279,19 @@ public partial class EnemyAILogic
                 Output(new Output.VelocityComputed(velocity));
             }
 
-            private void ComputeMovementWithoutRotation(EnemyAIDrone enemy, Vector3 toDirection, float desiredSpeed, float deltaTime)
-            {
-                var data = Get<Data>();
-                var settings = Get<EnemyDroneSettings>();
-            
-                var speedBleedingFactor = desiredSpeed < data.CurrentTargetSpeed ? settings.Acceleration : settings.Deceleration;
-                data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
-            
-                var velocity = enemy.Velocity;
-                var targetVelocity = toDirection.Normalized() * data.CurrentTargetSpeed;
-                velocity = velocity.Lerp(targetVelocity, settings.Deceleration * deltaTime);
-                Output(new Output.VelocityComputed(velocity));
-            }
+            // private void ComputeMovementWithoutRotation(EnemyAIDrone enemy, Vector3 toDirection, float desiredSpeed, float deltaTime)
+            // {
+            //     var data = Get<Data>();
+            //     var settings = Get<EnemyDroneSettings>();
+            //
+            //     var speedBleedingFactor = desiredSpeed < data.CurrentTargetSpeed ? settings.Acceleration : settings.Deceleration;
+            //     data.CurrentTargetSpeed = Mathf.Lerp(data.CurrentTargetSpeed, desiredSpeed, speedBleedingFactor * deltaTime);
+            //
+            //     var velocity = enemy.Velocity;
+            //     var targetVelocity = toDirection.Normalized() * data.CurrentTargetSpeed;
+            //     velocity = velocity.Lerp(targetVelocity, settings.Deceleration * deltaTime);
+            //     Output(new Output.VelocityComputed(velocity));
+            // }
             
             /// <summary>
             /// Compute the target rotation this drone should have when smoothly turning towards <c>toDirection</c>.
@@ -198,7 +300,7 @@ public partial class EnemyAILogic
             /// <param name="toDirection"></param>
             /// <param name="turnSpeed"></param>
             /// <param name="deltaTime"></param>
-            private void SmoothlyRotate(EnemyAIDrone enemy, Vector3 toDirection, float turnSpeed, float deltaTime)
+            protected void SmoothlyRotate(EnemyAIDrone enemy, Vector3 toDirection, float turnSpeed, float deltaTime)
             {
                 if (toDirection == Vector3.Zero) return;
 
@@ -216,9 +318,9 @@ public partial class EnemyAILogic
             /// <param name="path"></param>
             /// <param name="enemy"></param>
             /// <param name="settings"></param>
-            /// <param name="maxSpeed"></param>
+            /// <param name="targetSpeed"></param>
             /// <returns></returns>
-            private static float CalculateFinalTargetSpeed(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings, float maxSpeed)
+            private static float CalculateFinalTargetSpeed(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings, float targetSpeed)
             {
                 var finalTarget = path[^1];
                 var distanceToFinalTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
@@ -232,10 +334,10 @@ public partial class EnemyAILogic
                     // Smoothly scale speed down from MaxSpeed to zero as distance approaches zero
                     var arrivalFactor = Mathf.Clamp(distanceToFinalTarget / arrivalZone, 0f, 1f);
                     var easeOutFactor = Mathf.SmoothStep(0f, 1f, arrivalFactor);
-                    return maxSpeed * easeOutFactor;
+                    return targetSpeed * easeOutFactor;
                 }
 
-                return maxSpeed;
+                return targetSpeed;
             }
 
             /// <summary>
@@ -247,12 +349,15 @@ public partial class EnemyAILogic
             /// <param name="pathIndex"></param>
             /// <param name="settings"></param>
             /// <param name="currentPosition">current global position</param>
-            /// <param name="maxSpeed">the maximum speed the drone can reach right now</param>
+            /// <param name="targetSpeed">the maximum allowed speed the drone can reach right now</param>
             /// <returns></returns>
             private static float CalculateCurveSpeed(Vector3[] path, int pathIndex, EnemyDroneSettings settings,
-                Vector3 currentPosition, float maxSpeed)
+                Vector3 currentPosition, float targetSpeed)
             {
-                var pointA = path[pathIndex - 1];
+                // If pathIndex is zero, we make pointA to be where we are. And so, the first line (incomingDir) is the
+                // vector from where we are towards the actual first path point (path[0]).
+                
+                var pointA = pathIndex == 0 ? currentPosition : path[pathIndex - 1];
                 var pointB = path[pathIndex];
                 var pointC = path[pathIndex + 1];
 
@@ -265,13 +370,12 @@ public partial class EnemyAILogic
 
                 var dot = incomingDir.Dot(outgoingDir);
                 var turnTightness = Mathf.Remap(dot, -1f, 1f, 0f, 1f);
-                var targetSpeedForTurn =
-                    Mathf.Lerp(maxSpeed * settings.MinTurnSpeedPercentage, maxSpeed, turnTightness);
+                var targetSpeedForTurn = Mathf.Lerp(targetSpeed * settings.MinTurnSpeedPercentage, targetSpeed, turnTightness);
 
                 // We now have the target speed the enemy drone should have at the point of transition from one pathway point
                 // to another. The actual speed is now dependent on how close we are to that position.
 
-                return CalculateSpeedNearTarget(currentPosition, pointB, targetSpeedForTurn, maxSpeed,
+                return CalculateSpeedNearTarget(currentPosition, pointB, targetSpeedForTurn, targetSpeed,
                     settings.BreakingDistance);
             }
 

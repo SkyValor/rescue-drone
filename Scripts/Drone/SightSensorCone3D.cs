@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using Chickensoft.AutoInject;
+using Chickensoft.Collections;
 using Chickensoft.Introspection;
 using Godot;
 
@@ -20,9 +21,14 @@ public partial class SightSensorCone3D : Node3D
     private const string ERROR_MSG = $"'{nameof(SightSensorCone3D)}' requires a single child node with addon script 'VisionCode3D'";
     private const string GET_VISIBLE_BODIES = "get_visible_bodies";
 
-    public event Action<Node3D> BodySighted;
-    public event Action<Node3D> BodyHidden;
+    public event Action<IFlyingDrone> DroneSighted;
+    public event Action<IFlyingDrone> DroneHidden;
+
+    public Set<IFlyingDrone> DronesOnSight { get; private set; } = [];
     
+    // public IAutoSet<IFlyingDrone> DronesOnSight => dronesOnSight;
+    // private readonly AutoSet<IFlyingDrone> dronesOnSight = new();
+
     [Export]
     public float Range
     {
@@ -54,6 +60,11 @@ public partial class SightSensorCone3D : Node3D
         VisionCone.Connect("body_hidden", Callable.From<Node3D>(OnBodyHidden));
     }
 
+    // public void OnExitTree()
+    // {
+    //     dronesOnSight.Dispose();
+    // }
+
     public Node3D[] GetVisibleBodies()
     {
         var visibleBodies = VisionCone.Call(GET_VISIBLE_BODIES).AsGodotArray<Node3D>();
@@ -74,8 +85,21 @@ public partial class SightSensorCone3D : Node3D
         
         return VisionCone ?? throw new Exception(ERROR_MSG);
     }
-    
-    private void OnBodySighted(Node3D node) => BodySighted?.Invoke(node);
-    private void OnBodyHidden(Node3D node) => BodyHidden?.Invoke(node);
+
+    private void OnBodySighted(Node3D node)
+    {
+        if (node is not IFlyingDrone drone) return;
+            
+        var added = DronesOnSight.Add(drone);
+        if (added) DroneSighted?.Invoke(drone);
+    }
+
+    private void OnBodyHidden(Node3D node)
+    {
+        if (node is not IFlyingDrone drone) return;
+
+        var removed = DronesOnSight.Remove(drone);
+        if (removed) DroneHidden?.Invoke(drone);
+    }
     
 }

@@ -65,7 +65,7 @@ public partial class EnemyAILogic
             public override Transition On(in Input.PhysicsTick input)
             {
                 base.On(input);
-                OnMovingAlongPath(input.Delta, onFinalTargetReached: () => Input(new Input.MoveToWaypoint()));
+                OnMovingAlongPath(input.Delta, Get<EnemyDroneSettings>().MaxSpeed, onFinalTargetReached: () => Input(new Input.MoveToWaypoint()));
                 return ToSelf();
             }
 

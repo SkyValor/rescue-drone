@@ -2,6 +2,7 @@
 
 using System;
 using Chickensoft.Introspection;
+using Godot;
 
 public partial class EnemyAILogic
 {
@@ -10,9 +11,15 @@ public partial class EnemyAILogic
         [Meta]
         public partial record Fetch : Search, IGet<Input.ReturnToIdle>
         {
+            public Vector3 LastKnownPlayerPosition { get; set; }
+            
             public Fetch()
             {
-                OnAttach(GeneratePathToPlayerLastPosition);
+                OnAttach(() =>
+                {
+                    DebugConsole.Print("OnAttach state Fetch");
+                    GeneratePathToPlayerLastPosition();
+                });
             }
             
             private void GeneratePathToPlayerLastPosition()
@@ -32,7 +39,7 @@ public partial class EnemyAILogic
                 else
                 {
                     data.SVOPath = path;
-                    data.CurrentPathIndex = 1; // We skip the first point since it's where we are at
+                    data.CurrentPathIndex = 0;
                 }
             }
 
@@ -61,7 +68,7 @@ public partial class EnemyAILogic
 
                         return;
                     }
-                    ComputeMovementAlongPath(enemy, settings.MaxSpeed, (float) delta);
+                    OnMovingAlongPath(delta, settings.MaxSpeed);
                 }
                 catch (Exception ex)
                 {

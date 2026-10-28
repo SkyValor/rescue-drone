@@ -7,6 +7,15 @@ using Godot;
 
 public static class Utils
 {
+    // if (targetNumber == startNumber) --> 0.0
+    // if (targetNumber == endNumber) --> 1.0
+    public static float PercentageCalculate(float startNumber, float endNumber, float targetNumber)
+    {
+        var totalRange = endNumber - startNumber;
+        var distanceFromStartToTarget = targetNumber - startNumber;
+        return distanceFromStartToTarget / totalRange;
+    }
+    
     public static bool IsVectorApprox(Vector3 a, Vector3 b, float tolerance)
     {
         return 

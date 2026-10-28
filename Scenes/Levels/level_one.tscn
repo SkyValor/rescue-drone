@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://cdbvft3xqgbgq" path="res://Scripts/Game/DroneGame.cs" id="1_tg57j"]
 [ext_resource type="PackedScene" uid="uid://d0u2bhddxk4v3" path="res://Scenes/Enemy NPC/enemy_drone_ai.tscn" id="2_3ende"]
-[ext_resource type="Script" uid="uid://dtkfc5yhto74r" path="res://Scripts/System/AStar/SVOBuilder.cs" id="2_jaj5y"]
 [ext_resource type="PackedScene" uid="uid://de74rjpv774gk" path="res://Models/player_drone.tscn" id="2_xyv5c"]
 [ext_resource type="Script" uid="uid://bpswo35ium6ns" path="res://Scripts/Input/InputDeviceHandler.cs" id="4_m21gd"]
 [ext_resource type="PackedScene" uid="uid://b2i80m12vv71l" path="res://Scenes/Player/player_test.tscn" id="5_gpoiv"]
+[ext_resource type="Script" uid="uid://ck4c3ydgtil6p" path="res://Scripts/System/AStar/SparseVoxelOctree.cs" id="5_m21gd"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="5_xyv5c"]
 [ext_resource type="Script" uid="uid://csjccrhj5wnx7" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_3d.gd" id="6_2w0vd"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="7_1gv2x"]
@@ -165,9 +165,10 @@ environment = SubResource("Environment_1rm4e")
 unique_name_in_owner = true
 script = ExtResource("4_m21gd")
 
-[node name="SVOBuilder" type="Node3D" parent="." unique_id=818987673]
+[node name="SparseVoxelOctree" type="Node3D" parent="." unique_id=1243883636]
 unique_name_in_owner = true
-script = ExtResource("2_jaj5y")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76, 0, 60)
+script = ExtResource("5_m21gd")
 
 [node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
 unique_name_in_owner = true
@@ -319,6 +320,7 @@ metadata/_edit_group_ = true
 transform = Transform3D(-0.3912568, -0.8218132, 0.41417554, 0.10964121, 0.40522134, 0.9076203, -0.91372705, 0.4005233, -0.068440996, 6.4149704, 37.131123, 54.487137)
 
 [node name="UI" type="Control" parent="." unique_id=1629036901]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

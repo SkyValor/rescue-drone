@@ -19,8 +19,8 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 	[Dependency] private IGameRepo GameRepo => this.DependOn<IGameRepo>();
 
 	[Node] private CollisionShape3D Collider { get; set; }
-	[Node] private SightSensor Sight { get; set; }
 	[Node] private SightSensorCone3D SightSensor { get; set; }
+	[Node] private ProximitySensor ProximitySensor { get; set; }
 	
 	#region AI State Machine
 	private EnemyAILogic AIStateMachine { get; set; }
@@ -76,6 +76,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 
 		AIStateMachine = new EnemyAILogic();
 		AIStateMachine.Set(new EnemyAILogic.Data());
+		AIStateMachine.Set(ProximitySensor);
 		AIStateMachine.Set(GetWorld3D());
 		AIStateMachine.Set(SightSensor);
 		AIStateMachine.Set(pathfinder);

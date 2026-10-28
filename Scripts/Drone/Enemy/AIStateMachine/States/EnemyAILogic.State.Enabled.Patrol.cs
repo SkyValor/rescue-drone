@@ -1,5 +1,6 @@
 ﻿namespace RescueDrone;
 
+using System;
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
 
@@ -43,10 +44,8 @@ public partial class EnemyAILogic
 
             public Transition On(in Input.PlayerDetected input)
             {
-                var distanceToPlayer = CheckDistanceToPlayer();
-                if (distanceToPlayer < 0) return To<Retreat>();
-                if (distanceToPlayer > 0) return To<Pursuit>();
-                return To<Stay>();
+                Get<Data>().DetectedPlayer = input.Player;
+                return ToChaseBasedOnDistance(input.Player.GlobalPosition);
             }
 
         }

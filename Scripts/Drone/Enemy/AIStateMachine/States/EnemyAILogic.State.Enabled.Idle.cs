@@ -31,8 +31,12 @@ public partial class EnemyAILogic
                 return timeElapsed >= idleTime ? To<MovingToCircuit>() : ToSelf();
             }
 
-            public Transition On(in Input.PlayerDetected input) => To<Chase>();
-            
+            public Transition On(in Input.PlayerDetected input)
+            {
+                Get<Data>().DetectedPlayer = input.Player;
+                return ToChaseBasedOnDistance(input.Player.GlobalPosition);
+            }
+
         }
     }
 }
