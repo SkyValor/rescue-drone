@@ -69,6 +69,15 @@ public class VoxelNode
     }
 
     /// <summary>
+    /// Checks whether this voxel node has an ancestor with the given ID.
+    /// </summary>
+    public bool HasAncestor(int ancestorId)
+    {
+        if (Id == ancestorId) return true;
+        return Parent is not null && Parent.HasAncestor(ancestorId);
+    }
+
+    /// <summary>
     /// Continuously subdivide this node until there is no collision,
     /// or it hits the minimum node size limit, or it hits the subdivision limit.
     /// </summary>

@@ -95,9 +95,10 @@ public class VoxelOctreeAStar : IPathfindSVO, IDisposable
                 var neighborNode = Tree.GetNodeAtPosition(neighborPosition);
                 if (neighborNode is null || !neighborNode.IsEmpty) continue;
 
-                if (!AStar.HasPoint(neighborNode.Id))
+                if (!AStar.HasPoint(neighborNode.Id) && navigable.HasAncestor(neighborNode.Id))
                 {
-                    DebugConsole.Print($"NeighborNode with ID '{neighborNode.Id}' does not exist.");
+                    // Avoid connecting a navigable point to one of its ancestors, as the latter
+                    // is no longer a leaf
                     continue;
                 }
 
