@@ -252,7 +252,7 @@ metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="UpperBounds" type="StaticBody3D" parent="." unique_id=883336313]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -99.04303, 138.7955, 84.01219)
-collision_layer = 0
+collision_layer = 128
 collision_mask = 3
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="UpperBounds" unique_id=1293181323]
@@ -260,7 +260,7 @@ shape = SubResource("BoxShape3D_daowb")
 
 [node name="LowerBounds" type="StaticBody3D" parent="." unique_id=899693747]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -97.82568, -99.96863, 85)
-collision_layer = 0
+collision_layer = 128
 collision_mask = 3
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LowerBounds" unique_id=2070831931]

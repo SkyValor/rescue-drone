@@ -125,6 +125,12 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 			foreach (var waypoint in circuit.Waypoints)
 			{
 				var voxel = svo.GetNodeAtPositionPrecise(waypoint.GlobalPosition);
+				if (voxel is null)
+				{
+					DebugConsole.PrintWarning($"Waypoint '{waypoint.Name}' could not be placed in precise voxel node.");
+					continue;
+				}
+				
 				waypoint.GlobalPosition = voxel.Position;
 			}
 		}

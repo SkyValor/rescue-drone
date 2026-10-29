@@ -9,6 +9,7 @@ public class VoxelNode
 {
     public static event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
     public static event System.Action<VoxelNode, VoxelNode[]> OnNodePartiallySubdivided; 
+    public static event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdividedForCollisions; 
     
     public readonly int Id;
     private static int nextId;
@@ -22,8 +23,10 @@ public class VoxelNode
     public float Size { get; }
 
     public bool IsEmpty { get; private init; }
+    public bool IsOccupied => !IsEmpty;
     public VoxelNode[] Children { get; private set; } = [];
     public bool IsLeaf => Children.Length == 0;
+    public bool NotLeaf => !IsLeaf;
 
     public VoxelNode(Vector3 position, float size, VoxelNode parent)
     {
@@ -43,7 +46,7 @@ public class VoxelNode
         var size = new Vector3(Size, Size, Size);
         
         if (Parent is null) DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, RootWhite, true);
-        if (IsLeaf || Children.Any(child => child is null))
+        if (IsLeaf)
         {
             var color = IsEmpty ? EmptyLeafGreen : OccupiedLeafRed;
             DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, color, true);
@@ -54,32 +57,10 @@ public class VoxelNode
         foreach (var child in Children)
             child?.DrawVoxelWireframe();
     }
-    
-    /// <summary>
-    /// Checks whether the given point (in global space) is contained inside the bounds of this
-    /// voxel node.
-    /// </summary>
-    public bool ContainsPoint(Vector3 point)
-    {
-        var halfSize = Size / 2f;
-        return 
-            point.X >= Position.X - halfSize && point.X <= Position.X + halfSize &&
-            point.Y >= Position.Y - halfSize && point.Y <= Position.Y + halfSize &&
-            point.Z >= Position.Z - halfSize && point.Z <= Position.Z + halfSize;
-    }
 
     /// <summary>
-    /// Checks whether this voxel node has an ancestor with the given ID.
-    /// </summary>
-    public bool HasAncestor(int ancestorId)
-    {
-        if (Id == ancestorId) return true;
-        return Parent is not null && Parent.HasAncestor(ancestorId);
-    }
-
-    /// <summary>
-    /// Continuously subdivide this node until there is no collision,
-    /// or it hits the minimum node size limit, or it hits the subdivision limit.
+    /// Continuously subdivide this node until it hits the minimum node size limit,
+    /// or it hits the subdivision limit.
     /// </summary>
     public void Subdivide(World3D world, float minNodeSize, int remainingSubdivisions)
     {
@@ -91,29 +72,59 @@ public class VoxelNode
         var offsets = GetOffsetPositionArray(quarterSize);
 
         Children = new VoxelNode[8];
-        var hasChildren = false;
-
         for (int i = 0; i < 8; i++)
         {
             var childPosition = Position + offsets[i];
-            if (CheckCollision(world, childPosition, halfSize))
-            {
-                var child = new VoxelNode(childPosition, halfSize, this) { IsEmpty = false };
-                Children[i] = child;
-                hasChildren = true;
+            var child = CheckCollision(world, childPosition, halfSize)
+                ? new VoxelNode(childPosition, halfSize, this) { IsEmpty = false }
+                : new VoxelNode(childPosition, halfSize, this) { IsEmpty = true };
+            Children[i] = child;
             
-                // Recursively subdivide the child
-                child.Subdivide(world, minNodeSize, remainingSubdivisions - 1);
-            }
+            // Recursively subdivide the child
+            child.Subdivide(world, minNodeSize, remainingSubdivisions - 1);
         }
 
-        // If no children intersected geometry, the children array is empty (acts as a leaf)
-        if (hasChildren)
-            OnNodeSubdivided?.Invoke(this, Children);
-        else
-            Children = [];
+        OnNodeSubdivided?.Invoke(this, Children); // TODO: The event is only invoked after the for loop and recursive calls!!
+        // All subdivisions are going to be called before a single event is invoked.
+        // Then, all events are called from the deepest node up to the first one.
     }
 
+    /// <summary>
+    /// Continuously subdivide this voxel node while there is at least one collision inside.
+    /// If there is no collision, it stops subdividing once it hits the minimum node size limit or the subdivision limit.
+    /// </summary>
+    public void SubdivideForCollisions(World3D world, float minNodeSize, int remainingSubdivisions)
+    {
+        if (Size * 0.5f < minNodeSize) return;
+        
+        var halfSize = Size * 0.5f;
+        var quarterSize = halfSize * 0.5f;
+        var offsets = GetOffsetPositionArray(quarterSize);
+        
+        Children = new VoxelNode[8];
+        var hasAnyCollision = false;
+        for (int i = 0; i < 8; i++)
+        {
+            var childPosition = Position + offsets[i];
+            var child = CheckCollision(world, childPosition, halfSize)
+                ? new VoxelNode(childPosition, halfSize, this) { IsEmpty = false }
+                : new VoxelNode(childPosition, halfSize, this) { IsEmpty = true };
+            Children[i] = child;
+
+            if (child.IsOccupied) 
+                hasAnyCollision = true;
+        }
+        
+        OnNodeSubdividedForCollisions?.Invoke(this, Children);
+
+        if (hasAnyCollision || remainingSubdivisions > 0)
+        {
+            // Recursively subdivide the octants
+            foreach (var child in Children)
+                child.SubdivideForCollisions(world, minNodeSize, remainingSubdivisions - 1);
+        }
+    }
+    
     /// <summary>
     /// Continuously subdivide this node until it hits the minimum node size limit.
     /// </summary>
@@ -178,31 +189,77 @@ public class VoxelNode
     /// </summary>
     public VoxelNode FindOrCreateAtPosition(Vector3 targetPosition, float minNodeSize, World3D world)
     {
-        var halfSize = Size * 0.5f;
-        
         // Ensure target is within bounds
         if (!ContainsPoint(targetPosition)) return null;
-
+        
         // If we've reached min node size, return this node
-        if (Size <= minNodeSize || halfSize < minNodeSize)
+        if (Size <= minNodeSize || Size * 0.5f < minNodeSize)
             return this;
-
+    
         if (Children.Length == 0)
             Children = new VoxelNode[8];
-
+    
+        var halfSize = Size * 0.5f;
         var index = GetOctantIndex(targetPosition);
         if (Children[index] == null)
         {
             var quarterSize = halfSize * 0.5f;
             var offsets = GetOffsetPositionArray(quarterSize);
-
+    
             var childPosition = Position + offsets[index];
             var occupied = CheckCollision(world, childPosition, halfSize);
             Children[index] = new VoxelNode(childPosition, halfSize, this) { IsEmpty = !occupied };
             OnNodePartiallySubdivided?.Invoke(this, Children);
         }
-
+    
         return Children[index].FindOrCreateAtPosition(targetPosition, minNodeSize, world);
+    }
+    
+    /// <summary>
+    /// Checks whether the given point (in global space) is contained inside the bounds of this
+    /// voxel node.
+    /// </summary>
+    public bool ContainsPoint(Vector3 point)
+    {
+        var halfSize = Size / 2f;
+        return 
+            point.X >= Position.X - halfSize && point.X <= Position.X + halfSize &&
+            point.Y >= Position.Y - halfSize && point.Y <= Position.Y + halfSize &&
+            point.Z >= Position.Z - halfSize && point.Z <= Position.Z + halfSize;
+    }
+
+    /// <summary>
+    /// Checks whether this voxel node has an ancestor with the given ID.
+    /// </summary>
+    public bool HasAncestor(int ancestorId)
+    {
+        if (Id == ancestorId) return false;
+        return Parent is not null && Parent.HasAncestorRecursive(ancestorId);
+    }
+
+    private bool HasAncestorRecursive(int ancestorId)
+    {
+        if (Id == ancestorId) return true;
+        return Parent is not null && Parent.HasAncestorRecursive(ancestorId);
+    }
+
+    /// <summary>
+    /// Checks whether this voxel node has a descendant with the given ID.
+    /// </summary>
+    public bool HasDescendant(int descendantId)
+    {
+        if (Id == descendantId) return false;
+        return 
+            Children.Length > 0 &&
+            Children.Any(child => child is not null && child.HasDescendantRecursive(descendantId));
+    }
+
+    private bool HasDescendantRecursive(int descendantId)
+    {
+        if (Id == descendantId) return true;
+        return
+            Children.Length > 0 &&
+            Children.Any(child => child is not null && child.HasDescendantRecursive(descendantId));
     }
     
     /// <summary>
@@ -264,7 +321,7 @@ public class VoxelNode
         if (targetPosition.Z >= Position.Z) index |= 4;
         return index;
     }
-
+    
     /// <summary>
     /// Returns an array of positions relative to a center point that represent the
     /// eight octants of a voxel node.
@@ -283,5 +340,5 @@ public class VoxelNode
             new Vector3( quarterSize,  quarterSize,  quarterSize)  // 111
         ];
     }
-
+    
 }

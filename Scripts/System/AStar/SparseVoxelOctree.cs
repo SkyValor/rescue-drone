@@ -6,14 +6,6 @@ using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
 using Godot;
 
-/**
- *  1. Disconnect Origin from its neighbors
- *  2. Tree removes this Origin from its EmptyLeaves
- *  3. The AutoList.Binding OnRemove callback is called
- *  4. Have Origin subdivide
- *  5. For each of his children, connect with neighbors
- */
-
 [Tool]
 [Meta(typeof(IAutoOn))]
 public partial class SparseVoxelOctree : Node3D
@@ -26,6 +18,7 @@ public partial class SparseVoxelOctree : Node3D
     public event Action EarlyGenerationFinished;
     public event Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
     public event Action<VoxelNode, VoxelNode[]> OnNodePartiallySubdivided; 
+    public event Action<VoxelNode, VoxelNode[]> OnNodeSubdividedForCollisions;
 
     [Export] private float RootSize { get; set; } = 32f;
     [Export] private int InitialSubdivisions { get; set; } = 4;
@@ -40,12 +33,14 @@ public partial class SparseVoxelOctree : Node3D
     {
         VoxelNode.OnNodeSubdivided += OnVoxelNodeSubdivided;
         VoxelNode.OnNodePartiallySubdivided += OnVoxelNodePartiallySubdivided;
+        VoxelNode.OnNodeSubdividedForCollisions += OnVoxelNodeSubdividedForCollisions;
     }
 
     public void OnExitTree()
     {
         VoxelNode.OnNodeSubdivided -= OnVoxelNodeSubdivided;
         VoxelNode.OnNodePartiallySubdivided -= OnVoxelNodePartiallySubdivided;
+        VoxelNode.OnNodeSubdividedForCollisions -= OnVoxelNodeSubdividedForCollisions;
     }
 
     public override void _Process(double delta)
@@ -63,7 +58,7 @@ public partial class SparseVoxelOctree : Node3D
         EarlyGenerationStarted?.Invoke();
 
         Root = new VoxelNode(GlobalPosition, RootSize, null);
-        Root.Subdivide(GetWorld3D(), MinNodeSize, InitialSubdivisions);
+        Root.SubdivideForCollisions(GetWorld3D(), MinNodeSize, InitialSubdivisions);
         
         DebugConsole.Print("SparseVoxelOctree generated successfully.");
         EarlyGenerationFinished?.Invoke();
@@ -119,6 +114,11 @@ public partial class SparseVoxelOctree : Node3D
     private void OnVoxelNodePartiallySubdivided(VoxelNode parentNode, VoxelNode[] octants)
     {
         OnNodePartiallySubdivided?.Invoke(parentNode, octants);
+    }
+
+    private void OnVoxelNodeSubdividedForCollisions(VoxelNode parentNode, VoxelNode[] octants)
+    {
+        OnNodeSubdividedForCollisions?.Invoke(parentNode, octants);
     }
     
 }
