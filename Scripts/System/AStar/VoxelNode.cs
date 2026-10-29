@@ -1,12 +1,14 @@
 ﻿namespace RescueDrone;
 
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 [Tool]
 public class VoxelNode
 {
     public static event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
+    public static event System.Action<VoxelNode, VoxelNode[]> OnNodePartiallySubdivided; 
     
     public readonly int Id;
     private static int nextId;
@@ -33,24 +35,24 @@ public class VoxelNode
     }
     
     /// <summary>
-    /// Draw a wireframe box of this voxel node and bubble down on its children. If this node is the root, it
-    /// will be drawn in white. Only leaves are drawn. A leaf that is empty is drawn in green, otherwise in red.
+    /// Draw a wireframe box of this node and recursively call its children to do the same. Only the root
+    /// node and leaf nodes are drawn.
     /// </summary>
     public void DrawVoxelWireframe()
     {
         var size = new Vector3(Size, Size, Size);
         
         if (Parent is null) DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, RootWhite, true);
-        if (IsLeaf)
+        if (IsLeaf || Children.Any(child => child is null))
         {
             var color = IsEmpty ? EmptyLeafGreen : OccupiedLeafRed;
             DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, color, true);
         }
 
         if (Children is null || Children.Length == 0) return;
-        
+
         foreach (var child in Children)
-            child.DrawVoxelWireframe();
+            child?.DrawVoxelWireframe();
     }
     
     /// <summary>
@@ -97,7 +99,10 @@ public class VoxelNode
         }
 
         // If no children intersected geometry, the children array is empty (acts as a leaf)
-        if (!hasChildren) Children = [];
+        if (hasChildren)
+            OnNodeSubdivided?.Invoke(this, Children);
+        else
+            Children = [];
     }
 
     /// <summary>
@@ -124,6 +129,8 @@ public class VoxelNode
             // Recursively subdivide the child
             child.SubdivideInDepth(world, minNodeSize);
         }
+        
+        OnNodeSubdivided?.Invoke(this, Children);
     }
     
     /// <summary>
@@ -158,7 +165,7 @@ public class VoxelNode
     }
     
     /// <summary>
-    /// Finds or dynamically creates/subdivides down to MinNodeSize at a specific world position.
+    /// Finds or dynamically creates/subdivides down to minimum node size at a specific world position.
     /// </summary>
     public VoxelNode FindOrCreateAtPosition(Vector3 targetPosition, float minNodeSize, World3D world)
     {
@@ -183,11 +190,15 @@ public class VoxelNode
             var childPosition = Position + offsets[index];
             var occupied = CheckCollision(world, childPosition, halfSize);
             Children[index] = new VoxelNode(childPosition, halfSize, this) { IsEmpty = !occupied };
+            OnNodePartiallySubdivided?.Invoke(this, Children);
         }
 
         return Children[index].FindOrCreateAtPosition(targetPosition, minNodeSize, world);
     }
     
+    /// <summary>
+    /// Draw a box shape to detect collision against the world environment.
+    /// </summary>
     private static bool CheckCollision(World3D world, Vector3 center, float size)
     {
         if (world?.DirectSpaceState == null) 
@@ -201,10 +212,36 @@ public class VoxelNode
 
         query.Shape = boxShape;
         query.Transform = new Transform3D(Basis.Identity, center);
-        query.CollisionMask = (1 << 4 - 1) | (1 << 8 - 1); // 4:WorldGeometry ; 8:WorldBoundaries
+        query.CollisionMask = Get3DLayerValueByName("WorldGeometry") | Get3DLayerValueByName("WorldBounds");
 
         var results = spaceState.IntersectShape(query, 1);
         return results.Count > 0;
+    }
+
+    private static uint Get3DLayerValueByName(string layerName)
+    {
+        for (int i = 1; i < 33; i++)
+        {
+            var settingName = $"layer_names/3d_physics/layer_{i}";
+            var configuredName = ProjectSettings.GetSetting(settingName, "");
+            if (configuredName.VariantType is Variant.Type.String && configuredName.AsString().Equals(layerName))
+                return (uint) 1 << (i - 1); // Returns the bitmask value (e.g., 1, 2, 4, 8...)
+        }
+
+        return 0;
+    }
+
+    private static int Get3DLayerIndexByName(string layerName)
+    {
+        for (int i = 1; i < 33; i++)
+        {
+            var settingName = $"layer_names/3d_physics/layer_{i}";
+            var configuredName = ProjectSettings.GetSetting(settingName, "");
+            if (configuredName.VariantType is Variant.Type.String && configuredName.AsString().Equals(layerName))
+                return i;
+        }
+
+        return -1;
     }
     
     /// <summary>

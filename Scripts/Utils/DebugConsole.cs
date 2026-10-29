@@ -30,8 +30,8 @@ public class DebugConsole
         var debuglog = "";
         if (includeTimestamp)
             debuglog += $"[{DateTime.Now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture)}] ";
-        debuglog += $"[color=yellow]{message}[/color]";
-        GD.Print(debuglog);
+        debuglog += $"[color=goldenrod]{message}[/color]";
+        GD.PrintRich(debuglog);
     }
     
 }

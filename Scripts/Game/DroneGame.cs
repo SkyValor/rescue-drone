@@ -103,11 +103,31 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		// SVOBuilder.StartAsyncGeneration(WorldCenter, WorldSize, MinNodeSize);
 		// SetProcess(true);
 	}
+	
+	private WaypointCircuit[] GetWaypointCircuits()
+	{
+		var circuitNodes = WaypointCircuits.GetChildren();
+		var circuits = circuitNodes.Select(node => node as WaypointCircuit);
+		return circuits.ToArray();
+	}
 
 	private void OnOctreeGenerationFinished()
 	{
 		GameRepo.SetSVO(SparseVoxelOctree);
 		OnLoadingScreenFadeOutCompleted();
+		SetProcess(true);
+		
+		// Resolve Waypoint positions into the Sparse Voxel Octree
+		var svo = GameRepo.SVO.Value;
+		var circuits = GameRepo.WaypointCircuits.Value;
+		foreach (var circuit in circuits)
+		{
+			foreach (var waypoint in circuit.Waypoints)
+			{
+				var voxel = svo.GetNodeAtPositionPrecise(waypoint.GlobalPosition);
+				waypoint.GlobalPosition = voxel.Position;
+			}
+		}
 	}
 
 	// public void OnResolved()
@@ -131,12 +151,11 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	// 	
 	// 	OnLevelReady();
 	// }
-	
-	private WaypointCircuit[] GetWaypointCircuits()
+
+	public void OnProcess(double delta)
 	{
-		var circuitNodes = WaypointCircuits.GetChildren();
-		var circuits = circuitNodes.Select(node => node as WaypointCircuit);
-		return circuits.ToArray();
+		var svo = GameRepo.SVO.Value;
+		svo?.DrawVoxelOctree();
 	}
 
 	private void OnLevelReady()

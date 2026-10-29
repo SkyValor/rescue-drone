@@ -154,12 +154,16 @@ WorldSize = 300.0
 LoadingScreenFadeOutValue = 19.0
 EnemyDroneScene = ExtResource("2_3ende")
 PlayerDroneScene = ExtResource("2_xyv5c")
+DynamicGeneration = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1863000512]
 libraries/ = SubResource("AnimationLibrary_1gv2x")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1255910464]
 environment = SubResource("Environment_1rm4e")
+
+[node name="TESTER_POINT" type="Node3D" parent="." unique_id=1066567374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49.401093, 15.369724, 60.39532)
 
 [node name="DeviceHandler" type="Node" parent="." unique_id=298400630]
 unique_name_in_owner = true
@@ -169,6 +173,9 @@ script = ExtResource("4_m21gd")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76, 0, 60)
 script = ExtResource("5_m21gd")
+RootSize = 300.0
+InitialSubdivisions = 5
+DebugTree = true
 
 [node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
 unique_name_in_owner = true

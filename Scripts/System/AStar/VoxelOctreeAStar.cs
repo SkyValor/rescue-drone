@@ -28,38 +28,14 @@ public class VoxelOctreeAStar : IPathfindSVO, IDisposable
     {
         Tree = tree;
         Tree.OnNodeSubdivided += OnNodeSubdivided;
+        Tree.OnNodePartiallySubdivided += OnNodePartiallySubdivided;
         AStar = new AStar3D();
 
         var emptyLeaves = Tree.GetNavigableWaypoints();
         AddNavigablePoints(emptyLeaves);
         ConnectAdjacentPoints(emptyLeaves);
     }
-
-    private void AddNavigablePoints(List<VoxelNode> navigablePoints)
-    {
-        foreach (var navigable in navigablePoints)
-            AStar.AddPoint(navigable.Id, navigable.Position);
-    }
-
-    private void ConnectAdjacentPoints(List<VoxelNode> navigablePoints)
-    {
-        foreach (var navigable in navigablePoints)
-        {
-            foreach (var offset in OffsetDirections)
-            {
-                var neighborPosition =
-                    navigable.Position +
-                    offset * navigable.Size * 0.5f +
-                    offset * 0.01f;
-                var neighborNode = Tree.GetNodeAtPosition(neighborPosition);
-                if (neighborNode is null || !neighborNode.IsEmpty || AStar.ArePointsConnected(navigable.Id, neighborNode.Id)) 
-                    continue;
-                
-                AStar.ConnectPoints(navigable.Id, neighborNode.Id);
-            }
-        }
-    }
-
+    
     private void OnNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
     {
         DisconnectPoint(parentNode);
@@ -68,20 +44,81 @@ public class VoxelOctreeAStar : IPathfindSVO, IDisposable
         AddNavigablePoints(octantList);
         ConnectAdjacentPoints(octantList);
     }
+
+    private void OnNodePartiallySubdivided(VoxelNode parentNode, VoxelNode[] octants)
+    {
+        DisconnectPoint(parentNode);
+        if (AStar.HasPoint(parentNode.Id))
+            AStar.RemovePoint(parentNode.Id);
+        
+        var octantList = octants.Where(octant => octant is not null).ToList();
+        AddNavigablePoints(octantList);
+        ConnectAdjacentPoints(octantList);
+    }
     
     private void DisconnectPoint(VoxelNode navigablePoint)
     {
+        if (!AStar.HasPoint(navigablePoint.Id)) return;
+        
         var connections = AStar.GetPointConnections(navigablePoint.Id);
-        foreach (var connection in connections)
-            AStar.DisconnectPoints(navigablePoint.Id, connection);
+        foreach (var otherId in connections)
+            AStar.DisconnectPoints(navigablePoint.Id, otherId);
+        
+        AStar.RemovePoint(navigablePoint.Id);
+    }
+
+    private void AddNavigablePoints(List<VoxelNode> navigablePoints)
+    {
+        foreach (var navigable in navigablePoints)
+        {
+            if (!AStar.HasPoint(navigable.Id))
+                AStar.AddPoint(navigable.Id, navigable.Position);
+        }
+    }
+
+    private void ConnectAdjacentPoints(List<VoxelNode> navigablePoints)
+    {
+        foreach (var navigable in navigablePoints)
+        {
+            if (!AStar.HasPoint(navigable.Id))
+            {
+                DebugConsole.Print($"Point with ID '{navigable.Id}' does not exist.");
+                continue;
+            }
+            
+            foreach (var offset in OffsetDirections)
+            {
+                var neighborPosition =
+                    navigable.Position +
+                    offset * navigable.Size * 0.5f +
+                    offset * 0.01f;
+                var neighborNode = Tree.GetNodeAtPosition(neighborPosition);
+                if (neighborNode is null || !neighborNode.IsEmpty) continue;
+
+                if (!AStar.HasPoint(neighborNode.Id))
+                {
+                    DebugConsole.Print($"NeighborNode with ID '{neighborNode.Id}' does not exist.");
+                    continue;
+                }
+
+                if (AStar.ArePointsConnected(navigable.Id, neighborNode.Id)) continue;
+                
+                AStar.ConnectPoints(navigable.Id, neighborNode.Id);
+            }
+        }
     }
 
     public Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null)
     {
-        var origin = Tree.GetNodeAtPosition(start);
-        var target = Tree.GetNodeAtPosition(end);
+        var origin = Tree.GetNodeAtPositionPrecise(start);
+        var target = Tree.GetNodeAtPositionPrecise(end);
 
         if (origin is null || target is null) return [];
+        if (!AStar.HasPoint(origin.Id) || !AStar.HasPoint(target.Id))
+        {
+            DebugConsole.PrintWarning("Cannot create point path because either origin or target is null.");
+            return [];
+        }
 
         var rawPath = AStar.GetPointPath(origin.Id, target.Id);
         return SmoothPath(rawPath, world, droneRadius, exclusion);
@@ -164,6 +201,7 @@ public class VoxelOctreeAStar : IPathfindSVO, IDisposable
         if (!disposing) return;
         
         Tree.OnNodeSubdivided -= OnNodeSubdivided;
+        Tree.OnNodePartiallySubdivided -= OnNodePartiallySubdivided;
         AStar.Dispose();
     }
     #endregion
