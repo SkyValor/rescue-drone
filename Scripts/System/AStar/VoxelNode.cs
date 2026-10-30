@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 [Tool]
@@ -22,7 +23,7 @@ public class VoxelNode
     public Vector3 Position { get; }
     public float Size { get; }
 
-    public bool IsEmpty { get; private init; }
+    public bool IsEmpty { get; private set; }
     public bool IsOccupied => !IsEmpty;
     public VoxelNode[] Children { get; private set; } = [];
     public bool IsLeaf => Children.Length == 0;
@@ -95,33 +96,82 @@ public class VoxelNode
     /// </summary>
     public void SubdivideForCollisions(World3D world, float minNodeSize, int remainingSubdivisions)
     {
-        if (Size * 0.5f < minNodeSize) return;
+        if (remainingSubdivisions <= 0 || Size * 0.5f < minNodeSize) return;
         
         var halfSize = Size * 0.5f;
         var quarterSize = halfSize * 0.5f;
         var offsets = GetOffsetPositionArray(quarterSize);
         
         Children = new VoxelNode[8];
-        var hasAnyCollision = false;
+        // var hasAnyCollision = false;
         for (int i = 0; i < 8; i++)
         {
             var childPosition = Position + offsets[i];
-            var child = CheckCollision(world, childPosition, halfSize)
-                ? new VoxelNode(childPosition, halfSize, this) { IsEmpty = false }
-                : new VoxelNode(childPosition, halfSize, this) { IsEmpty = true };
-            Children[i] = child;
-
-            if (child.IsOccupied) 
-                hasAnyCollision = true;
+            if (CheckCollision(world, childPosition, halfSize))
+            {
+                Children[i] = new VoxelNode(childPosition, halfSize, this) { IsEmpty = false };
+                OnNodeSubdividedForCollisions?.Invoke(this, Children);
+                Children[i].SubdivideForCollisions(world, minNodeSize, remainingSubdivisions - 1);
+                // hasAnyCollision = true;
+            }
+            
+            // var child = CheckCollision(world, childPosition, halfSize)
+            //     ? new VoxelNode(childPosition, halfSize, this) { IsEmpty = false }
+            //     : new VoxelNode(childPosition, halfSize, this) { IsEmpty = true };
+            // Children[i] = child;
+            //
+            // if (child.IsOccupied) 
+            //     hasAnyCollision = true;
         }
         
-        OnNodeSubdividedForCollisions?.Invoke(this, Children);
+        // OnNodeSubdividedForCollisions?.Invoke(this, Children);
 
-        if (hasAnyCollision || remainingSubdivisions > 0)
+        // if (hasAnyCollision)
+        // {
+        //     OnNodeSubdividedForCollisions?.Invoke(this, Children);
+        //     
+        //     // Recursively subdivide the octants
+        //     // foreach (var child in Children)
+        //         // child.SubdivideForCollisions(world, minNodeSize, remainingSubdivisions - 1);
+        // }
+    }
+
+    public async Task SubdivideAsync(World3D world, float minNodeSize, int remainingSubdivisions, 
+        float upperLimit, float lowerLimit, Node contextNode)
+    {
+        var halfSize = Size * 0.5f;
+        var boxBottom = Position.Y - halfSize;
+        var boxTop = Position.Y + halfSize;
+
+        // PRUNING CHECK: If the ENTIRE voxel box is above the sky limit or below ground limit, 
+        // mark it as occupied (non-navigable) and stop subdividing this branch completely!
+        if (boxBottom >= upperLimit || boxTop <= lowerLimit)
         {
-            // Recursively subdivide the octants
-            foreach (var child in Children)
-                child.SubdivideForCollisions(world, minNodeSize, remainingSubdivisions - 1);
+            IsEmpty = false;
+            return;
+        }
+        
+        if (remainingSubdivisions <= 0 || Size * 0.5f < minNodeSize) return;
+        
+        var quarterSize = halfSize * 0.5f;
+        var offsets = GetOffsetPositionArray(quarterSize);
+
+        Children = new VoxelNode[8];
+        for (int i = 0; i < 8; i++)
+        {
+            var childPosition = Position + offsets[i];
+            var occupied = CheckCollision(world, childPosition, halfSize);
+            var child = new VoxelNode(childPosition, halfSize, this) { IsEmpty = !occupied };
+            Children[i] = child;
+            
+            // Recursively subdivide child
+            await child.SubdivideAsync(world, minNodeSize, remainingSubdivisions - 1, upperLimit, lowerLimit, contextNode);
+        }
+        
+        // Yield execution back to the engine every tier level so the main thread stays smooth
+        if (contextNode != null && contextNode.IsInsideTree())
+        {
+            await contextNode.ToSignal(contextNode.GetTree(), SceneTree.SignalName.ProcessFrame);
         }
     }
     
@@ -187,10 +237,11 @@ public class VoxelNode
     /// <summary>
     /// Finds or dynamically creates/subdivides down to minimum node size at a specific world position.
     /// </summary>
-    public VoxelNode FindOrCreateAtPosition(Vector3 targetPosition, float minNodeSize, World3D world)
+    public VoxelNode FindOrCreateAtPosition(Vector3 targetPosition, float minNodeSize, 
+        float upperLimit, float lowerLimit, World3D world)
     {
-        // Ensure target is within bounds
-        if (!ContainsPoint(targetPosition)) return null;
+        if (!ContainsPoint(targetPosition) || targetPosition.Y >= upperLimit || targetPosition.Y <= lowerLimit)
+            return null; // Out of bounds
         
         // If we've reached min node size, return this node
         if (Size <= minNodeSize || Size * 0.5f < minNodeSize)
@@ -198,7 +249,7 @@ public class VoxelNode
     
         if (Children.Length == 0)
             Children = new VoxelNode[8];
-    
+        
         var halfSize = Size * 0.5f;
         var index = GetOctantIndex(targetPosition);
         if (Children[index] == null)
@@ -212,7 +263,7 @@ public class VoxelNode
             OnNodePartiallySubdivided?.Invoke(this, Children);
         }
     
-        return Children[index].FindOrCreateAtPosition(targetPosition, minNodeSize, world);
+        return Children[index].FindOrCreateAtPosition(targetPosition, minNodeSize, upperLimit, lowerLimit, world);
     }
     
     /// <summary>
@@ -278,7 +329,7 @@ public class VoxelNode
 
         query.Shape = boxShape;
         query.Transform = new Transform3D(Basis.Identity, center);
-        query.CollisionMask = Get3DLayerValueByName("WorldGeometry") | Get3DLayerValueByName("WorldBounds");
+        query.CollisionMask = Get3DLayerValueByName("WorldGeometry");
 
         var results = spaceState.IntersectShape(query, 1);
         return results.Count > 0;
@@ -326,7 +377,7 @@ public class VoxelNode
     /// Returns an array of positions relative to a center point that represent the
     /// eight octants of a voxel node.
     /// </summary>
-    private static Vector3[] GetOffsetPositionArray(float quarterSize)
+    public static Vector3[] GetOffsetPositionArray(float quarterSize)
     {
         return
         [

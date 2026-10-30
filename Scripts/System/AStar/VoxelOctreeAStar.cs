@@ -182,8 +182,8 @@ public class VoxelOctreeAStar : IPathfindSVO, IDisposable
 
     public Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null)
     {
-        var origin = Tree.GetNodeAtPosition(start);
-        var target = Tree.GetNodeAtPosition(end);
+        var origin = Tree.GetNodeAtPositionPrecise(start);
+        var target = Tree.GetNodeAtPositionPrecise(end);
 
         if (origin is null || target is null)
         {

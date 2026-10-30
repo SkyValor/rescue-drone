@@ -1,6 +1,7 @@
 namespace RescueDrone;
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
@@ -61,6 +62,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	IGameRepo IProvide<IGameRepo>.Value() => GameRepo;
 
 	private ShaderMaterial loadingScreenShader;
+	private Stopwatch octreeGenerationStopwatch;
 
 	public void OnReady()
 	{
@@ -81,9 +83,14 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		GameRepo.SetEnemyDrones([enemyDrone]);
 		this.Provide();
 		
-		SparseVoxelOctree.EarlyGenerationFinished += OnOctreeGenerationFinished;
-		if (DynamicGeneration) SparseVoxelOctree.GenerateOctree();
-		else SparseVoxelOctree.GenerateOctreeInDepth();
+		// SparseVoxelOctree.EarlyGenerationFinished += OnOctreeGenerationFinished;
+		Timing.RunCoroutine(WaitForOctree(SparseVoxelOctree));
+		octreeGenerationStopwatch = new Stopwatch();
+		octreeGenerationStopwatch.Start();
+		SparseVoxelOctree.GenerateOctreeAsync();
+		
+		// if (DynamicGeneration) SparseVoxelOctree.GenerateOctree();
+		// else SparseVoxelOctree.GenerateOctreeInDepth();
 		
 		// loadingScreenShader = LoadingScreen.Material as ShaderMaterial;
 		// if (loadingScreenShader is null)
@@ -109,6 +116,19 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		var circuitNodes = WaypointCircuits.GetChildren();
 		var circuits = circuitNodes.Select(node => node as WaypointCircuit);
 		return circuits.ToArray();
+	}
+	
+	private IEnumerator<double> WaitForOctree(SparseVoxelOctree octree)
+	{
+		while (!octree.IsReadyForPathfinding)
+		{
+			yield return Timing.WaitForOneFrame;
+		}
+		
+		octreeGenerationStopwatch.Stop();
+		var time = octreeGenerationStopwatch.ElapsedMilliseconds / 1000f;
+		DebugConsole.Print($"Octree took { time } seconds to generate.");
+		OnOctreeGenerationFinished();
 	}
 
 	private void OnOctreeGenerationFinished()

@@ -111,10 +111,10 @@ radius = 0.3
 script = ExtResource("7_1gv2x")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_daowb"]
-size = Vector3(300, 150, 302.689)
+size = Vector3(330, 150, 330)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tswcn"]
-size = Vector3(300, 200, 302.689)
+size = Vector3(330, 150, 330)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_diuf7"]
 shader = ExtResource("18_qu7dt")
@@ -171,11 +171,18 @@ script = ExtResource("4_m21gd")
 
 [node name="SparseVoxelOctree" type="Node3D" parent="." unique_id=1243883636]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76, 0, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76, 23.544258, 60)
 script = ExtResource("5_m21gd")
 RootSize = 300.0
-InitialSubdivisions = 5
 DebugTree = true
+UpperSkyLimit = 49.0
+LowerGroundLimit = 0.5
+
+[node name="UpperSkyLimit" type="Node3D" parent="." unique_id=793039843]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -73.425, 49, 84.108)
+
+[node name="LowerGroundLimit" type="Node3D" parent="." unique_id=1979724078]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -73.425, 0.5, 84.108)
 
 [node name="MainCamera" type="Camera3D" parent="." unique_id=147421970]
 unique_name_in_owner = true
@@ -251,19 +258,21 @@ tween_resource = SubResource("Resource_2w0vd")
 metadata/_custom_type_script = "uid://csjccrhj5wnx7"
 
 [node name="UpperBounds" type="StaticBody3D" parent="." unique_id=883336313]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -99.04303, 138.7955, 84.01219)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -78.38004, 143.35455, 63.739067)
 collision_layer = 128
 collision_mask = 3
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="UpperBounds" unique_id=1293181323]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -19.050674, 0)
 shape = SubResource("BoxShape3D_daowb")
 
 [node name="LowerBounds" type="StaticBody3D" parent="." unique_id=899693747]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -97.82568, -99.96863, 85)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -77.1627, -99.96863, 64.726875)
 collision_layer = 128
 collision_mask = 3
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LowerBounds" unique_id=2070831931]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.423164, 0)
 shape = SubResource("BoxShape3D_tswcn")
 
 [node name="Map" parent="." unique_id=2018743283 instance=ExtResource("14_m21gd")]
