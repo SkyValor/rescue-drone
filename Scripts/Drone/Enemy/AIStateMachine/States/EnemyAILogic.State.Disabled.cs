@@ -11,8 +11,8 @@ public partial class EnemyAILogic
         {
             public Disabled()
             {
-                OnAttach(() => Get<IGameRepo>().LevelStart += OnLevelStart);
-                OnDetach(() => Get<IGameRepo>().LevelStart -= OnLevelStart);
+                // OnAttach(() => Get<IGameRepo>().LevelStart += OnLevelStart);
+                // OnDetach(() => Get<IGameRepo>().LevelStart -= OnLevelStart);
             }
 
             private void OnLevelStart() => Input(new Input.Enable());

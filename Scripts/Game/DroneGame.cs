@@ -84,7 +84,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		this.Provide();
 		
 		// SparseVoxelOctree.EarlyGenerationFinished += OnOctreeGenerationFinished;
-		Timing.RunCoroutine(WaitForOctree(SparseVoxelOctree));
+		Timing.RunCoroutine(WaitForOctreeSubdivision());
 		octreeGenerationStopwatch = new Stopwatch();
 		octreeGenerationStopwatch.Start();
 		SparseVoxelOctree.GenerateOctreeAsync();
@@ -118,9 +118,9 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		return circuits.ToArray();
 	}
 	
-	private IEnumerator<double> WaitForOctree(SparseVoxelOctree octree)
+	private IEnumerator<double> WaitForOctreeSubdivision()
 	{
-		while (!octree.IsReadyForPathfinding)
+		while (!SparseVoxelOctree.IsReadyForPathfinding)
 		{
 			yield return Timing.WaitForOneFrame;
 		}

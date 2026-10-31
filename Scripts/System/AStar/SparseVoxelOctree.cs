@@ -1,6 +1,5 @@
 ﻿namespace RescueDrone;
 
-using System;
 using System.Collections.Generic;
 using Chickensoft.AutoInject;
 using Chickensoft.Introspection;
@@ -15,11 +14,7 @@ public partial class SparseVoxelOctree : Node3D
     private readonly Color DebugColorTree = new(Colors.Green, 0.4f);
     private readonly Color DebugColorRootBranch = new(Colors.White, 0.6f);
 
-    public event Action EarlyGenerationStarted;
-    public event Action EarlyGenerationFinished;
-    public event Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
-    public event Action<VoxelNode, VoxelNode[]> OnNodePartiallySubdivided; 
-    public event Action<VoxelNode, VoxelNode[]> OnNodeSubdividedForCollisions;
+    public event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided; 
 
     [Export] private float RootSize { get; set; } = 32f;
     [Export] private int InitialSubdivisions { get; set; } = 4;
@@ -38,15 +33,11 @@ public partial class SparseVoxelOctree : Node3D
     public void OnReady()
     {
         VoxelNode.OnNodeSubdivided += OnVoxelNodeSubdivided;
-        VoxelNode.OnNodePartiallySubdivided += OnVoxelNodePartiallySubdivided;
-        VoxelNode.OnNodeSubdividedForCollisions += OnVoxelNodeSubdividedForCollisions;
     }
 
     public void OnExitTree()
     {
         VoxelNode.OnNodeSubdivided -= OnVoxelNodeSubdivided;
-        VoxelNode.OnNodePartiallySubdivided -= OnVoxelNodePartiallySubdivided;
-        VoxelNode.OnNodeSubdividedForCollisions -= OnVoxelNodeSubdividedForCollisions;
     }
 
     public override void _Process(double delta)
@@ -65,28 +56,6 @@ public partial class SparseVoxelOctree : Node3D
         }
         else
             Root?.DrawVoxelWireframe();
-    }
-
-    public void GenerateOctree()
-    {
-        EarlyGenerationStarted?.Invoke();
-
-        Root = new VoxelNode(GlobalPosition, RootSize, null);
-        Root.SubdivideForCollisions(GetWorld3D(), MinNodeSize, InitialSubdivisions);
-        
-        DebugConsole.Print("SparseVoxelOctree generated successfully.");
-        EarlyGenerationFinished?.Invoke();
-    }
-
-    public void GenerateOctreeInDepth()
-    {
-        EarlyGenerationStarted?.Invoke();
-        
-        Root = new VoxelNode(GlobalPosition, RootSize, null);
-        Root.SubdivideInDepth(GetWorld3D(), MinNodeSize);
-        
-        DebugConsole.Print("SparseVoxelOctree generated successfully.");
-        EarlyGenerationFinished?.Invoke();
     }
 
     public async void GenerateOctreeAsync()
@@ -139,16 +108,6 @@ public partial class SparseVoxelOctree : Node3D
     private void OnVoxelNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
     {
         OnNodeSubdivided?.Invoke(parentNode, octants);
-    }
-
-    private void OnVoxelNodePartiallySubdivided(VoxelNode parentNode, VoxelNode[] octants)
-    {
-        OnNodePartiallySubdivided?.Invoke(parentNode, octants);
-    }
-
-    private void OnVoxelNodeSubdividedForCollisions(VoxelNode parentNode, VoxelNode[] octants)
-    {
-        OnNodeSubdividedForCollisions?.Invoke(parentNode, octants);
     }
     
 }

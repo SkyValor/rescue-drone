@@ -7,6 +7,32 @@ using Godot;
 
 public static class Utils
 {
+    public static uint Get3DLayerValueByName(string layerName)
+    {
+        for (int i = 1; i < 33; i++)
+        {
+            var settingName = $"layer_names/3d_physics/layer_{i}";
+            var configuredName = ProjectSettings.GetSetting(settingName, "");
+            if (configuredName.VariantType is Variant.Type.String && configuredName.AsString().Equals(layerName))
+                return (uint) 1 << (i - 1); // Returns the bitmask value (e.g., 1, 2, 4, 8...)
+        }
+
+        return 0;
+    }
+    
+    public static int Get3DLayerIndexByName(string layerName)
+    {
+        for (int i = 1; i < 33; i++)
+        {
+            var settingName = $"layer_names/3d_physics/layer_{i}";
+            var configuredName = ProjectSettings.GetSetting(settingName, "");
+            if (configuredName.VariantType is Variant.Type.String && configuredName.AsString().Equals(layerName))
+                return i;
+        }
+
+        return -1;
+    }
+    
     // if (targetNumber == startNumber) --> 0.0
     // if (targetNumber == endNumber) --> 1.0
     public static float PercentageCalculate(float startNumber, float endNumber, float targetNumber)
