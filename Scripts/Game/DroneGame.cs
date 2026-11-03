@@ -136,7 +136,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		GameRepo.SetSVO(SparseVoxelOctree);
 		OnLoadingScreenFadeOutCompleted();
 		SetProcess(true);
-		
+
 		// Resolve Waypoint positions into the Sparse Voxel Octree
 		var svo = GameRepo.SVO.Value;
 		var circuits = GameRepo.WaypointCircuits.Value;
@@ -144,10 +144,11 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		{
 			foreach (var waypoint in circuit.Waypoints)
 			{
+				DebugConsole.Print("Setting up the position of " + waypoint.Name);
 				var voxel = svo.GetNodeAtPositionPrecise(waypoint.GlobalPosition);
-				if (voxel is null)
+				if (voxel is null || voxel.IsOccupied)
 				{
-					DebugConsole.PrintWarning($"Waypoint '{waypoint.Name}' could not be placed in precise voxel node.");
+					DebugConsole.PrintWarning($"Waypoint '{ waypoint.Name }' could not be placed in precise voxel node.");
 					continue;
 				}
 				
@@ -180,8 +181,7 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 
 	public void OnProcess(double delta)
 	{
-		var svo = GameRepo.SVO.Value;
-		svo?.DrawVoxelOctree();
+		SparseVoxelOctree?.DrawVoxelOctree();
 	}
 
 	private void OnLevelReady()

@@ -14,7 +14,7 @@ public interface IPathfindSVO
     /// </summary>
     /// <remarks>This method must be invoked during physics time.</remarks>
     Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
-    
+    Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end);
     bool IsPathClear(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclude = null);
 }
 
@@ -43,7 +43,6 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
     private void HandleNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
     {
         RemoveNodeFromGraph(parentNode);
-
         foreach (var octant in octants)
         {
             if (octant is null || octant.IsOccupied) continue;
@@ -151,6 +150,73 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
                 
                 AStar.ConnectPoints(navigable.Id, neighborNode.Id);
             }
+        }
+    }
+
+    public Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end)
+    {
+        var coarsePath = CoarseRouteSearch(start, end);
+        RefineThePath(coarsePath);
+
+        var fineStart = Tree.GetNodeAtPosition(start);
+        var fineEnd = Tree.GetNodeAtPosition(end);
+
+        if (fineStart is null || fineEnd is null)
+        {
+            DebugConsole.Print("FineRouteSearch Start or target non-existent in the tree.");
+            return [];
+        }
+
+        if (!AStar.HasPoint(fineStart.Id) || !AStar.HasPoint(fineEnd.Id))
+        {
+            DebugConsole.PrintWarning("FineRouteSearch A* graph does not have start point or end point.");
+            return [];
+        }
+        
+        return AStar.GetPointPath(fineStart.Id, fineEnd.Id);
+    }
+
+    /// <summary>
+    /// Return a pathway of points from start to finish, even if they are coarse.
+    /// </summary>
+    private Vector3[] CoarseRouteSearch(Vector3 start, Vector3 end)
+    {
+        var coarseStart = Tree.GetNodeAtPosition(start);
+        var coarseEnd = Tree.GetNodeAtPosition(end);
+
+        if (coarseStart is null || coarseEnd is null)
+        {
+            // Start or target is inside an obstacle!
+            DebugConsole.Print("CoarseRouteSearch Start or target is inside an obstacle!");
+            return [];
+        }
+        
+        DebugConsole.Print($"CoarseStart '{coarseStart.Id}' | CoarseEnd '{coarseEnd.Id}'");
+
+        if (!AStar.HasPoint(coarseStart.Id) || !AStar.HasPoint(coarseEnd.Id))
+        {
+            DebugConsole.PrintWarning("CoarseRouteSearch A* graph does not have start point or end point.");
+            return [];
+        }
+        
+        var coarsePath = AStar.GetPointPath(coarseStart.Id, coarseEnd.Id);
+        if (coarsePath.Length == 0)
+        {
+            DebugConsole.Print("No coarse path found around obstacles.");
+            return [];
+        }
+
+        return coarsePath;
+    }
+
+    private void RefineThePath(Vector3[] coarsePath)
+    {
+        for (int i = 0; i < coarsePath.Length - 1; i++)
+        {
+            var segmentStart = coarsePath[i];
+            var segmentEnd = coarsePath[i + 1];
+
+            Tree.RefineArea(segmentStart, segmentEnd, sampleStep: Tree.MinNodeSize);
         }
     }
 

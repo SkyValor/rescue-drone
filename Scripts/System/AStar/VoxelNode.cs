@@ -137,27 +137,27 @@ public class VoxelNode
     public VoxelNode FindOrCreateAtPosition(Vector3 targetPosition, float minNodeSize, 
         float upperLimit, float lowerLimit, World3D world)
     {
-        if (!ContainsPoint(targetPosition) || targetPosition.Y >= upperLimit || targetPosition.Y <= lowerLimit)
-            return null; // Out of bounds
+        if (IsOutOfBounds(targetPosition, upperLimit, lowerLimit)) return null;
         
         // If we've reached min node size, return this node
-        if (Size <= minNodeSize || Size * 0.5f < minNodeSize)
-            return this;
-    
+        if (Size <= minNodeSize || Size * 0.5f < minNodeSize) return this;
+        
         if (Children.Length == 0)
-            Children = new VoxelNode[8];
-        
-        var halfSize = Size * 0.5f;
-        var quarterSize = halfSize * 0.5f;
-        var offsets = GetOffsetPositionArray(quarterSize);
-        for (int i = 0; i < 8; i++)
         {
-            var childPosition = Position + offsets[i];
-            var occupied = CheckCollision(world, childPosition, halfSize);
-            Children[i] = new VoxelNode(childPosition, halfSize, this) { IsEmpty = !occupied };
-        }
+            Children = new VoxelNode[8];
+            
+            var halfSize = Size * 0.5f;
+            var quarterSize = halfSize * 0.5f;
+            var offsets = GetOffsetPositionArray(quarterSize);
+            for (int i = 0; i < 8; i++)
+            {
+                var childPosition = Position + offsets[i];
+                var occupied = CheckCollision(world, childPosition, halfSize);
+                Children[i] = new VoxelNode(childPosition, halfSize, this) { IsEmpty = !occupied };
+            }
         
-        OnNodeSubdivided?.Invoke(this, Children);
+            OnNodeSubdivided?.Invoke(this, Children);
+        }
 
         var index = GetOctantIndex(targetPosition);
         return Children[index].FindOrCreateAtPosition(targetPosition, minNodeSize, upperLimit, lowerLimit, world);
@@ -174,6 +174,11 @@ public class VoxelNode
             point.X >= Position.X - halfSize && point.X <= Position.X + halfSize &&
             point.Y >= Position.Y - halfSize && point.Y <= Position.Y + halfSize &&
             point.Z >= Position.Z - halfSize && point.Z <= Position.Z + halfSize;
+    }
+
+    private bool IsOutOfBounds(Vector3 point, float upperLimit, float lowerLimit)
+    {
+        return !ContainsPoint(point) || point.Y >= upperLimit || point.Y <= lowerLimit;
     }
 
     /// <summary>

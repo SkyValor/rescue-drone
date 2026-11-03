@@ -169,7 +169,9 @@ public partial class EnemyAILogic
                 var world = Get<World3D>();
                 var enemy = Get<EnemyAIDrone>();
                 var pathfinder = Get<IPathfindSVO>();
-                return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
+                DebugConsole.Print("Requesting a smart drone pathway.");
+                return pathfinder.RequestSmartDronePath(originPosition, targetPosition);
+                // return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
             }
 
             protected void OnMovingAlongPath(double delta, float targetSpeed, bool includeRotation = true, Action onFinalTargetReached = null)

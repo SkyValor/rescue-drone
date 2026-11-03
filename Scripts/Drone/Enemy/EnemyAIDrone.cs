@@ -89,7 +89,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 			.Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
 			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		
-		AIStateMachine.Start();
+		// AIStateMachine.Start();
 		SetPhysicsProcess(true);
 	}
 

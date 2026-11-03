@@ -18,7 +18,7 @@ public partial class SparseVoxelOctree : Node3D
 
     [Export] private float RootSize { get; set; } = 32f;
     [Export] private int InitialSubdivisions { get; set; } = 4;
-    [Export] private float MinNodeSize { get; set; } = 1f;
+    [Export] public float MinNodeSize { get; private set; } = 1f;
     
     [Export] private bool DebugTree { get; set; }
     [Export] private bool DebugTreeLeaves { get; set; }
@@ -55,7 +55,9 @@ public partial class SparseVoxelOctree : Node3D
                 DebugDraw3D.DrawBox(GlobalPosition + direction, Quaternion.Identity, Vector3.One * halfSize, DebugColorRootBranch, true);
         }
         else
+        {
             Root?.DrawVoxelWireframe();
+        }
     }
 
     public async void GenerateOctreeAsync()
@@ -90,7 +92,8 @@ public partial class SparseVoxelOctree : Node3D
     }
 
     /// <summary>
-    /// Gets the VoxelNode at a given world position.
+    /// Gets the currently existing deepest voxel node at a given world position
+    /// without modifying the tree.
     /// </summary>
     public VoxelNode GetNodeAtPosition(Vector3 position)
     {
@@ -98,11 +101,31 @@ public partial class SparseVoxelOctree : Node3D
     }
 
     /// <summary>
-    /// Gets or dynamically subdivides to the most precise VoxelNode at a given world position.
+    /// Gets or dynamically subdivides to the minimum node size limit at a given world position.
     /// </summary>
     public VoxelNode GetNodeAtPositionPrecise(Vector3 position)
     {
         return Root?.FindOrCreateAtPosition(position, MinNodeSize, UpperSkyLimit, LowerGroundLimit, GetWorld3D());
+    }
+
+    /// <summary>
+    /// Forces nodes along a path or within a bounding area to subdivide toward the minimum node size limit
+    /// so A* has high-resolution nodes to work with.
+    /// </summary>
+    public void RefineArea(Vector3 start, Vector3 end, float sampleStep = 2f)
+    {
+        var world = GetWorld3D();
+        if (world is null || Root is null) return;
+        
+        // Step along the path from start to end and ensure fine nodes exist there
+        var distance = start.DistanceTo(end);
+        var steps = Mathf.Max(1, Mathf.CeilToInt(distance / sampleStep));
+        for (int i = 0; i < steps; i++)
+        {
+            var t = (float) i / steps;
+            var samplePosition = start.Lerp(end, t);
+            Root.FindOrCreateAtPosition(samplePosition, MinNodeSize, UpperSkyLimit, LowerGroundLimit, world);
+        }
     }
 
     private void OnVoxelNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
