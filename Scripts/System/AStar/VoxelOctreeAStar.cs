@@ -14,7 +14,7 @@ public interface IPathfindSVO
     /// </summary>
     /// <remarks>This method must be invoked during physics time.</remarks>
     Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
-    Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end);
+    Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
     bool IsPathClear(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclude = null);
 }
 
@@ -38,86 +38,6 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         ConnectAdjacentPoints(navigablePoints);
     }
     
-    #region Handle Node Subdivision
-    
-    private void HandleNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
-    {
-        RemoveNodeFromGraph(parentNode);
-        foreach (var octant in octants)
-        {
-            if (octant is null || octant.IsOccupied) continue;
-            AddNodeToGraph(octant);
-
-            // Connect octant to its internal siblings (since they share inner faces)
-            foreach (var sibling in octants)
-            {
-                if (sibling is null || sibling == octant || sibling.IsOccupied) continue;
-                if (AreNodesAdjacent(octant, sibling))
-                    ConnectGraphNodes(octant, sibling);
-            }
-
-            var externalNeighbors = GetFaceNeighbors(octant);
-            foreach (var neighbor in externalNeighbors)
-                ConnectGraphNodes(octant, neighbor);
-        }
-    }
-    
-    private void RemoveNodeFromGraph(VoxelNode navigablePoint)
-    {
-        if (!AStar.HasPoint(navigablePoint.Id)) return;
-        
-        var connections = AStar.GetPointConnections(navigablePoint.Id);
-        foreach (var otherId in connections)
-            AStar.DisconnectPoints(navigablePoint.Id, otherId);
-        
-        AStar.RemovePoint(navigablePoint.Id);
-    }
-    
-    private void AddNodeToGraph(VoxelNode navigable)
-    {
-        if (!AStar.HasPoint(navigable.Id))
-            AStar.AddPoint(navigable.Id, navigable.Position);
-    }
-    
-    /// <summary>
-    /// Check if voxel node A and voxel node B are face-adjacent.
-    /// </summary>
-    private static bool AreNodesAdjacent(VoxelNode a, VoxelNode b)
-    {
-        var actualDistance = a.Position.DistanceTo(b.Position);
-        var expectedDistance = a.Size * 0.5f + b.Size * 0.5f;
-        return Mathf.IsEqualApprox(actualDistance, expectedDistance, 0.01f);
-    }
-    
-    /// <summary>
-    /// Finds all valid, unoccupied leaf neighbors touching the 6 faces of this voxel node.
-    /// </summary>
-    private Set<VoxelNode> GetFaceNeighbors(VoxelNode navigable)
-    {
-        var halfSize = navigable.Size * 0.5f;
-        var offsetDistance = halfSize * 0.05f;
-        var neighbors = new Set<VoxelNode>();
-
-        foreach (var direction in OffsetDirections)
-        {
-            var samplePosition = navigable.Position + direction * offsetDistance;
-            var neighbor = Tree.GetNodeAtPosition(samplePosition);
-            if (neighbor is null || neighbor == navigable || neighbor.IsOccupied || neighbor.NotLeaf) continue;
-            neighbors.Add(neighbor);
-        }
-
-        return neighbors;
-    }
-    
-    private void ConnectGraphNodes(VoxelNode a, VoxelNode b)
-    {
-        if (!AStar.HasPoint(a.Id) || !AStar.HasPoint(b.Id) || AStar.ArePointsConnected(a.Id, b.Id)) return;
-        
-        AStar.ConnectPoints(a.Id, b.Id);
-    }
-    
-    #endregion
-
     /// <summary>
     /// Connect each navigable voxel node to its neighbors as navigable waypoints in the octree.
     /// </summary>
@@ -153,31 +73,115 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         }
     }
 
-    public Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end)
+    #region Handle Node Subdivision
+    
+    private void HandleNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
+    {
+        RemoveNodeFromGraph(parentNode);
+        foreach (var octant in octants)
+        {
+            if (octant is null || octant.IsOccupied) continue;
+            AddNodeToGraph(octant);
+            ConnectOctantToSiblings(octant, octants);
+            ConnectOctantToNeighbors(octant);
+        }
+    }
+    
+    /// <summary>
+    /// Disconnect this voxel node from any other in the A* graph. Then, remove it from the graph.
+    /// </summary>
+    private void RemoveNodeFromGraph(VoxelNode voxelNode)
+    {
+        if (!AStar.HasPoint(voxelNode.Id)) return;
+        
+        var connections = AStar.GetPointConnections(voxelNode.Id);
+        foreach (var otherId in connections)
+            AStar.DisconnectPoints(voxelNode.Id, otherId);
+        
+        AStar.RemovePoint(voxelNode.Id);
+    }
+    
+    /// <summary>
+    /// Connect this octant to its internal siblings (since they share inner faces).
+    /// </summary>
+    private void ConnectOctantToSiblings(VoxelNode octant, VoxelNode[] siblings)
+    {
+        foreach (var sibling in siblings)
+        {
+            if (sibling is null || sibling == octant || sibling.IsOccupied) continue;
+            if (AreNodesAdjacent(octant, sibling))
+                ConnectGraphNodes(octant, sibling);
+        }
+    }
+    
+    /// <summary>
+    /// Connect this octant to its face-adjacent external neighbors (not siblings).
+    /// </summary>
+    private void ConnectOctantToNeighbors(VoxelNode octant)
+    {
+        var externalNeighbors = GetFaceNeighbors(octant);
+        foreach (var neighbor in externalNeighbors)
+            ConnectGraphNodes(octant, neighbor);
+    }
+    
+    private void AddNodeToGraph(VoxelNode navigable)
+    {
+        if (!AStar.HasPoint(navigable.Id))
+            AStar.AddPoint(navigable.Id, navigable.Position);
+    }
+    
+    /// <summary>
+    /// Check if voxel node A and voxel node B are face-adjacent.
+    /// </summary>
+    private static bool AreNodesAdjacent(VoxelNode a, VoxelNode b)
+    {
+        var actualDistance = a.Position.DistanceTo(b.Position);
+        var expectedDistance = a.Size * 0.5f + b.Size * 0.5f;
+        return Mathf.IsEqualApprox(actualDistance, expectedDistance, 0.01f);
+    }
+    
+    /// <summary>
+    /// Finds all valid, unoccupied leaf neighbors touching the 6 faces of this voxel node.
+    /// </summary>
+    private Set<VoxelNode> GetFaceNeighbors(VoxelNode navigable)
+    {
+        var halfSize = navigable.Size * 0.5f;
+        var offsetDistance = halfSize + 0.05f;
+        var neighbors = new Set<VoxelNode>();
+
+        foreach (var direction in OffsetDirections)
+        {
+            var samplePosition = navigable.Position + direction * offsetDistance;
+            var neighbor = Tree.GetNodeAtPosition(samplePosition);
+            if (neighbor is null || neighbor == navigable || neighbor.IsOccupied || neighbor.NotLeaf) continue;
+            neighbors.Add(neighbor);
+        }
+
+        return neighbors;
+    }
+    
+    private void ConnectGraphNodes(VoxelNode a, VoxelNode b)
+    {
+        if (!AStar.HasPoint(a.Id) || !AStar.HasPoint(b.Id) || AStar.ArePointsConnected(a.Id, b.Id)) return;
+        
+        AStar.ConnectPoints(a.Id, b.Id);
+    }
+    
+    #endregion
+
+    public Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end, World3D world, float droneRadius, 
+        Rid[] exclusion = null)
     {
         var coarsePath = CoarseRouteSearch(start, end);
         RefineThePath(coarsePath);
 
-        var fineStart = Tree.GetNodeAtPosition(start);
-        var fineEnd = Tree.GetNodeAtPosition(end);
-
-        if (fineStart is null || fineEnd is null)
-        {
-            DebugConsole.Print("FineRouteSearch Start or target non-existent in the tree.");
-            return [];
-        }
-
-        if (!AStar.HasPoint(fineStart.Id) || !AStar.HasPoint(fineEnd.Id))
-        {
-            DebugConsole.PrintWarning("FineRouteSearch A* graph does not have start point or end point.");
-            return [];
-        }
-        
-        return AStar.GetPointPath(fineStart.Id, fineEnd.Id);
+        var finePath = FineRouteSearch(start, end);
+        return SmoothPath(finePath, world, droneRadius, exclusion);
     }
 
     /// <summary>
-    /// Return a pathway of points from start to finish, even if they are coarse.
+    /// Make a preliminary sweep of the path from start to finish. Return a pathway of points,
+    /// even if they are coarse.
     /// </summary>
     private Vector3[] CoarseRouteSearch(Vector3 start, Vector3 end)
     {
@@ -187,12 +191,9 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         if (coarseStart is null || coarseEnd is null)
         {
             // Start or target is inside an obstacle!
-            DebugConsole.Print("CoarseRouteSearch Start or target is inside an obstacle!");
             return [];
         }
         
-        DebugConsole.Print($"CoarseStart '{coarseStart.Id}' | CoarseEnd '{coarseEnd.Id}'");
-
         if (!AStar.HasPoint(coarseStart.Id) || !AStar.HasPoint(coarseEnd.Id))
         {
             DebugConsole.PrintWarning("CoarseRouteSearch A* graph does not have start point or end point.");
@@ -220,6 +221,26 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         }
     }
 
+    private Vector3[] FineRouteSearch(Vector3 start, Vector3 end)
+    {
+        var fineStart = Tree.GetNodeAtPosition(start);
+        var fineEnd = Tree.GetNodeAtPosition(end);
+
+        if (fineStart is null || fineEnd is null)
+        {
+            DebugConsole.Print("FineRouteSearch Start or target non-existent in the tree.");
+            return [];
+        }
+
+        if (!AStar.HasPoint(fineStart.Id) || !AStar.HasPoint(fineEnd.Id))
+        {
+            DebugConsole.PrintWarning("FineRouteSearch A* graph does not have start point or end point.");
+            return [];
+        }
+        
+        return AStar.GetPointPath(fineStart.Id, fineEnd.Id);
+    }
+
     public Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null)
     {
         var origin = Tree.GetNodeAtPositionPrecise(start);
@@ -245,11 +266,6 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
     /// String Pulling algorithm to smoothen out the raw path. It works by checking line-of-sight between
     /// non-consecutive waypoints and eliminating unnecessary corners.
     /// </summary>
-    /// <param name="rawPath"></param>
-    /// <param name="world"></param>
-    /// <param name="droneRadius"></param>
-    /// <param name="exclusion"></param>
-    /// <returns></returns>
     private Vector3[] SmoothPath(Vector3[] rawPath, World3D world, float droneRadius, Rid[] exclusion = null)
     {
         if (rawPath.Length <= 2) return rawPath;
@@ -260,7 +276,7 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         {
             var shortcutFound = false;
             
-            // Check from the end of the path backwards.
+            // Check from the end of the path backwards
             for (int next = rawPath.Length - 1; next > current + 1; next--)
             {
                 // If the drone can safely fly in a straight line between these two points

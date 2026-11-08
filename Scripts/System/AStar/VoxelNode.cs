@@ -8,7 +8,7 @@ using Godot;
 [Tool]
 public class VoxelNode
 {
-    public static event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided; 
+    public static event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
     
     public readonly int Id;
     private static int nextId;
@@ -42,19 +42,20 @@ public class VoxelNode
     /// </summary>
     public void DrawVoxelWireframe()
     {
-        var size = new Vector3(Size, Size, Size);
-        
-        if (Parent is null) DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, RootWhite, true);
+        if (Parent is null) DrawWithColor(RootWhite);
         if (IsLeaf)
         {
-            var color = IsEmpty ? EmptyLeafGreen : OccupiedLeafRed;
-            DebugDraw3D.DrawBox(Position, Quaternion.Identity, size, color, true);
+            DrawWithColor(IsEmpty ? EmptyLeafGreen : OccupiedLeafRed);
+            return;
         }
-
-        if (Children is null || Children.Length == 0) return;
 
         foreach (var child in Children)
             child?.DrawVoxelWireframe();
+    }
+
+    public void DrawWithColor(Color color)
+    {
+        DebugDraw3D.DrawBox(Position, Quaternion.Identity, new Vector3(Size, Size, Size), color, true);
     }
 
     /// <summary>
@@ -76,7 +77,7 @@ public class VoxelNode
             return;
         }
         
-        if (remainingSubdivisions <= 0 || Size * 0.5f < minNodeSize) return;
+        if (remainingSubdivisions <= 0 || halfSize < minNodeSize) return;
         
         var quarterSize = halfSize * 0.5f;
         var offsets = GetOffsetPositionArray(quarterSize);

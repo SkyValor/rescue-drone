@@ -11,17 +11,24 @@ public partial class SparseVoxelOctree : Node3D
 {
     public override void _Notification(int what) => this.Notify(what);
 
-    private readonly Color DebugColorTree = new(Colors.Green, 0.4f);
-    private readonly Color DebugColorRootBranch = new(Colors.White, 0.6f);
+    private readonly Color RootGreen = new(Colors.Green, 0.4f);
+    private readonly Color RootBranchWhite = new(Colors.White, 0.6f);
 
-    public event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided; 
+    /// <summary>
+    /// Event is called when a voxel node in this tree undergoes subdivision, creating
+    /// its child octants.
+    /// <remarks>
+    /// The parameters are the voxel node that went through subdivision and an array
+    /// containing its new octant children.
+    /// </remarks>
+    /// </summary>
+    public event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
 
     [Export] private float RootSize { get; set; } = 32f;
     [Export] private int InitialSubdivisions { get; set; } = 4;
     [Export] public float MinNodeSize { get; private set; } = 1f;
     
     [Export] private bool DebugTree { get; set; }
-    [Export] private bool DebugTreeLeaves { get; set; }
 
     [ExportCategory("Flight Boundaries")]
     [Export] public float UpperSkyLimit { get; private set; } = 120f;
@@ -33,6 +40,7 @@ public partial class SparseVoxelOctree : Node3D
     public void OnReady()
     {
         VoxelNode.OnNodeSubdivided += OnVoxelNodeSubdivided;
+        SetProcess(true);
     }
 
     public void OnExitTree()
@@ -40,24 +48,14 @@ public partial class SparseVoxelOctree : Node3D
         VoxelNode.OnNodeSubdivided -= OnVoxelNodeSubdivided;
     }
 
-    public override void _Process(double delta)
+    public void OnProcess(double delta)
     {
         if (!DebugTree) return;
-
+    
         if (Engine.IsEditorHint())
-        {
-            DebugDraw3D.DrawBox(GlobalPosition, Quaternion.Identity, Vector3.One * RootSize, DebugColorTree, true);
-            
-            var halfSize = RootSize * 0.5f;
-            var quarterSize = halfSize * 0.5f;
-            var offsets = VoxelNode.GetOffsetPositionArray(quarterSize);
-            foreach (var direction in offsets)
-                DebugDraw3D.DrawBox(GlobalPosition + direction, Quaternion.Identity, Vector3.One * halfSize, DebugColorRootBranch, true);
-        }
+            DrawVoxelOctreeInEditor();
         else
-        {
             Root?.DrawVoxelWireframe();
-        }
     }
 
     public async void GenerateOctreeAsync()
@@ -73,7 +71,18 @@ public partial class SparseVoxelOctree : Node3D
         await Root.SubdivideAsync(world, MinNodeSize, InitialSubdivisions, UpperSkyLimit, LowerGroundLimit, this);
 
         IsReadyForPathfinding = true;
-        DebugConsole.Print("\"SparseVoxelOctree async generation complete. Ready for drone pathfinding!\"");
+        DebugConsole.Print("\"SparseVoxelOctree async generation complete.\"");
+    }
+
+    private void DrawVoxelOctreeInEditor()
+    {
+        DebugDraw3D.DrawBox(GlobalPosition, Quaternion.Identity, Vector3.One * RootSize, RootGreen, true);
+            
+        var halfSize = RootSize * 0.5f;
+        var quarterSize = halfSize * 0.5f;
+        var offsets = VoxelNode.GetOffsetPositionArray(quarterSize);
+        foreach (var direction in offsets)
+            DebugDraw3D.DrawBox(GlobalPosition + direction, Quaternion.Identity, Vector3.One * halfSize, RootBranchWhite, true);
     }
     
     public void DrawVoxelOctree()

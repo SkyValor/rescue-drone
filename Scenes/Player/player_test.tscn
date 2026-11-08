@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://chywtfecfmxqa" path="res://Scripts/Drone/TiltByInputComponent.cs" id="9_pm8st"]
 [ext_resource type="Script" uid="uid://cihp66ji43wf8" path="res://Scripts/Drone/TiltByInputSettings.cs" id="10_pm8st"]
 [ext_resource type="Script" uid="uid://d2b0ewpfp3wo2" path="res://Scripts/Input/InputComponent.cs" id="11_eifh0"]
+[ext_resource type="Script" uid="uid://o4gsvpn4pnuq" path="res://Scripts/Drone/DroneVoxelDrawComponent.cs" id="12_tkcdc"]
 
 [sub_resource type="Resource" id="Resource_omdfs"]
 script = ExtResource("2_7cjgh")
@@ -89,3 +90,8 @@ Settings = SubResource("Resource_eifh0")
 [node name="InputComponent" type="Node" parent="." unique_id=1090091327]
 unique_name_in_owner = true
 script = ExtResource("11_eifh0")
+
+[node name="Node3D" type="Node3D" parent="." unique_id=45828128]
+script = ExtResource("12_tkcdc")
+DebugCurrentNode = true
+DebugNodeConnections = true

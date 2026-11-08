@@ -72,14 +72,12 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 
 		octreeBind?.Dispose();
 
-		IPathfindSVO pathfinder = new VoxelOctreeAStar(GameRepo.SVO.Value);
-
 		AIStateMachine = new EnemyAILogic();
 		AIStateMachine.Set(new EnemyAILogic.Data());
+		AIStateMachine.Set(new VoxelOctreeAStar(octree) as IPathfindSVO);
 		AIStateMachine.Set(ProximitySensor);
 		AIStateMachine.Set(GetWorld3D());
 		AIStateMachine.Set(SightSensor);
-		AIStateMachine.Set(pathfinder);
 		AIStateMachine.Set(GameRepo);
 		AIStateMachine.Set(Settings);
 		AIStateMachine.Set(this);
@@ -89,7 +87,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 			.Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
 			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
 		
-		// AIStateMachine.Start();
+		AIStateMachine.Start();
 		SetPhysicsProcess(true);
 	}
 

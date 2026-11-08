@@ -99,7 +99,6 @@ public partial class EnemyAILogic
             /// Draw a line from the enemy drone towards the player, setting the color based on whether
             /// said player is currently detected or not.
             /// </summary>
-            /// <param name="isDetected"></param>
             protected void DrawPlayerDetectionLine(bool isDetected)
             {
                 var player = Get<IGameRepo>().PlayerDrone.Value;
@@ -114,7 +113,6 @@ public partial class EnemyAILogic
             /// <summary>
             /// Check the current distance to the player drone's last known position (in global space).
             /// </summary>
-            /// <returns></returns>
             protected PlayerDistanceType CheckDistanceToPlayer(Vector3 playerPosition)
             {
                 var settings = Get<EnemyDroneSettings>();
@@ -140,9 +138,6 @@ public partial class EnemyAILogic
             /// This method should only be called when the player drone is firstly detected during
             /// a state in which it's not being tracked.
             /// </summary>
-            /// <param name="playerPosition"></param>
-            /// <returns></returns>
-            /// <exception cref="ArgumentOutOfRangeException"></exception>
             protected Transition ToChaseBasedOnDistance(Vector3 playerPosition)
             {
                 var distanceType = CheckDistanceToPlayer(playerPosition);
@@ -161,16 +156,13 @@ public partial class EnemyAILogic
             /// Get the state machine's current pathfinding instance and request to generate
             /// a point pathway from origin to target.
             /// </summary>
-            /// <param name="originPosition"></param>
-            /// <param name="targetPosition"></param>
-            /// <returns></returns>
             protected Vector3[] GeneratePathway(Vector3 originPosition, Vector3 targetPosition)
             {
                 var world = Get<World3D>();
                 var enemy = Get<EnemyAIDrone>();
                 var pathfinder = Get<IPathfindSVO>();
                 DebugConsole.Print("Requesting a smart drone pathway.");
-                return pathfinder.RequestSmartDronePath(originPosition, targetPosition);
+                return pathfinder.RequestSmartDronePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
                 // return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
             }
 
@@ -237,10 +229,6 @@ public partial class EnemyAILogic
             /// both depend on the tightness of the curve. The enemy drone also slows down until a complete stop when nearing
             /// the end of the path.
             /// </summary>
-            /// <param name="enemy"></param>
-            /// <param name="includeRotation"></param>
-            /// <param name="targetSpeed"></param>
-            /// <param name="deltaTime"></param>
             private void ComputeMovementAlongPath(EnemyAIDrone enemy, bool includeRotation, float targetSpeed,
                 float deltaTime)
             {
@@ -298,10 +286,6 @@ public partial class EnemyAILogic
             /// <summary>
             /// Compute the target rotation this drone should have when smoothly turning towards <c>toDirection</c>.
             /// </summary>
-            /// <param name="enemy"></param>
-            /// <param name="toDirection"></param>
-            /// <param name="turnSpeed"></param>
-            /// <param name="deltaTime"></param>
             protected void SmoothlyRotate(EnemyAIDrone enemy, Vector3 toDirection, float turnSpeed, float deltaTime)
             {
                 if (toDirection == Vector3.Zero) return;
@@ -317,11 +301,6 @@ public partial class EnemyAILogic
             /// Calculate the target speed based on the distance to the final target of this pathway.
             /// The distance required to come to a complete stop from velocity <c>v</c> with deceleration <c>a</c> is: <c>d = v^2 / 2a</c>
             /// </summary>
-            /// <param name="path"></param>
-            /// <param name="enemy"></param>
-            /// <param name="settings"></param>
-            /// <param name="targetSpeed"></param>
-            /// <returns></returns>
             private static float CalculateFinalTargetSpeed(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings, float targetSpeed)
             {
                 var finalTarget = path[^1];

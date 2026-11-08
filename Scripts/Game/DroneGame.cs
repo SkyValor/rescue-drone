@@ -144,13 +144,8 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 		{
 			foreach (var waypoint in circuit.Waypoints)
 			{
-				DebugConsole.Print("Setting up the position of " + waypoint.Name);
 				var voxel = svo.GetNodeAtPositionPrecise(waypoint.GlobalPosition);
-				if (voxel is null || voxel.IsOccupied)
-				{
-					DebugConsole.PrintWarning($"Waypoint '{ waypoint.Name }' could not be placed in precise voxel node.");
-					continue;
-				}
+				if (voxel is null || voxel.IsOccupied) continue;
 				
 				waypoint.GlobalPosition = voxel.Position;
 			}
@@ -179,10 +174,10 @@ public partial class DroneGame : Node3D, IProvide<IGameRepo>
 	// 	OnLevelReady();
 	// }
 
-	public void OnProcess(double delta)
-	{
-		SparseVoxelOctree?.DrawVoxelOctree();
-	}
+	// public void OnProcess(double delta)
+	// {
+	// 	SparseVoxelOctree?.DrawVoxelOctree();
+	// }
 
 	private void OnLevelReady()
 	{
