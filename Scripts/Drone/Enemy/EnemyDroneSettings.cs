@@ -79,6 +79,19 @@ public partial class EnemyDroneSettings : Resource
     public float MaxDistance = 7f;
     
     /// <summary>
+    /// How far ahead in time to look when cutting off the player drone's movement while in
+    /// close quarters.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.1, 300, 0.1")]
+    public float InterceptionPredictionTime = 1.2f;
+
+    /// <summary>
+    /// Distance threshold to trigger a direct smash attack against the player drone.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.1, 300, 0.1")]
+    public float RammingTriggerDistance = 5f;
+    
+    /// <summary>
     /// Only recalculate the SVO path if the player moves this much.
     /// </summary>
     [Export(PropertyHint.Range, "0.1, 50, 0.1")]

@@ -80,7 +80,7 @@ public partial class EnemyAILogic
                 var path = GeneratePathway(origin, target);
                 if (path.Length > 0)
                 {
-                    data.SVOPath = path;
+                    data.SvoPath = path;
                     data.CurrentPathIndex = 1; // Skip current position, which might not be the center of this node
                 }
                 else

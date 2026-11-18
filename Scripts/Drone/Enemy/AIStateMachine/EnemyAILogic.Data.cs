@@ -13,7 +13,7 @@ public partial class EnemyAILogic
         /// <summary>
         /// The point pathway that the enemy drone is using in order to travel in 3D space.
         /// </summary>
-        public Vector3[] SVOPath { get; set; }
+        public Vector3[] SvoPath { get; set; }
         
         /// <summary>
         /// The current index to get the corresponding target point from the SVO pathway.
@@ -30,18 +30,29 @@ public partial class EnemyAILogic
         /// </summary>
         public Waypoint CurrentWaypoint { get; set; }
         
-        public PlayerDrone DetectedPlayer { get; set; }
+        /// <summary>
+        /// Whether the player drone is currently being detected by the enemy drone. If set to false,
+        /// the player is considered hidden or too far away.
+        /// </summary>
+        public bool PlayerDetected { get; set; }
+        
+        /// <summary>
+        /// The player's last known position in the A* graph. This relates to the sparse voxel octree
+        /// and to which voxel node the player was currently sitting on.
+        /// </summary>
+        public VoxelNode LastPlayerSvoNode { get; set; }
+        
+        /// <summary>
+        /// The enemy drone's current position in the A* graph. This relates to the sparse voxel octree
+        /// and to which voxel node the enemy is currently sitting on.
+        /// </summary>
+        public VoxelNode EnemySvoNode { get; set; }
         
         /// <summary>
         /// The player drone's position (in global space) when the drone recalculated the SVO
         /// pathway most recently.
         /// </summary>
         public Vector3 LastRepathPosition { get; set; }
-        
-        // /// <summary>
-        // /// The most recent player position (in global space) that was detected by the sight sensor.
-        // /// </summary>
-        // public Vector3 LastKnownPlayerPosition { get; set; }
         
         /// <summary>
         /// The target number of scans the drone will perform during scanning phase.

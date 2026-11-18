@@ -95,7 +95,7 @@ public partial class EnemyAILogic
                 }
                 else
                 {
-                    data.SVOPath = path;
+                    data.SvoPath = path;
                     data.CurrentPathIndex = 1; // We skip the first point since it's where we are at
                 }
             }

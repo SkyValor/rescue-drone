@@ -17,11 +17,11 @@ public partial class SparseVoxelOctree : Node3D
     /// <summary>
     /// Event is called when a voxel node in this tree undergoes subdivision, creating
     /// its child octants.
+    /// </summary>
     /// <remarks>
     /// The parameters are the voxel node that went through subdivision and an array
     /// containing its new octant children.
     /// </remarks>
-    /// </summary>
     public event System.Action<VoxelNode, VoxelNode[]> OnNodeSubdivided;
 
     [Export] private float RootSize { get; set; } = 32f;

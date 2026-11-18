@@ -55,7 +55,7 @@ public class VoxelNode
 
     public void DrawWithColor(Color color)
     {
-        DebugDraw3D.DrawBox(Position, Quaternion.Identity, new Vector3(Size, Size, Size), color, true);
+        DebugDraw3D.DrawBox(Position, Quaternion.Identity, Vector3.One * Size, color, true);
     }
 
     /// <summary>

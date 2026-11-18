@@ -7,15 +7,26 @@ using Godot.Collections;
 
 public interface IPathfindSVO
 {
+    Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
+    bool IsPathClear(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclude = null);
+    
     /// <summary>
     /// Generate and return a point path consisting of A* points from the closest empty leaves to start and end.
     /// The droneRadius must be accurate to properly determine if the drone can fit through tight spaces or avoid
     /// colliding with walls.
     /// </summary>
     /// <remarks>This method must be invoked during physics time.</remarks>
-    Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
     Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
-    bool IsPathClear(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclude = null);
+
+    /// <summary>
+    /// Returns whether there is a navigable point in the A* graph with the given ID.
+    /// </summary>
+    bool IsPointContained(int pointId);
+    
+    /// <summary>
+    /// Returns the IDs of navigable points in the A* graph that are connected to the given ID.
+    /// </summary>
+    long[] GetPointConnections(int pointId);
 }
 
 public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
@@ -168,6 +179,10 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
     }
     
     #endregion
+
+    public bool IsPointContained(int pointId) => AStar?.HasPoint(pointId) ?? false;
+
+    public long[] GetPointConnections(int pointId) => AStar?.GetPointConnections(pointId) ?? [];
 
     public Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end, World3D world, float droneRadius, 
         Rid[] exclusion = null)

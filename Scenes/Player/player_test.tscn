@@ -75,6 +75,9 @@ spring_length = 6.0
 
 [node name="SpringPosition" type="Node3D" parent="SpringArmPivot/SpringArm" unique_id=1875747718]
 
+[node name="SVO_ConnectionDrawComponent" type="Node3D" parent="." unique_id=45828128]
+script = ExtResource("12_tkcdc")
+
 [node name="PlayerCameraComponent" type="Node" parent="." unique_id=2017493537]
 script = ExtResource("3_pkpl1")
 Settings = SubResource("Resource_muiep")
@@ -90,8 +93,3 @@ Settings = SubResource("Resource_eifh0")
 [node name="InputComponent" type="Node" parent="." unique_id=1090091327]
 unique_name_in_owner = true
 script = ExtResource("11_eifh0")
-
-[node name="Node3D" type="Node3D" parent="." unique_id=45828128]
-script = ExtResource("12_tkcdc")
-DebugCurrentNode = true
-DebugNodeConnections = true

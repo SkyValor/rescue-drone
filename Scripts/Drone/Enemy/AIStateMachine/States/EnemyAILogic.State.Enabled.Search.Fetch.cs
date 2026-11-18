@@ -1,8 +1,6 @@
 ﻿namespace RescueDrone;
 
-using System;
 using Chickensoft.Introspection;
-using Godot;
 
 public partial class EnemyAILogic
 {
@@ -11,8 +9,6 @@ public partial class EnemyAILogic
         [Meta]
         public partial record Fetch : Search, IGet<Input.ReturnToIdle>
         {
-            public Vector3 LastKnownPlayerPosition { get; set; }
-            
             public Fetch()
             {
                 OnAttach(() =>
@@ -25,10 +21,8 @@ public partial class EnemyAILogic
             private void GeneratePathToPlayerLastPosition()
             {
                 var data = Get<Data>();
-                var enemy = Get<EnemyAIDrone>();
-
-                var origin = enemy.GlobalPosition;
-                var target = data.DetectedPlayer.GlobalPosition;
+                var origin = Get<EnemyAIDrone>().GlobalPosition;
+                var target = data.LastPlayerSvoNode.Position;
 
                 var path = GeneratePathway(origin, target);
                 if (path.Length == 0)
@@ -38,7 +32,7 @@ public partial class EnemyAILogic
                 }
                 else
                 {
-                    data.SVOPath = path;
+                    data.SvoPath = path;
                     data.CurrentPathIndex = 0;
                 }
             }
@@ -58,10 +52,10 @@ public partial class EnemyAILogic
 
                 try
                 {
-                    var targetPosition = data.SVOPath[data.CurrentPathIndex];
+                    var targetPosition = data.SvoPath[data.CurrentPathIndex];
                     if (enemy.GlobalPosition.DistanceTo(targetPosition) < settings.CheckpointRadius)
                     {
-                        if (data.CurrentPathIndex == data.SVOPath.Length - 1)
+                        if (data.CurrentPathIndex == data.SvoPath.Length - 1)
                             Input(new Input.StartAlertScanning());
                         else
                             data.CurrentPathIndex++;
@@ -70,7 +64,7 @@ public partial class EnemyAILogic
                     }
                     OnMovingAlongPath(delta, settings.MaxSpeed);
                 }
-                catch (Exception ex)
+                catch (System.Exception ex)
                 {
                     DebugConsole.PrintError("Error in try/catch Fetch: " + ex.Message);
                     Input(new Input.ReturnToIdle());

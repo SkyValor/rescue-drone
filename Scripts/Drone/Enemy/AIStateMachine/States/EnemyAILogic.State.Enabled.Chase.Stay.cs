@@ -29,7 +29,7 @@ public partial class EnemyAILogic
                 
                 var enemy = Get<EnemyAIDrone>();
                 var settings = Get<EnemyDroneSettings>();
-                var playerPosition = Get<Data>().DetectedPlayer.GlobalPosition;
+                var playerPosition = Get<Data>().LastPlayerSvoNode.Position;
                 var toPlayer = enemy.GlobalPosition.DirectionTo(playerPosition) with { Y = 0f };
                 
                 TrackPlayerOutOfBounds(enemy.GlobalPosition, playerPosition, settings);

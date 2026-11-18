@@ -41,28 +41,28 @@ public partial class EnemyAILogic
 
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
-                var player = data.DetectedPlayer;
-                if (player is null)
-                {
-                    DebugConsole.PrintError("Error in state Pursuit. Detected player is null!");
-                    player = Get<IGameRepo>().PlayerDrone.Value;
-                    if (player is null)
-                    {
-                        DebugConsole.PrintWarning("Warning in state Pursuit. GameRepo has no reference to player drone.");
-                        return To<Idle>();
-                    }
-                }
+                // var player = data.DetectedPlayer;
+                // if (player is null)
+                // {
+                //     DebugConsole.PrintError("Error in state Pursuit. Detected player is null!");
+                //     player = Get<IGameRepo>().PlayerDrone.Value;
+                //     if (player is null)
+                //     {
+                //         DebugConsole.PrintWarning("Warning in state Pursuit. GameRepo has no reference to player drone.");
+                //         return To<Idle>();
+                //     }
+                // }
                 
                 var settings = Get<EnemyDroneSettings>();
                 var enemyPosition = enemy.GlobalPosition;
-                var playerPosition = player.GlobalPosition;
+                var playerPosition = data.LastPlayerSvoNode.Position;
 
                 DrawMinMaxDistance(enemyPosition, settings.MinDistance, settings.MaxDistance);
                 DrawIdealTarget();
                 DrawPathEnd(data);
 
                 var playerPastThreshold = playerPosition.DistanceTo(data.LastRepathPosition) >= settings.RepathThreshold;
-                if (data.SVOPath is null || playerPastThreshold)
+                if (data.SvoPath is null || playerPastThreshold)
                 {
                     DebugConsole.Print("Either the path is null or the player moved a bunch. Recalculate SVO pathway.");
                     var recalculated = RecalculateSVOPathway(data, enemy, player, settings);
@@ -95,8 +95,8 @@ public partial class EnemyAILogic
 
             private void DrawPathEnd(Data data)
             {
-                if (data.SVOPath is null || data.SVOPath.Length == 0) return;
-                DebugDraw3D.DrawSphere(data.SVOPath[^1], color: DebugPathEndColor);
+                if (data.SvoPath is null || data.SvoPath.Length == 0) return;
+                DebugDraw3D.DrawSphere(data.SvoPath[^1], color: DebugPathEndColor);
             }
 
             private bool RecalculateSVOPathway(Data data, EnemyAIDrone enemy, PlayerDrone player, EnemyDroneSettings settings)
@@ -124,7 +124,7 @@ public partial class EnemyAILogic
                 //     return false;
                 // }
                 
-                data.SVOPath = path;
+                data.SvoPath = path;
                 data.CurrentPathIndex = path.Length == 1 ? 0 : 1;
                 data.LastRepathPosition = player.GlobalPosition;
                 return true;
@@ -204,7 +204,7 @@ public partial class EnemyAILogic
             {
                 var settings = Get<EnemyDroneSettings>();
                 var enemyPosition = Get<EnemyAIDrone>().GlobalPosition;
-                var playerPosition = Get<Data>().DetectedPlayer.GlobalPosition;
+                var playerPosition = Get<Data>().LastPlayerSvoNode.Position;
 
                 var toPlayer = playerPosition - enemyPosition;
                 var toPlayerXZ = toPlayer with { Y = 0f };
@@ -241,7 +241,7 @@ public partial class EnemyAILogic
                 var data = Get<Data>();
                 var stoppingSpeed = Get<EnemyDroneSettings>().StoppingSpeed;
                 var enemyVelocity = Get<EnemyAIDrone>().Velocity;
-                var isEndOfPath = data.CurrentPathIndex == data.SVOPath.Length - 1;
+                var isEndOfPath = data.CurrentPathIndex == data.SvoPath.Length - 1;
                 
                 if (isEndOfPath && enemyVelocity.Length() <= stoppingSpeed)
                 {

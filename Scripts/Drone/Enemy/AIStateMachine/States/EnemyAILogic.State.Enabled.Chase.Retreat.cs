@@ -39,12 +39,11 @@ public partial class EnemyAILogic
 
                 var world = Get<World3D>();
                 var enemy = Get<EnemyAIDrone>();
-                var player = Get<Data>().DetectedPlayer;
                 var settings = Get<EnemyDroneSettings>();
 
                 var deltaTime = (float) input.Delta;
                 var enemyPosition = enemy.GlobalPosition;
-                var playerPosition = player.GlobalPosition;
+                var playerPosition = Get<Data>().LastPlayerSvoNode.Position;
                 var retreatDistance = 1f + deltaTime;
 
                 var retreatDirection = FindSafeRetreatDirection(enemy, playerPosition, world, retreatDistance);
@@ -76,16 +75,81 @@ public partial class EnemyAILogic
 
             public Transition On(in Input.PlayerDroneCloseEnough input) => To<Stay>();
 
+            private VoxelNode FindRetreatTargetVoxel()
+            {
+                var data = Get<Data>();
+                var enemyVoxel = data.EnemySvoNode;
+                var playerVoxel = data.LastPlayerSvoNode;
+
+                // If the enemy is above or below the player by more than the maximum allowed,
+                // then our priority is to ascend/descend to eye-level. Otherwise, we remain at this height.
+                
+                // TODO:
+                // We can only ascend/descend if the environment allows us. So back away first and change
+                // height later.
+                
+                var positionHeight = GetTargetPositionHeight(enemyVoxel, playerVoxel);
+                if (positionHeight.IsEqualApprox(enemyVoxel.Position.Y))
+                {
+                    // We remain in this height while calculating the ideal target.
+                }
+                else
+                {
+                    // We need to ascend/descend to another height.
+                }
+                
+                var toEnemyDirection = (enemyVoxel.Position - playerVoxel.Position).Normalized();
+
+                var projection = enemyVoxel.Position with { Y = positionHeight };
+                var toProjectionDir = (projection - playerVoxel.Position).Normalized();
+                
+                // From this point, we need to verify which distance the projection is from the player and
+                // move accordingly.
+                
+                var toPlayer = playerVoxel.Position - enemyVoxel.Position;
+                var idealAwayDirection = toPlayer.Inverse().Normalized();
+            }
+
+            private float GetTargetPositionHeight(VoxelNode enemyVoxel, VoxelNode playerVoxel)
+            {
+                var settings = Get<EnemyDroneSettings>();
+                var heightDifference = Mathf.Abs(enemyVoxel.Position.Y - playerVoxel.Position.Y);
+                if (heightDifference <= settings.PreferredHeightOffset)
+                {
+                    // The height difference is okay. The target position could be in our Y-axis position.
+                    return enemyVoxel.Position.Y;
+                }
+                    
+                // If the height difference is greater than preferred offset, then we need to calculate where
+                // we need to be in the Y-axis.
+                
+                if (playerVoxel.Position.Y > enemyVoxel.Position.Y) 
+                {
+                    // The player is higher up than we are. We need to ascend to a certain value
+                    // in order to be at eye-level to the player.
+                    
+                    var targetHeight = playerVoxel.Position.Y - settings.PreferredHeightOffset;
+                    var ascendAmount = targetHeight - enemyVoxel.Position.Y;
+
+                    return targetHeight;
+                }
+                else
+                {
+                    // The player is lower down than we are. We need to descend to a certain value
+                    // in order to be at eye-level to the player.
+                    
+                    var targetHeight = playerVoxel.Position.Y + settings.PreferredHeightOffset;
+                    var descendAmount = enemyVoxel.Position.Y - targetHeight;
+
+                    return targetHeight;
+                }
+            }
+            
             /// <summary>
             /// Attempt to find a retreat direction for the drone to avoid the player. Start by investigating
             /// backwards directions and moving towards a 90º angle. If moving horizontally is impossible without
             /// collision, fallback to ascending (Vector3.Up). If that is impossible as well, halt movement (Vector3.Zero).
             /// </summary>
-            /// <param name="enemy"></param>
-            /// <param name="playerPosition"></param>
-            /// <param name="world"></param>
-            /// <param name="retreatDistance"></param>
-            /// <returns></returns>
             private Vector3 FindSafeRetreatDirection(EnemyAIDrone enemy, Vector3 playerPosition, World3D world, float retreatDistance = 3f)
             {
                 var voxelOctree = Get<IGameRepo>().SVO.Value;
@@ -133,11 +197,6 @@ public partial class EnemyAILogic
             /// Check whether the end position is an empty voxel leaf in the Sparse Voxel Octree, and if the movement
             /// towards it results in no collisions. This is achieved by means of a CastMotion.
             /// </summary>
-            /// <param name="start"></param>
-            /// <param name="end"></param>
-            /// <param name="world"></param>
-            /// <param name="svo"></param>
-            /// <returns></returns>
             private bool IsRetreatPathClear(Vector3 start, Vector3 end, World3D world, SparseVoxelOctree svo)
             {
                 // Check if the end result is a valid empty leaf

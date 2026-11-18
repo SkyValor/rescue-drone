@@ -25,7 +25,7 @@ public partial class DroneVoxelDrawComponent : Node3D
     private IPathfindSVO pathfinder;
     private SparseVoxelOctree octree;
     private AutoValue<SparseVoxelOctree>.Binding svoBind;
-    private List<VoxelNode> navigables = [];
+    private List<VoxelNode> navigablePoints = [];
 
     public void OnResolved()
     {
@@ -77,7 +77,7 @@ public partial class DroneVoxelDrawComponent : Node3D
         
         foreach (var connectionId in pathfinder.GetPointConnections(centralNode.Id))
         {
-            var connectedNode = navigables.FirstOrDefault(nav => nav.Id == connectionId);
+            var connectedNode = navigablePoints.FirstOrDefault(nav => nav.Id == connectionId);
             if (connectedNode is null)
             {
                 DebugConsole.Print("Navigable list does not contain node with correct ID.");
@@ -94,7 +94,7 @@ public partial class DroneVoxelDrawComponent : Node3D
         
         svoBind?.Dispose();
         pathfinder = new VoxelOctreeAStar(octree);
-        navigables = octree.GetNavigableWaypoints();
+        navigablePoints = octree.GetNavigableWaypoints();
 
         this.octree = octree;
         octree.OnNodeSubdivided += OnNodeSubdivided;
@@ -103,8 +103,8 @@ public partial class DroneVoxelDrawComponent : Node3D
 
     private void OnNodeSubdivided(VoxelNode parentNode, VoxelNode[] octants)
     {
-        navigables.Remove(parentNode);
-        navigables.AddRange(octants);
+        navigablePoints.Remove(parentNode);
+        navigablePoints.AddRange(octants);
     }
     
 }

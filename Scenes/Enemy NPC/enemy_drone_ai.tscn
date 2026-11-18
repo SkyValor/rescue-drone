@@ -32,8 +32,8 @@ metadata/_custom_type_script = "uid://c31enkx87j30n"
 [sub_resource type="Resource" id="Resource_31ski"]
 script = ExtResource("2_v1mr3")
 StoppingSpeed = 0.2
-MinDistance = 8.0
-MaxDistance = 14.0
+MinDistance = 18.0
+MaxDistance = 30.0
 PatrolScanSettings = SubResource("Resource_dn2e1")
 SearchScanSettings = SubResource("Resource_n7gd0")
 IdleWaitTime = 3.15
@@ -47,13 +47,15 @@ radius = 10.0
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_n7gd0"]
 height = 0.001
-radius = 7.5
+radius = 18.0
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_ssi3f"]
 height = 0.001
-radius = 14.0
+radius = 30.0
 
 [node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022]
+collision_layer = 2
+collision_mask = 155
 script = ExtResource("1_qfwpt")
 Settings = SubResource("Resource_31ski")
 
