@@ -64,6 +64,10 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 
 		MoveAndSlide();
 		AIStateMachine.Input(new EnemyAILogic.Input.Moved());
+
+		// Get collision information. If there is a collision, send to LogicBlock by Input.
+		var collision = GetLastSlideCollision();
+		if (collision is null) return;
 	}
 
 	private void StartAIStateMachine(SparseVoxelOctree octree)
@@ -86,6 +90,10 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 		AIStateBinding
 			.Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
 			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
+		AIStateBinding.When<EnemyAILogic.State.Ramming>(_ =>
+		{
+			
+		});
 		
 		AIStateMachine.Start();
 		SetPhysicsProcess(true);

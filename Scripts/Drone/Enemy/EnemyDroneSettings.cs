@@ -90,6 +90,18 @@ public partial class EnemyDroneSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0.1, 300, 0.1")]
     public float RammingTriggerDistance = 5f;
+
+    /// <summary>
+    /// The drone's max speed when in ramming phase. This value overrides the standard one during the phase.
+    /// </summary>
+    [Export(PropertyHint.Range, "0, 100, 0.01")] 
+    public float RamMaxSpeed = 15f;
+    
+    /// <summary>
+    /// The drone's acceleration when in ramming phase. This value overrides the standard one during the phase.
+    /// </summary>
+    [Export(PropertyHint.Range, "0, 100, 0.01")] 
+    public float RamAcceleration = 5f;
     
     /// <summary>
     /// Only recalculate the SVO path if the player moves this much.
