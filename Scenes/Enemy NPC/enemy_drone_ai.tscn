@@ -53,6 +53,9 @@ radius = 18.0
 height = 0.001
 radius = 30.0
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_ssi3f"]
+radius = 1.0
+
 [node name="EnemyDrone" type="CharacterBody3D" unique_id=1527454022]
 collision_layer = 2
 collision_mask = 155
@@ -100,4 +103,14 @@ disabled = true
 
 [node name="MaxDistanceToPlayer" type="CollisionShape3D" parent="." unique_id=999515168]
 shape = SubResource("CylinderShape3D_ssi3f")
+disabled = true
+
+[node name="RamAreaCollider" type="Area3D" parent="." unique_id=1596509278]
+unique_name_in_owner = true
+collision_layer = 2
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RamAreaCollider" unique_id=902124802]
+shape = SubResource("SphereShape3D_ssi3f")
 disabled = true

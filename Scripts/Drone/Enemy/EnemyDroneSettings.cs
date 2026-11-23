@@ -102,6 +102,12 @@ public partial class EnemyDroneSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0, 100, 0.01")] 
     public float RamAcceleration = 5f;
+
+    /// <summary>
+    /// How much the enemy drone should recoil after successfully ramming against the player drone.
+    /// </summary>
+    [Export(PropertyHint.Range, "0, 30, 0.1")]
+    public float RamRecoilDistance = 7f;
     
     /// <summary>
     /// Only recalculate the SVO path if the player moves this much.

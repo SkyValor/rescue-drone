@@ -45,11 +45,16 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
         public readonly record struct PlayerDroneCloseEnough;
         public readonly record struct PlayerDroneTooClose;
         public readonly record struct PlayerDroneTooFar;
+
+        public readonly record struct RamCollisionWithPlayer;
     }
     
     public static class Output
     {
         public readonly record struct RotationComputed(Transform3D GlobalTransform);
         public readonly record struct VelocityComputed(Vector3 Velocity);
+
+        public readonly record struct EnableRamCollision(bool IsEnabled);
+        public readonly record struct RammedIntoPlayer;
     }
 }

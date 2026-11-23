@@ -14,6 +14,8 @@ public partial class EnemyAILogic
         
         public float CurrentAcceleration { get; set; }
         
+        public float CurrentDashSpeed { get; set; }
+        
         /// <summary>
         /// The point pathway that the enemy drone is using in order to travel in 3D space.
         /// </summary>

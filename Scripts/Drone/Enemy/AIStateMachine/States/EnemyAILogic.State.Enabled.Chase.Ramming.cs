@@ -2,13 +2,14 @@
 
 using Chickensoft.Introspection;
 using Chickensoft.LogicBlocks;
+using Godot;
 
 public partial class EnemyAILogic
 {
     public partial record State
     {
         [Meta]
-        public partial record Ramming : Chase
+        public partial record Ramming : Chase, IGet<Input.RamCollisionWithPlayer>
         {
             private VoxelNode targetVoxel;
             private float lastFrameDistance = -1f;
@@ -18,14 +19,14 @@ public partial class EnemyAILogic
                 this.OnEnter(() =>
                 {
                     SetRamSpeedSettings();
-                    DisableCollisionWithPlayer();
                     SetupTargetVoxel();
                     RequestRepath();
+                    Output(new Output.EnableRamCollision(IsEnabled: true));
                 });
                 this.OnExit(() =>
                 {
                     RevertSpeedSettings();
-                    ReEnableCollisionWithPlayer();
+                    Output(new Output.EnableRamCollision(IsEnabled: false));
                 });
             }
 
@@ -35,6 +36,7 @@ public partial class EnemyAILogic
                 var settings = Get<EnemyDroneSettings>();
                 data.CurrentMaxSpeed = settings.RamMaxSpeed;
                 data.CurrentAcceleration = settings.RamAcceleration;
+                data.CurrentDashSpeed = Get<EnemyAIDrone>().Velocity.Length();
             }
 
             private void RevertSpeedSettings()
@@ -43,20 +45,7 @@ public partial class EnemyAILogic
                 var settings = Get<EnemyDroneSettings>();
                 data.CurrentMaxSpeed = settings.MaxSpeed;
                 data.CurrentAcceleration = settings.Acceleration;
-            }
-
-            private void DisableCollisionWithPlayer()
-            {
-                var player = Get<IGameRepo>().PlayerDrone.Value;
-                var enemy = Get<EnemyAIDrone>();
-                enemy.AddCollisionExceptionWith(player);
-            }
-
-            private void ReEnableCollisionWithPlayer()
-            {
-                var player = Get<IGameRepo>().PlayerDrone.Value;
-                var enemy = Get<EnemyAIDrone>();
-                enemy.RemoveCollisionExceptionWith(player);
+                data.CurrentDashSpeed = 0f;
             }
 
             private void SetupTargetVoxel()
@@ -73,28 +62,7 @@ public partial class EnemyAILogic
                     
                 targetVoxel = playerVoxel;
             }
-
-            public override Transition On(in Input.PhysicsTick input)
-            {
-                base.On(input);
-
-                var enemyPosition = Get<EnemyAIDrone>().GlobalPosition;
-                var playerPosition = Get<IGameRepo>().PlayerDrone.Value.GlobalPosition;
-                var distance = enemyPosition.DistanceTo(playerPosition);
-                if (distance >= lastFrameDistance)
-                {
-                    // We are no longer dashing towards player
-                    // TODO: Transition to RamFlyBy state
-                    return ToSelf();
-                }
-
-                // Cache this value for comparison in the next frame
-                lastFrameDistance = distance;
-                
-                // TODO: Change this method in order to override the slowing-down at the end.
-                OnMovingAlongPath();
-            }
-
+            
             private void RequestRepath()
             {
                 var path = GeneratePathway(Get<Data>().EnemySvoNode.Position, targetVoxel.Position);
@@ -113,6 +81,57 @@ public partial class EnemyAILogic
                 data.SvoPath = path;
                 data.CurrentPathIndex = path.Length == 1 ? 0 : 1;
                 // LastRepathPosition ?
+            }
+
+            /// <summary>
+            /// Continuously increase target speed to the current max speed, and dash towards the target voxel.
+            /// If we pass by the player, jump state to <see cref="State.RamFlyBy"/>.
+            /// </summary>
+            public override Transition On(in Input.PhysicsTick input)
+            {
+                base.On(input);
+
+                var enemyPosition = Get<EnemyAIDrone>().GlobalPosition;
+                var playerPosition = Get<IGameRepo>().PlayerDrone.Value.GlobalPosition;
+                var distance = enemyPosition.DistanceTo(playerPosition);
+                if (distance >= lastFrameDistance)
+                    return To<RamFlyBy>(); // We are no longer dashing towards player
+
+                // Cache this value for comparison in the next frame
+                lastFrameDistance = distance;
+
+                var data = Get<Data>();
+                var deltaTime = (float) input.Delta;
+                UpdateDashSpeed(data, deltaTime);
+                DashToPlayer(data, Get<IGameRepo>().PlayerDrone.Value, deltaTime);
+                return ToSelf();
+            }
+
+            private static void UpdateDashSpeed(Data data, float deltaTime)
+            {
+                data.CurrentDashSpeed = Mathf.Lerp(data.CurrentDashSpeed, data.CurrentMaxSpeed,
+                    data.CurrentAcceleration * deltaTime);
+            }
+
+            private void DashToPlayer(Data data, PlayerDrone player, float deltaTime)
+            {
+                var enemy = Get<EnemyAIDrone>();
+                var toTarget = player.GlobalPosition - enemy.GlobalPosition;
+                SmoothlyRotate(enemy, toTarget, Get<EnemyDroneSettings>().TurnSpeed, deltaTime);
+
+                // Let's assume we can get to the target voxel (the player's) directly
+                var velocity = enemy.Velocity;
+                var targetVelocity = toTarget.Normalized() * data.CurrentMaxSpeed;
+
+                velocity = velocity.Lerp(targetVelocity, data.CurrentAcceleration * deltaTime);
+                Output(new Output.VelocityComputed(velocity));
+            }
+            
+            public Transition On(in Input.RamCollisionWithPlayer input)
+            {
+                Output(new Output.RammedIntoPlayer());
+                var force = Get<EnemyAIDrone>().Velocity;
+                return To<RamCooldown>().With(state => ((RamCooldown) state).VectorForce = force);
             }
             
         }

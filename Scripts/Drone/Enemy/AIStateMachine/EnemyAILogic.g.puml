@@ -5,6 +5,8 @@ state "EnemyAILogic State" as RescueDrone_EnemyAILogic_State {
     state "Chase" as RescueDrone_EnemyAILogic_State_Chase {
       state "Interception" as RescueDrone_EnemyAILogic_State_Interception
       state "Pursuit" as RescueDrone_EnemyAILogic_State_Pursuit
+      state "RamCooldown" as RescueDrone_EnemyAILogic_State_RamCooldown
+      state "RamFlyBy" as RescueDrone_EnemyAILogic_State_RamFlyBy
       state "Ramming" as RescueDrone_EnemyAILogic_State_Ramming
       state "Retreat" as RescueDrone_EnemyAILogic_State_Retreat
       state "Stay" as RescueDrone_EnemyAILogic_State_Stay
@@ -38,6 +40,7 @@ RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Pursui
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Retreat : PlayerDroneTooClose
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Stay : Moved
 RescueDrone_EnemyAILogic_State_Pursuit --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
+RescueDrone_EnemyAILogic_State_Ramming --> RescueDrone_EnemyAILogic_State_RamCooldown : RamCollisionWithPlayer
 RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Pursuit : PlayerDroneTooFar
 RescueDrone_EnemyAILogic_State_Retreat --> RescueDrone_EnemyAILogic_State_Stay : PlayerDroneCloseEnough
 RescueDrone_EnemyAILogic_State_Scanning --> RescueDrone_EnemyAILogic_State_ToPatrolWaypoint : ScanningComplete
@@ -51,6 +54,10 @@ RescueDrone_EnemyAILogic_State_Enabled : ComputeMovementAlongPath() → Velocity
 RescueDrone_EnemyAILogic_State_Enabled : OnMovingAlongPath() → VelocityComputed
 RescueDrone_EnemyAILogic_State_Enabled : SmoothlyRotate() → RotationComputed
 RescueDrone_EnemyAILogic_State_Pursuit : OnMoved → VelocityComputed
+RescueDrone_EnemyAILogic_State_Ramming : DashToPlayer() → VelocityComputed
+RescueDrone_EnemyAILogic_State_Ramming : OnEnter → EnableRamCollision
+RescueDrone_EnemyAILogic_State_Ramming : OnExit → EnableRamCollision
+RescueDrone_EnemyAILogic_State_Ramming : OnRamCollisionWithPlayer → RammedIntoPlayer
 RescueDrone_EnemyAILogic_State_Stay : OnEnter → VelocityComputed
 
 [*] --> RescueDrone_EnemyAILogic_State_Disabled

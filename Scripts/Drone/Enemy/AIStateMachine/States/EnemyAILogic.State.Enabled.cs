@@ -336,7 +336,8 @@ public partial class EnemyAILogic
             /// Calculate the target speed based on the distance to the final target of this pathway.
             /// The distance required to come to a complete stop from velocity <c>v</c> with deceleration <c>a</c> is: <c>d = v^2 / 2a</c>
             /// </summary>
-            private static float CalculateFinalTargetSpeed(Vector3[] path, EnemyAIDrone enemy, EnemyDroneSettings settings, float targetSpeed)
+            private static float CalculateFinalTargetSpeed(Vector3[] path, EnemyAIDrone enemy, 
+                EnemyDroneSettings settings, float targetSpeed)
             {
                 var finalTarget = path[^1];
                 var distanceToFinalTarget = enemy.GlobalPosition.DistanceTo(finalTarget);
@@ -405,7 +406,8 @@ public partial class EnemyAILogic
             /// <param name="maxSpeed">which speed is desired before we reach the breaking distance</param>
             /// <param name="breakingDistance">distance from the target at which we start lowering speed</param>
             /// <returns></returns>
-            private static float CalculateSpeedNearTarget(Vector3 current, Vector3 target, float startingSpeed, float maxSpeed, float breakingDistance)
+            private static float CalculateSpeedNearTarget(Vector3 current, Vector3 target, float startingSpeed, 
+                float maxSpeed, float breakingDistance)
             {
                 var distanceToDestination = current.DistanceTo(target);
                 if (distanceToDestination >= breakingDistance) 

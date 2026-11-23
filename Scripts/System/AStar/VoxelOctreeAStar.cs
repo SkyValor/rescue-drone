@@ -7,9 +7,6 @@ using Godot.Collections;
 
 public interface IPathfindSVO
 {
-    Vector3[] CreatePath(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclusion = null);
-    bool IsPathClear(Vector3 start, Vector3 end, World3D world, float droneRadius, Rid[] exclude = null);
-    
     /// <summary>
     /// Generate and return a point path consisting of A* points from the closest empty leaves to start and end.
     /// The droneRadius must be accurate to properly determine if the drone can fit through tight spaces or avoid
@@ -180,10 +177,6 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
     
     #endregion
 
-    public bool IsPointContained(int pointId) => AStar?.HasPoint(pointId) ?? false;
-
-    public long[] GetPointConnections(int pointId) => AStar?.GetPointConnections(pointId) ?? [];
-
     public Vector3[] RequestSmartDronePath(Vector3 start, Vector3 end, World3D world, float droneRadius, 
         Rid[] exclusion = null)
     {
@@ -193,6 +186,10 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         var finePath = FineRouteSearch(start, end);
         return SmoothPath(finePath, world, droneRadius, exclusion);
     }
+    
+    public bool IsPointContained(int pointId) => AStar?.HasPoint(pointId) ?? false;
+
+    public long[] GetPointConnections(int pointId) => AStar?.GetPointConnections(pointId) ?? [];
 
     /// <summary>
     /// Make a preliminary sweep of the path from start to finish. Return a pathway of points,

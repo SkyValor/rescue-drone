@@ -21,6 +21,7 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 	[Node] private CollisionShape3D Collider { get; set; }
 	[Node] private SightSensorCone3D SightSensor { get; set; }
 	[Node] private ProximitySensor ProximitySensor { get; set; }
+	[Node] private Area3D RamAreaCollider { get; set; }
 	
 	#region AI State Machine
 	private EnemyAILogic AIStateMachine { get; set; }
@@ -89,7 +90,25 @@ public partial class EnemyAIDrone : CharacterBody3D, IFlyingDrone, IProvide<IDro
 		AIStateBinding = AIStateMachine.Bind();
 		AIStateBinding
 			.Handle((in EnemyAILogic.Output.RotationComputed output) => GlobalTransform = output.GlobalTransform)
-			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity);
+			.Handle((in EnemyAILogic.Output.VelocityComputed output) => Velocity = output.Velocity)
+			.Handle((in EnemyAILogic.Output.EnableRamCollision output) =>
+			{
+				var playerDrone = GameRepo.PlayerDrone.Value;
+				if (playerDrone is null) return;
+				
+				RamAreaCollider.Monitoring = output.IsEnabled;
+				if (output.IsEnabled)
+					AddCollisionExceptionWith(playerDrone);
+				else
+					RemoveCollisionExceptionWith(playerDrone);
+			})
+			.Handle((in EnemyAILogic.Output.RammedIntoPlayer output) =>
+			{
+				// TODO:
+				// We rammed against player.
+				// Send ram force to player drone.
+				// Play impact VFX and SFX.
+			});
 		AIStateBinding.When<EnemyAILogic.State.Ramming>(_ =>
 		{
 			
