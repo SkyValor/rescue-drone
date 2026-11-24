@@ -108,6 +108,10 @@ public partial class EnemyDroneSettings : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0, 30, 0.1")]
     public float RamRecoilDistance = 7f;
+
+    public float RamRecoilDuration = 1.5f;
+    
+    public float RamCooldownDuration = 2.5f;
     
     /// <summary>
     /// Only recalculate the SVO path if the player moves this much.

@@ -65,13 +65,14 @@ public partial class EnemyAILogic
             private void OnDroneHidden(IFlyingDrone drone)
             {
                 if (drone is not PlayerDrone player) return;
-                
+
                 // The player exited our field of vision.
                 // Unless it is in our surroundings, it's lost to us.
 
                 var inVicinity = Get<ProximitySensor>().DronesInProximity.Contains(player);
                 if (inVicinity) return;
-                
+
+                Get<Data>().PlayerDetected = false;
                 Input(new Input.PlayerLost());
             }
 
@@ -94,6 +95,7 @@ public partial class EnemyAILogic
                 var onSight = Get<SightSensorCone3D>().DronesOnSight.Contains(player);
                 if (onSight) return;
 
+                Get<Data>().PlayerDetected = false;
                 Input(new Input.PlayerLost());
             }
 
@@ -199,6 +201,41 @@ public partial class EnemyAILogic
                 DebugConsole.Print("Requesting a smart drone pathway.");
                 return pathfinder.RequestSmartDronePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
                 // return pathfinder.CreatePath(originPosition, targetPosition, world, enemy.DroneRadius, [enemy.GetRid()]);
+            }
+
+            /// <summary>
+            /// Continuously attempts to generate a point pathway. At first, the <c>preferredPosition</c>
+            /// is taken as the target position, but if it's not possible to reach it then multiple shorter
+            /// paths will be attempted instead, each one closer to the origin position until a certain
+            /// threshold.
+            /// </summary>
+            protected Vector3[] GeneratePathwayUpTo(Vector3 originPosition, Vector3 preferredPosition)
+            {
+                var world = Get<World3D>();
+                var enemy = Get<EnemyAIDrone>();
+                var pathfinder = Get<IPathfindSVO>();
+                DebugConsole.Print("Requesting a smart drone pathway up to position.");
+
+                var svo = Get<IGameRepo>().SVO.Value;
+                var minNodeSize = svo.MinNodeSize;
+                var stepDistance = minNodeSize * 2.1f;
+                var minimumThreshold = minNodeSize * 2f;
+                
+                var toOrigin = (originPosition - preferredPosition).Normalized();
+                var numberOfSteps = 0;
+
+                Vector3[] pathway = [];
+                while (pathway.Length < 2)
+                {
+                    var candidatePosition = preferredPosition + toOrigin * numberOfSteps++ * stepDistance;
+                    
+                    if (originPosition.DistanceTo(candidatePosition) <= minimumThreshold) break;
+                    
+                    pathway = pathfinder.RequestSmartDronePath(originPosition, candidatePosition, world,
+                        enemy.DroneRadius, [enemy.GetRid()]);
+                }
+                
+                return pathway;
             }
 
             protected void OnMovingAlongPath(double delta, float targetSpeed, bool includeRotation = true, Action onFinalTargetReached = null)

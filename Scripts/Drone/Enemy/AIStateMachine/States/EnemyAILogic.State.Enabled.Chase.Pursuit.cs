@@ -3,11 +3,6 @@
 using Chickensoft.Introspection;
 using Godot;
 
-// TODO: Have a sphere hitbox around the enemy drone for a second sensor.
-// When the player is being detected, allow this second hitbox to also continuously detect it.
-// This avoids the bottleneck of the player getting too close and reaching outside of the sight sensor cone of detection.
-// It's also standard for enemies to be aware of their close surroundings, especially when alerted.
-
 public partial class EnemyAILogic
 {
     public partial record State
@@ -41,17 +36,7 @@ public partial class EnemyAILogic
 
                 var data = Get<Data>();
                 var enemy = Get<EnemyAIDrone>();
-                // var player = data.DetectedPlayer;
-                // if (player is null)
-                // {
-                //     DebugConsole.PrintError("Error in state Pursuit. Detected player is null!");
-                //     player = Get<IGameRepo>().PlayerDrone.Value;
-                //     if (player is null)
-                //     {
-                //         DebugConsole.PrintWarning("Warning in state Pursuit. GameRepo has no reference to player drone.");
-                //         return To<Idle>();
-                //     }
-                // }
+                var player = Get<IGameRepo>().PlayerDrone.Value;
                 
                 var settings = Get<EnemyDroneSettings>();
                 var enemyPosition = enemy.GlobalPosition;
@@ -72,6 +57,8 @@ public partial class EnemyAILogic
                 TravelToSweetSpot(enemy, player, settings, input.Delta);
                 return ToSelf();
             }
+            
+            #region Debug Drawing
 
             private void DrawMinMaxDistance(Vector3 position, float minDistance, float maxDistance)
             {
@@ -98,6 +85,8 @@ public partial class EnemyAILogic
                 if (data.SvoPath is null || data.SvoPath.Length == 0) return;
                 DebugDraw3D.DrawSphere(data.SvoPath[^1], color: DebugPathEndColor);
             }
+            
+            #endregion
 
             private bool RecalculateSVOPathway(Data data, EnemyAIDrone enemy, PlayerDrone player, EnemyDroneSettings settings)
             {

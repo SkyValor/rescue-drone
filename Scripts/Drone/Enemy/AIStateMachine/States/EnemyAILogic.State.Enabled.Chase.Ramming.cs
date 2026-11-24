@@ -9,7 +9,7 @@ public partial class EnemyAILogic
     public partial record State
     {
         [Meta]
-        public partial record Ramming : Chase, IGet<Input.RamCollisionWithPlayer>
+        public partial record Ramming : Chase, IGet<Input.TriggerRamRecoil>
         {
             private VoxelNode targetVoxel;
             private float lastFrameDistance = -1f;
@@ -126,14 +126,14 @@ public partial class EnemyAILogic
                 velocity = velocity.Lerp(targetVelocity, data.CurrentAcceleration * deltaTime);
                 Output(new Output.VelocityComputed(velocity));
             }
-            
-            public Transition On(in Input.RamCollisionWithPlayer input)
+
+            public Transition On(in Input.TriggerRamRecoil input)
             {
                 Output(new Output.RammedIntoPlayer());
-                var force = Get<EnemyAIDrone>().Velocity;
-                return To<RamCooldown>().With(state => ((RamCooldown) state).VectorForce = force);
+                Get<Data>().RamDirection = Get<EnemyAIDrone>().Velocity;
+                return To<RamRecoil>();
             }
-            
+
         }
     }
 }

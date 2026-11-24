@@ -55,10 +55,7 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
         {
             foreach (var offset in OffsetDirections)
             {
-                var neighborPosition =
-                    navigable.Position +
-                    offset * navigable.Size * 0.5f +
-                    offset * 0.01f;
+                var neighborPosition = GetNeighborPosition(navigable, offset);
                 var neighborNode = Tree.GetNodeAtPosition(neighborPosition);
                 if (neighborNode is null || !neighborNode.IsEmpty) continue;
 
@@ -79,6 +76,11 @@ public class VoxelOctreeAStar : IPathfindSVO, System.IDisposable
                 AStar.ConnectPoints(navigable.Id, neighborNode.Id);
             }
         }
+    }
+
+    private static Vector3 GetNeighborPosition(VoxelNode navigable, Vector3 offsetDir)
+    {
+        return navigable.Position + offsetDir * navigable.Size * 0.5f + offsetDir * 0.01f;
     }
 
     #region Handle Node Subdivision

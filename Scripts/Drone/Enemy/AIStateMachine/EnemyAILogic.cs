@@ -46,7 +46,8 @@ public partial class EnemyAILogic : LogicBlock<EnemyAILogic.State>, IEnemyAILogi
         public readonly record struct PlayerDroneTooClose;
         public readonly record struct PlayerDroneTooFar;
 
-        public readonly record struct RamCollisionWithPlayer;
+        public readonly record struct TriggerRamRecoil;
+        public readonly record struct TriggerRamCooldown;
     }
     
     public static class Output

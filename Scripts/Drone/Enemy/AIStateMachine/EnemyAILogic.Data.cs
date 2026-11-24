@@ -89,5 +89,7 @@ public partial class EnemyAILogic
         /// Whether the drone is currently holding a gaze during scanning phase.
         /// </summary>
         public bool IsScanning { get; set; }
+        
+        public Vector3 RamDirection { get; set; }
     }
 }
